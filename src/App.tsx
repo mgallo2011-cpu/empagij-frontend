@@ -1323,7 +1323,6 @@ const content = useMemo(() => {
               }
           }}
         >
-                >
           {isSavingProducer ? "Salvataggio..." : "Aggiungi produttore"}
         </button>
       </div>
