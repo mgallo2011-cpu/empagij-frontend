@@ -1125,6 +1125,7 @@ const content = useMemo(() => {
     case "producerAdd": {
         const draft = producerDraft;
         const setDraft = setProducerDraft;
+        const [isSavingProducer, setIsSavingProducer] = useState(false);
 
       const canSave =
   draft.name.trim().length > 0 &&
@@ -1267,61 +1268,63 @@ const content = useMemo(() => {
   />
 </div>
 
-              <button
-                type="button"
-                disabled={!canSave}
-                style={{
-                  ...styles.primaryButton,
-                  ...(canSave ? {} : { opacity: 0.5, cursor: "not-allowed" }),
-                }}
-                        onClick={async () => {
-                         
-                            if (!user?.id || !user?.selected_province_code) {
-                                alert("Devi effettuare il login");
-                                return;
-                            }
+                    <button
+          type="button"
+          disabled={!canSave || isSavingProducer}
+          style={{
+            ...styles.primaryButton,
+            ...(!canSave || isSavingProducer
+              ? { opacity: 0.5, cursor: "not-allowed" }
+              : {}),
+          }}
+          onClick={async () => {
+              if (isSavingProducer) return;
 
-                            const currentUser = user as AuthUser;
+              if (!user?.id || !user?.selected_province_code) {
+                  alert("Devi effettuare il login");
+                  return;
+              }
 
-                            try {
-                                await apiPost<{ ok: true; id: string }>("/producers", {
-                                    name: draft.name.trim(),
-                                    category: draft.category.trim(),
-                                    province_code: currentUser.selected_province_code,
-                                    city: draft.city.trim() || null,
-                                    address: draft.address.trim() || null,
-                                    google_maps_url: draft.google_maps_url.trim() || null,
-                                    website_url: draft.website_url.trim() || null,
-                                    notes: draft.notes.trim() || null,
-                                    created_by_user_id: currentUser.id,
-                                });
+              const currentUser = user as AuthUser;
+              setIsSavingProducer(true);
 
-                                const updated = await fetchProducers(currentUser.selected_province_code);
-                                setProducers(updated);
+              try {
+                  await apiPost<{ ok: true; id: string }>("/producers", {
+                      name: draft.name.trim(),
+                      category: draft.category.trim(),
+                      province_code: currentUser.selected_province_code,
+                      city: draft.city.trim() || null,
+                      address: draft.address.trim() || null,
+                      google_maps_url: draft.google_maps_url.trim() || null,
+                      website_url: draft.website_url.trim() || null,
+                      notes: draft.notes.trim() || null,
+                      created_by_user_id: currentUser.id,
+                  });
 
-                                setProducerDraft({
-                                    name: "",
-                                    category: "",
-                                    city: "",
-                                    address: "",
-                                    google_maps_url: "",
-                                    website_url: "",
-                                    notes: "",
-                                });
+                  const updated = await fetchProducers(currentUser.selected_province_code);
+                  setProducers(updated);
 
-                                setScreen({ name: "tabs", tab: "disponibilita" });
-                            } catch (err) {
-                                console.error("Errore creazione produttore:", err);
-                                alert("Errore nel salvataggio del produttore");
-                            }
-                        }}
-              >
-                Aggiungi produttore
-              </button>
-            </div>
-          </div>
-        );
-      }
+                  setProducerDraft({
+                      name: "",
+                      category: "",
+                      city: "",
+                      address: "",
+                      google_maps_url: "",
+                      website_url: "",
+                      notes: "",
+                  });
+
+                  setScreen({ name: "tabs", tab: "disponibilita" });
+              } catch (err) {
+                  console.error("Errore creazione produttore:", err);
+                  alert("Errore nel salvataggio del produttore");
+              } finally {
+                  setIsSavingProducer(false);
+              }
+          }}
+        >
+          {isSavingProducer ? "Salvataggio..." : "Aggiungi produttore"}
+        </button>
       case "miaArea": {
         return (
           <div style={styles.page}>
@@ -2013,7 +2016,9 @@ function ProducerDetail({
   const mapQuery = encodeURIComponent(
     `${producer.address}, ${producer.city}`
   );
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
+  const mapsUrl =
+  producer.google_maps_url?.trim() ||
+  `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
 
   return (
     <div style={styles.page}>
@@ -2130,12 +2135,34 @@ function ProducerDetail({
                       />
                   </div>
 
-                  <div>
+                                   <div>
                       <div style={{ ...styles.muted, marginBottom: 6 }}>Città / Provincia</div>
                       <input
                           value={editDraft.city || ""}
                           onChange={(e) =>
                               setEditDraft((p) => ({ ...p, city: e.target.value }))
+                          }
+                          style={styles.input}
+                      />
+                  </div>
+
+                  <div>
+                      <div style={{ ...styles.muted, marginBottom: 6 }}>Link Google Maps</div>
+                      <input
+                          value={editDraft.google_maps_url || ""}
+                          onChange={(e) =>
+                              setEditDraft((p) => ({ ...p, google_maps_url: e.target.value }))
+                          }
+                          style={styles.input}
+                      />
+                  </div>
+
+                  <div>
+                      <div style={{ ...styles.muted, marginBottom: 6 }}>Sito web / pagina online</div>
+                      <input
+                          value={editDraft.website_url || ""}
+                          onChange={(e) =>
+                              setEditDraft((p) => ({ ...p, website_url: e.target.value }))
                           }
                           style={styles.input}
                       />
@@ -2150,18 +2177,20 @@ function ProducerDetail({
                           }
                           style={{ ...styles.textarea, marginTop: 0 }}
                       />
-                      <button
+                                          <button
                           type="button"
                           style={styles.primaryBtn}
                           onClick={() => {
                               onUpdateProducer({
-    ...editDraft,
-    name: editDraft.name.trim(),
-    category: editDraft.category.trim(),
-    address: editDraft.address?.trim() || "",
-    city: editDraft.city?.trim() || "",
-    notes: editDraft.notes?.trim() || "",
-});
+                                  ...editDraft,
+                                  name: editDraft.name.trim(),
+                                  category: editDraft.category.trim(),
+                                  address: editDraft.address?.trim() || "",
+                                  city: editDraft.city?.trim() || "",
+                                  notes: editDraft.notes?.trim() || "",
+                                  google_maps_url: editDraft.google_maps_url?.trim() || "",
+                                  website_url: editDraft.website_url?.trim() || "",
+                              });
                               setIsEditing(false);
                           }}
                       >
