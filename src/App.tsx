@@ -1323,8 +1323,13 @@ const content = useMemo(() => {
               }
           }}
         >
+                >
           {isSavingProducer ? "Salvataggio..." : "Aggiungi produttore"}
         </button>
+      </div>
+    </div>
+  );
+}
       case "miaArea": {
         return (
           <div style={styles.page}>
