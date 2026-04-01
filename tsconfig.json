@@ -1,0 +1,11 @@
+{
+    "include": [
+        "./src/**/*"
+    ],
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "lib": [ "dom", "dom.iterable", "es2022" ],
+    "jsx": "react-jsx"
+  }
+}
