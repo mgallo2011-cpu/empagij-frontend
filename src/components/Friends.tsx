@@ -125,8 +125,12 @@ export default function Friends({
     const [itemsText, setItemsText] = useState("");
     const [draft, setDraft] = useState("");
     const [isSubmittingLocal, setIsSubmittingLocal] = useState(false);
-    const [inviteEmail, setInviteEmail] = useState("");
+       const [inviteEmail, setInviteEmail] = useState("");
     const [isInviting, setIsInviting] = useState(false);
+    const [inviteFeedback, setInviteFeedback] = useState<{
+        type: "success" | "error";
+        text: string;
+    } | null>(null);
     const [newCircleName, setNewCircleName] = useState("");
     const [isCreatingCircle, setIsCreatingCircle] = useState(false);
 
@@ -166,60 +170,93 @@ export default function Friends({
         </div>
       )}
 
-      {!selecting && activeCircleId && circleMembers.length < 5 && (
-              <div style={{ marginBottom: 12 }}>
-                  <input
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
-                      placeholder="Email da invitare"
-                      style={{ ...styles.input, marginBottom: 8 }}
-                  />
+            {!selecting && activeCircleId && circleMembers.length < 5 && (
+          <div style={{ marginBottom: 12 }}>
+              <input
+                  value={inviteEmail}
+                  onChange={(e) => {
+                      setInviteEmail(e.target.value);
+                      if (inviteFeedback) setInviteFeedback(null);
+                  }}
+                  placeholder="Email da invitare"
+                  style={{ ...styles.input, marginBottom: 8 }}
+              />
 
-                  <button
-                      type="button"
-                      style={{
-                          ...styles.primaryBtn,
-                          opacity: !inviteEmail.trim() || isInviting ? 0.5 : 1,
-                      }}
-                      disabled={!inviteEmail.trim() || isInviting}
-                      onClick={async () => {
-                          if (!activeCircleId) return;
+              <button
+                  type="button"
+                  style={{
+                      ...styles.primaryBtn,
+                      opacity: !inviteEmail.trim() || isInviting ? 0.5 : 1,
+                  }}
+                  disabled={!inviteEmail.trim() || isInviting}
+                  onClick={async () => {
+                      if (!activeCircleId) return;
 
-                          setIsInviting(true);
+                      setInviteFeedback(null);
+                      setIsInviting(true);
 
-                          try {
-                              const res = await fetch(
-                                  `${apiBase}/circles/${encodeURIComponent(activeCircleId)}/invite`,
-                                  {
-                                      method: "POST",
-                                      headers: {
-                                          "Content-Type": "application/json",
-                                          ...getBearerHeaders(),
-                                      },
-                                      body: JSON.stringify({
-                                          invitee_email: inviteEmail.trim(),
-                                      }),
-                                  }
-                              );
+                      try {
+                          const email = inviteEmail.trim();
 
-                              const data = await res.json().catch(() => ({}));
-
-                              if (!res.ok || data?.ok === false) {
-                                  throw new Error(data?.error || `HTTP ${res.status}`);
+                          const res = await fetch(
+                              `${apiBase}/circles/${encodeURIComponent(activeCircleId)}/invite`,
+                              {
+                                  method: "POST",
+                                  headers: {
+                                      "Content-Type": "application/json",
+                                      ...getBearerHeaders(),
+                                  },
+                                  body: JSON.stringify({
+                                      invitee_email: email,
+                                  }),
                               }
+                          );
 
-                              setInviteEmail("");
-                          } catch (err: any) {
-                              console.error("Errore invito:", err);
-                          } finally {
-                              setIsInviting(false);
+                          const data = await res.json().catch(() => ({}));
+
+                          if (!res.ok || data?.ok === false) {
+                              throw new Error(data?.error || `HTTP ${res.status}`);
                           }
+
+                          setInviteEmail("");
+                          setInviteFeedback({
+                              type: "success",
+                              text:
+                                  `Invito registrato per ${email}. ` +
+                                  `Per ora Empagij non invia ancora email automatiche: ` +
+                                  `la persona vedrà l’invito entrando nell’app con questa email.`,
+                          });
+                      } catch (err: any) {
+                          console.error("Errore invito:", err);
+                          setInviteFeedback({
+                              type: "error",
+                              text: String(err?.message || err),
+                          });
+                      } finally {
+                          setIsInviting(false);
+                      }
+                  }}
+              >
+                  {isInviting ? "Invio..." : "Invita nella cerchia"}
+              </button>
+
+              {inviteFeedback && (
+                  <div
+                      style={{
+                          marginTop: 8,
+                          fontSize: 13,
+                          lineHeight: 1.45,
+                          color:
+                              inviteFeedback.type === "error"
+                                  ? "crimson"
+                                  : "#2f4a3d",
                       }}
                   >
-                      {isInviting ? "Invio..." : "Invita via email"}
-                  </button>
-              </div>
-          )}
+                      {inviteFeedback.text}
+                  </div>
+              )}
+          </div>
+      )}
           {circles.length === 0 && (
               <div style={styles.card}>
                   <div style={styles.cardTitle}>

@@ -1706,22 +1706,60 @@ apiGet={apiGet}
   myInvites,
   user?.id,
 ]);
-    const main = !user ? (
-        <div style={{ padding: 16, maxWidth: 420, margin: "0 auto", display: "grid", gap: 24 }}>
-            <div>
-                <h2 style={{ margin: 0 }}>Login</h2>
-                <p style={{ opacity: 0.7, marginTop: 8 }}>
-                    Accedi per entrare nella tua cerchia e vedere richieste/passaggi.
+        const main = !user ? (
+        <div
+            style={{
+                padding: 16,
+                maxWidth: 420,
+                margin: "0 auto",
+                display: "grid",
+                gap: 18,
+                width: "100%",
+            }}
+        >
+            <div style={{ ...styles.card, padding: 20 }}>
+                <div style={{ ...styles.brand, textAlign: "center", marginBottom: 10 }}>
+                    empagij
+                </div>
+
+                <h1
+                    style={{
+                        margin: 0,
+                        fontSize: 24,
+                        lineHeight: 1.2,
+                        textAlign: "center",
+                    }}
+                >
+                    Crea il tuo account
+                </h1>
+
+                <p
+                    style={{
+                        opacity: 0.8,
+                        marginTop: 10,
+                        marginBottom: 0,
+                        textAlign: "center",
+                        lineHeight: 1.45,
+                    }}
+                >
+                    Per iniziare, crea un account e scegli la tua provincia.
                 </p>
-                <LoginBox onLogged={(u) => setUser(u)} />
             </div>
 
-            <div>
+            <div style={{ ...styles.card, padding: 20 }}>
                 <h2 style={{ margin: 0 }}>Registrazione</h2>
                 <p style={{ opacity: 0.7, marginTop: 8 }}>
-                    Crea un account e scegli la provincia di cui vuoi vedere i produttori.
+                    È il primo passo per usare Empagij.
                 </p>
                 <RegisterBox onLogged={(u) => setUser(u)} />
+            </div>
+
+            <div style={{ ...styles.card, padding: 20 }}>
+                <h2 style={{ margin: 0 }}>Hai già un account?</h2>
+                <p style={{ opacity: 0.7, marginTop: 8 }}>
+                    Accedi per entrare nella tua cerchia e vedere richieste e passaggi.
+                </p>
+                <LoginBox onLogged={(u) => setUser(u)} />
             </div>
         </div>
     ) : (
@@ -3125,22 +3163,58 @@ function RegisterBox({
                 style={{ padding: 10, borderRadius: 10, border: "1px solid #ddd" }}
             />
 
-                                  <select
-                value={provinceCode}
-                onChange={(e) => {
-                    const v = e.target.value;
-                    setProvinceCode(v);
-                    const selectedProvince = PROVINCES.find((p) => p.code === v);
-                    setProvinceName(selectedProvince?.name || v);
-                }}
-                style={{ padding: 10, borderRadius: 10, border: "1px solid #ddd" }}
-            >
-                {PROVINCES.map((province) => (
-                    <option key={province.code} value={province.code}>
-                        {province.name}
-                    </option>
-                ))}
-            </select>
+                                             <div>
+                <div
+                    style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        marginBottom: 6,
+                    }}
+                >
+                    Provincia
+                </div>
+
+                <div
+                    style={{
+                        fontSize: 13,
+                        lineHeight: 1.4,
+                        opacity: 0.8,
+                        marginBottom: 8,
+                    }}
+                >
+                    La provincia serve per mostrarti i produttori della tua zona e
+                    costruire la tua rete locale.
+                </div>
+
+                <select
+                    value={provinceCode}
+                    onChange={(e) => {
+                        const v = e.target.value;
+                        setProvinceCode(v);
+                        const selectedProvince = PROVINCES.find((p) => p.code === v);
+                        setProvinceName(selectedProvince?.name || v);
+                    }}
+                    style={{ padding: 10, borderRadius: 10, border: "1px solid #ddd", width: "100%" }}
+                >
+                    {PROVINCES.map((province) => (
+                        <option key={province.code} value={province.code}>
+                            {province.name}
+                        </option>
+                    ))}
+                </select>
+
+                <div
+                    style={{
+                        fontSize: 12,
+                        lineHeight: 1.4,
+                        opacity: 0.75,
+                        marginTop: 8,
+                    }}
+                >
+                    Perché è importante la provincia? Userai Empagij scegliendo tra i produttori della provincia di{" "}
+                    <strong>{provinceName}</strong>.
+                </div>
+            </div>
 
             {error ? <div style={{ color: "crimson", fontSize: 13 }}>{error}</div> : null}
 
