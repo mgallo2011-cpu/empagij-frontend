@@ -180,10 +180,6 @@ export default function Friends({
                       </strong>
                   </div>
 
-                  <div style={{ marginTop: 8 }}>
-                      Per invitare altri utenti, inserisci l’email e clicca <strong>Invita</strong>.
-                  </div>
-
                   <div style={{ marginTop: 6, opacity: 0.75 }}>
                       Ogni cerchia può contenere massimo 5 utenti.
                   </div>
