@@ -461,6 +461,7 @@ export default function App() {
   website_url: "",
   notes: "",
 });
+const [isSavingProducer, setIsSavingProducer] = useState(false);
   const [richieste, setRichieste] = useState<Richiesta[]>([]);
         const handleRespondRequest = async (
   requestId: string,
@@ -1139,7 +1140,7 @@ const handleCreateRichiesta = async ({
             alert(String(err?.message || err));
         }
     };
-const content = useMemo(() => {
+const content = (() => {
   switch (screen.name) {
     case "producerDetail": {
       const { producer, fromTab } = screen;
@@ -1171,8 +1172,7 @@ const content = useMemo(() => {
     case "producerAdd": {
         const draft = producerDraft;
         const setDraft = setProducerDraft;
-        const [isSavingProducer, setIsSavingProducer] = useState(false);
-
+        
       const canSave =
   draft.name.trim().length > 0 &&
   draft.category.trim().length > 0 &&
@@ -1738,20 +1738,7 @@ apiGet={apiGet}
         }
       }
     }
-  }, [
-  screen,
-  passaggi,
-  richieste,
-  producerDraft,
-  myName,
-  followedProducerIds,
-  producers,
-  circles,
-  activeCircleId,
-  circleMembers,
-  myInvites,
-  user?.id,
-]);
+  })();
        const main = !user ? (
         <div
             style={{
