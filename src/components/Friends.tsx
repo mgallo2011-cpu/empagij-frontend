@@ -179,7 +179,24 @@ export default function Friends({
                   </div>
               </div>
           )}
-
+          {activeCircleId && (
+              <div
+                  style={{
+                      background: "#e8f3ec",
+                      padding: 12,
+                      borderRadius: 10,
+                      marginBottom: 12,
+                      fontSize: 14,
+                      lineHeight: 1.45,
+                  }}
+              >
+                  Sei nella cerchia{" "}
+                  <strong>
+                      {circles.find((c) => c.id === activeCircleId)?.name || "—"}
+                  </strong>
+                  .
+              </div>
+          )}
             {!selecting && activeCircleId && circleMembers.length < 5 && (
           <div style={{ marginBottom: 12 }}>
               <input
