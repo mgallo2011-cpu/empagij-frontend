@@ -1750,18 +1750,17 @@ apiGet={apiGet}
                 width: "100%",
             }}
         >
-            <div style={{ ...styles.card, padding: 20 }}>
-                <div style={{ ...styles.brand, textAlign: "center", marginBottom: 10 }}>
+                    <div style={{ ...styles.card, padding: "14px 20px 12px" }}>
+                <div style={{ ...styles.brand, textAlign: "center", marginBottom: 8 }}>
                     empagij
                 </div>
 
                 <p
                     style={{
                         opacity: 0.8,
-                        marginTop: 0,
-                        marginBottom: 0,
+                        margin: 0,
                         textAlign: "left",
-                        lineHeight: 1.45,
+                        lineHeight: 1.3,
                     }}
                 >
                     Per iniziare, registra un account
@@ -1769,8 +1768,16 @@ apiGet={apiGet}
                     scegli la provincia per vedere i produttori
                     <br />
                     del tuo territorio, già presenti in empagij.
-                    <br />
-                    <br />
+                </p>
+
+                <p
+                    style={{
+                        opacity: 0.8,
+                        margin: "8px 0 0 0",
+                        textAlign: "left",
+                        lineHeight: 1.3,
+                    }}
+                >
                     Puoi cambiare quando vuoi la provincia di
                     <br />
                     riferimento.
