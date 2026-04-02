@@ -3147,7 +3147,15 @@ function LoginBox({
                                       setError(String(e?.message || e));
                                   }
                 }}
-                style={{ padding: 10, borderRadius: 10, border: "none", cursor: "pointer" }}
+               style={{
+                                      padding: "12px 14px",
+                                      borderRadius: 10,
+                                      border: "none",
+                                      cursor: "pointer",
+                                      background: "#6ea96e",
+                                      color: "#fff",
+                                      fontWeight: 700,
+                                  }}
             >
                 Entra
             </button>
@@ -3285,7 +3293,15 @@ function RegisterBox({
                                       setError(String(e?.message || e));
                                   }
                 }}
-                style={{ padding: 10, borderRadius: 10, border: "none", cursor: "pointer" }}
+                style={{
+                                      padding: "12px 14px",
+                                      borderRadius: 10,
+                                      border: "none",
+                                      cursor: "pointer",
+                                      background: "#6ea96e",
+                                      color: "#fff",
+                                      fontWeight: 700,
+                                  }}
             >
                 Registrati
             </button>

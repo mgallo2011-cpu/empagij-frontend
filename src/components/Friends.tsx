@@ -162,50 +162,46 @@ export default function Friends({
       <h2 style={styles.h2}>La tua cerchia</h2>
 
           {activeCircleId && (
-              <div style={{ marginBottom: 12, fontSize: 14, lineHeight: 1.5 }}>
+              <div
+                  style={{
+                      marginBottom: 14,
+                      fontSize: 14,
+                      lineHeight: 1.5,
+                      background: "#f7f3ec",
+                      border: "1px solid #eee6d7",
+                      borderRadius: 14,
+                      padding: 14,
+                  }}
+              >
                   <div>
-                      Sei parte della cerchia:{" "}
+                      Sei parte di questa cerchia:{" "}
                       <strong>
                           {circles.find((c) => c.id === activeCircleId)?.name || "—"}
                       </strong>
                   </div>
 
-                  <div style={{ marginTop: 6 }}>
-                      Puoi invitare altre persone inserendo la loro email.
+                  <div style={{ marginTop: 8 }}>
+                      Per invitare altri utenti, inserisci l’email e clicca <strong>Invita</strong>.
                   </div>
 
-                  <div style={{ marginTop: 4, opacity: 0.7 }}>
-                      Ogni cerchia può contenere massimo 5 persone.
+                  <div style={{ marginTop: 6, opacity: 0.75 }}>
+                      Ogni cerchia può contenere massimo 5 utenti.
                   </div>
               </div>
           )}
-          {activeCircleId && (
-              <div
-                  style={{
-                      background: "#e8f3ec",
-                      padding: 12,
-                      borderRadius: 10,
-                      marginBottom: 12,
-                      fontSize: 14,
-                      lineHeight: 1.45,
-                  }}
-              >
-                  Sei nella cerchia{" "}
-                  <strong>
-                      {circles.find((c) => c.id === activeCircleId)?.name || "—"}
-                  </strong>
-                  .
-              </div>
-          )}
+         
             {!selecting && activeCircleId && circleMembers.length < 5 && (
           <div style={{ marginBottom: 12 }}>
-              <input
+            <div style={{ ...styles.muted, marginBottom: 6 }}>
+                  Inserisci l’email della persona che vuoi aggiungere alla cerchia.
+              </div>
+          <input
                   value={inviteEmail}
                   onChange={(e) => {
                       setInviteEmail(e.target.value);
                       if (inviteFeedback) setInviteFeedback(null);
                   }}
-                  placeholder="Inserisci email della persona da invitare"
+                  placeholder="Scrivi qui l’email della persona da invitare"
                   style={{ ...styles.input, marginBottom: 8 }}
               />
 
