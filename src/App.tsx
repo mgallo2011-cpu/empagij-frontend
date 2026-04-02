@@ -259,7 +259,41 @@ type ProducersResponse = {
     ok: true;
     producers: Producer[];
 };
+async function acceptInviteTokenIfPresent(): Promise<void> {
+    try {
+        const inviteToken = localStorage.getItem("empagij_invite_token") || "";
 
+        if (!inviteToken) return;
+
+        const res = await fetch(`${API_BASE}/invites/accept-by-token`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...getBearerHeaders(),
+            },
+            body: JSON.stringify({
+                token: inviteToken,
+            }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || data?.ok === false) {
+            throw new Error(data?.error || `HTTP ${res.status}`);
+        }
+
+        localStorage.removeItem("empagij_invite_token");
+
+        try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("invite_token");
+            window.history.replaceState({}, "", url.toString());
+        } catch { }
+    } catch (err) {
+        console.error("Errore accept invite by token:", err);
+        throw err;
+    }
+}
 async function fetchProducers(provinceCode?: string): Promise<Producer[]> {
     if (!provinceCode) return [];
 
@@ -490,6 +524,18 @@ const [circles, setCircles] = useState<Circle[]>([]);
 const [activeCircleId, setActiveCircleId] = useState<string | null>(null);
 const [circleMembers, setCircleMembers] = useState<CircleMember[]>([]);
 const [myInvites, setMyInvites] = useState<InviteItem[]>([]);
+useEffect(() => {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const inviteToken = params.get("invite_token");
+
+        if (inviteToken) {
+            localStorage.setItem("empagij_invite_token", inviteToken);
+        }
+    } catch (err) {
+        console.error("Errore parsing invite_token:", err);
+    }
+}, []);
 useEffect(() => {
   let alive = true;
 
@@ -1722,15 +1768,15 @@ apiGet={apiGet}
                     empagij
                 </div>
 
-                <h1
+              <h1
                     style={{
                         margin: 0,
-                        fontSize: 24,
-                        lineHeight: 1.2,
+                        fontSize: 22,
+                        lineHeight: 1.3,
                         textAlign: "center",
                     }}
                 >
-                    Crea il tuo account
+                    Per iniziare, registra un account
                 </h1>
 
                 <p
@@ -1742,7 +1788,8 @@ apiGet={apiGet}
                         lineHeight: 1.45,
                     }}
                 >
-                    Per iniziare, crea un account e scegli la tua provincia.
+                    Scegli la provincia per vedere i produttori del tuo territorio già presenti in Empagij.  
+                    Puoi cambiarla quando vuoi dalle impostazioni.
                 </p>
             </div>
 
@@ -1756,8 +1803,9 @@ apiGet={apiGet}
 
             <div style={{ ...styles.card, padding: 20 }}>
                 <h2 style={{ margin: 0 }}>Hai già un account?</h2>
-                <p style={{ opacity: 0.7, marginTop: 8 }}>
-                    Accedi per entrare nella tua cerchia e vedere richieste e passaggi.
+               <p style={{ opacity: 0.8, marginTop: 8 }}>
+                    Accedi con la tua email.  
+                    Vedrai richieste e passaggi condivisi con la tua Cerchia.
                 </p>
                 <LoginBox onLogged={(u) => setUser(u)} />
             </div>
@@ -3077,43 +3125,45 @@ function LoginBox({
                 type="button"
                 onClick={async () => {
                     setError("");
-                    try {
-                        const out = await apiPost<{
-    ok: true;
-    token: string;
-    user: {
-        id: string;
-        name: string;
-        email: string;
-        province_code: string;
-        province_name?: string;
-    };
-}>(
-    "/auth/login",
-    { email, password }
-);
-          
-                        localStorage.setItem(LS_TOKEN, out.token);
-                        console.log("TOKEN SALVATO:", out.token);
-                        localStorage.setItem(
-                            "empagij_user",
-                            JSON.stringify({
-                                id: out.user.id,
-                                name: out.user.name,
-                                email: out.user.email,
-                                selected_province_code: out.user.province_code,
-                            })
-                        );
+                                       try {
+                                      const out = await apiPost<{
+                                          ok: true;
+                                          token: string;
+                                          user: {
+                                              id: string;
+                                              name: string;
+                                              email: string;
+                                              province_code: string;
+                                              province_name?: string;
+                                          };
+                                      }>(
+                                          "/auth/login",
+                                          { email, password }
+                                      );
 
-                        onLogged({
-                            id: out.user.id,
-                            name: out.user.name,
-                            email: out.user.email,
-                            selected_province_code: out.user.province_code,
-                        });
-                    } catch (e: any) {
-                        setError(String(e?.message || e));
-                    }
+                                      localStorage.setItem(LS_TOKEN, out.token);
+                                      console.log("TOKEN SALVATO:", out.token);
+                                      localStorage.setItem(
+                                          "empagij_user",
+                                          JSON.stringify({
+                                              id: out.user.id,
+                                              name: out.user.name,
+                                              email: out.user.email,
+                                              selected_province_code: out.user.province_code,
+                                          })
+                                      );
+
+                                      await acceptInviteTokenIfPresent();
+
+                                      onLogged({
+                                          id: out.user.id,
+                                          name: out.user.name,
+                                          email: out.user.email,
+                                          selected_province_code: out.user.province_code,
+                                      });
+                                  } catch (e: any) {
+                                      setError(String(e?.message || e));
+                                  }
                 }}
                 style={{ padding: 10, borderRadius: 10, border: "none", cursor: "pointer" }}
             >
@@ -3222,36 +3272,48 @@ function RegisterBox({
                 type="button"
                 onClick={async () => {
                     setError("");
-                    try {
-                       const out = await apiPost<{
-    ok: true;
-    token: string;
-    user: {
-        id: string;
-        name: string;
-        email: string;
-        province_code: string;
-        province_name: string;
-    };
-}>("/auth/register", {
-    name,
-    email,
-    password,
-    province_code: provinceCode,
-    province_name: provinceName,
-});
+                                       try {
+                                      const out = await apiPost<{
+                                          ok: true;
+                                          token: string;
+                                          user: {
+                                              id: string;
+                                              name: string;
+                                              email: string;
+                                              province_code: string;
+                                              province_name: string;
+                                          };
+                                      }>("/auth/register", {
+                                          name,
+                                          email,
+                                          password,
+                                          province_code: provinceCode,
+                                          province_name: provinceName,
+                                      });
 
-localStorage.setItem(LS_TOKEN, out.token);
+                                      localStorage.setItem(LS_TOKEN, out.token);
 
-onLogged({
-    id: out.user.id,
-    name: out.user.name,
-    email: out.user.email,
-    selected_province_code: out.user.province_code,
-});
-                    } catch (e: any) {
-                        setError(String(e?.message || e));
-                    }
+                                      localStorage.setItem(
+                                          LS_USER,
+                                          JSON.stringify({
+                                              id: out.user.id,
+                                              name: out.user.name,
+                                              email: out.user.email,
+                                              selected_province_code: out.user.province_code,
+                                          })
+                                      );
+
+                                      await acceptInviteTokenIfPresent();
+
+                                      onLogged({
+                                          id: out.user.id,
+                                          name: out.user.name,
+                                          email: out.user.email,
+                                          selected_province_code: out.user.province_code,
+                                      });
+                                  } catch (e: any) {
+                                      setError(String(e?.message || e));
+                                  }
                 }}
                 style={{ padding: 10, borderRadius: 10, border: "none", cursor: "pointer" }}
             >

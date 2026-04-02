@@ -159,16 +159,26 @@ export default function Friends({
         <div style={styles.avatar}>🙂</div>
       </div>
 
-      <h2 style={styles.h2}>Cerchia</h2>
+      <h2 style={styles.h2}>La tua cerchia</h2>
 
-      {activeCircleId && (
-        <div style={{ marginBottom: 8, fontSize: 13, opacity: 0.7 }}>
-          Cerchia attiva:{" "}
-          <strong>
-            {circles.find((c) => c.id === activeCircleId)?.name || "—"}
-          </strong>
-        </div>
-      )}
+          {activeCircleId && (
+              <div style={{ marginBottom: 12, fontSize: 14, lineHeight: 1.5 }}>
+                  <div>
+                      Sei parte della cerchia:{" "}
+                      <strong>
+                          {circles.find((c) => c.id === activeCircleId)?.name || "—"}
+                      </strong>
+                  </div>
+
+                  <div style={{ marginTop: 6 }}>
+                      Puoi invitare altre persone inserendo la loro email.
+                  </div>
+
+                  <div style={{ marginTop: 4, opacity: 0.7 }}>
+                      Ogni cerchia può contenere massimo 5 persone.
+                  </div>
+              </div>
+          )}
 
             {!selecting && activeCircleId && circleMembers.length < 5 && (
           <div style={{ marginBottom: 12 }}>
@@ -178,7 +188,7 @@ export default function Friends({
                       setInviteEmail(e.target.value);
                       if (inviteFeedback) setInviteFeedback(null);
                   }}
-                  placeholder="Email da invitare"
+                  placeholder="Inserisci email della persona da invitare"
                   style={{ ...styles.input, marginBottom: 8 }}
               />
 
@@ -218,14 +228,23 @@ export default function Friends({
                               throw new Error(data?.error || `HTTP ${res.status}`);
                           }
 
-                          setInviteEmail("");
-                          setInviteFeedback({
-                              type: "success",
-                              text:
-                                  `Invito registrato per ${email}. ` +
-                                  `Per ora Empagij non invia ancora email automatiche: ` +
-                                  `la persona vedrà l’invito entrando nell’app con questa email.`,
-                          });
+                                                    setInviteEmail("");
+
+            if (data?.email_sent) {
+                setInviteFeedback({
+                    type: "success",
+                    text:
+                        `Invito inviato a ${email}. ` +
+                        `La persona riceverà un'email con il link per entrare nella cerchia.`,
+                });
+            } else {
+                setInviteFeedback({
+                    type: "error",
+                    text:
+                        `Invito salvato per ${email}, ma l'email non è stata inviata. ` +
+                        `Errore: ${data?.email_error || "invio email non disponibile"}`,
+                });
+            }
                       } catch (err: any) {
                           console.error("Errore invito:", err);
                           setInviteFeedback({
@@ -237,7 +256,7 @@ export default function Friends({
                       }
                   }}
               >
-                  {isInviting ? "Invio..." : "Invita nella cerchia"}
+                  {isInviting ? "Invio..." : "Invita"}
               </button>
 
               {inviteFeedback && (
