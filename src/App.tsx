@@ -1807,23 +1807,23 @@ apiGet={apiGet}
     <div style={styles.app}>
           <div style={styles.screen}>{main}</div>
 
-      {screen.name !== "intro" && (
-      <BottomNav
-  tab={activeTab}
-  setTab={(t) => {
-    setLastTab(activeTab);
-    setScreen({ name: "tabs", tab: t });
-  }}
-  onOpenFriends={() =>
-    setScreen({
-      name: "cerchia",
-      mode: "manage",
-      from: activeTab,
-    })
-  }
-  pendingCerchiaCount={pendingRicevuteCount}
-/>
-      )}
+            {user && screen.name !== "intro" && (
+            <BottomNav
+                tab={activeTab}
+                setTab={(t) => {
+                    setLastTab(activeTab);
+                    setScreen({ name: "tabs", tab: t });
+                }}
+                onOpenFriends={() =>
+                    setScreen({
+                        name: "cerchia",
+                        mode: "manage",
+                        from: activeTab,
+                    })
+                }
+                pendingCerchiaCount={pendingRicevuteCount}
+            />
+        )}
     </div>
   );
 }
