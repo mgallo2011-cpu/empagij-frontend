@@ -1752,7 +1752,7 @@ apiGet={apiGet}
   myInvites,
   user?.id,
 ]);
-        const main = !user ? (
+       const main = !user ? (
         <div
             style={{
                 padding: 16,
@@ -1768,44 +1768,39 @@ apiGet={apiGet}
                     empagij
                 </div>
 
-              <h1
-                    style={{
-                        margin: 0,
-                        fontSize: 22,
-                        lineHeight: 1.3,
-                        textAlign: "center",
-                    }}
-                >
-                    Per iniziare, registra un account
-                </h1>
-
                 <p
                     style={{
                         opacity: 0.8,
-                        marginTop: 10,
+                        marginTop: 0,
                         marginBottom: 0,
-                        textAlign: "center",
+                        textAlign: "left",
                         lineHeight: 1.45,
                     }}
                 >
-                    Scegli la provincia per vedere i produttori del tuo territorio già presenti in Empagij.  
-                    Puoi cambiarla quando vuoi dalle impostazioni.
+                    Per iniziare, registra un account
+                    <br />
+                    scegli la provincia per vedere i produttori
+                    <br />
+                    del tuo territorio, già presenti in empagij.
+                    <br />
+                    <br />
+                    Puoi cambiare quando vuoi la provincia di
+                    <br />
+                    riferimento.
                 </p>
             </div>
 
             <div style={{ ...styles.card, padding: 20 }}>
                 <h2 style={{ margin: 0 }}>Registrazione</h2>
-                <p style={{ opacity: 0.7, marginTop: 8 }}>
-                    È il primo passo per usare Empagij.
-                </p>
                 <RegisterBox onLogged={(u) => setUser(u)} />
             </div>
 
             <div style={{ ...styles.card, padding: 20 }}>
                 <h2 style={{ margin: 0 }}>Hai già un account?</h2>
-               <p style={{ opacity: 0.8, marginTop: 8 }}>
-                    Accedi con la tua email.  
-                    Vedrai richieste e passaggi condivisi con la tua Cerchia.
+                <p style={{ opacity: 0.8, marginTop: 8 }}>
+                    Accedi con la tua email e vedrai
+                    <br />
+                    passaggi e richieste dalla tua Cerchia
                 </p>
                 <LoginBox onLogged={(u) => setUser(u)} />
             </div>
@@ -3213,7 +3208,7 @@ function RegisterBox({
                 style={{ padding: 10, borderRadius: 10, border: "1px solid #ddd" }}
             />
 
-                                             <div>
+                                           <div>
                 <div
                     style={{
                         fontSize: 14,
@@ -3222,18 +3217,6 @@ function RegisterBox({
                     }}
                 >
                     Provincia
-                </div>
-
-                <div
-                    style={{
-                        fontSize: 13,
-                        lineHeight: 1.4,
-                        opacity: 0.8,
-                        marginBottom: 8,
-                    }}
-                >
-                    La provincia serve per mostrarti i produttori della tua zona e
-                    costruire la tua rete locale.
                 </div>
 
                 <select
@@ -3259,10 +3242,10 @@ function RegisterBox({
                         lineHeight: 1.4,
                         opacity: 0.75,
                         marginTop: 8,
+                        textAlign: "right",
                     }}
                 >
-                    Perché è importante la provincia? Userai Empagij scegliendo tra i produttori della provincia di{" "}
-                    <strong>{provinceName}</strong>.
+                    Da ora vedrai i produttori della provincia di <strong>{provinceName}</strong>.
                 </div>
             </div>
 
