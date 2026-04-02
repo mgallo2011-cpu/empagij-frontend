@@ -189,7 +189,7 @@ export default function Friends({
             {!selecting && activeCircleId && circleMembers.length < 5 && (
           <div style={{ marginBottom: 12 }}>
             <div style={{ ...styles.muted, marginBottom: 6 }}>
-                  Inserisci l’email della persona che vuoi aggiungere alla cerchia.
+                  Se vuoi aggiungere alla cerchia una persona inserisci qui la sua email.
               </div>
           <input
                   value={inviteEmail}
@@ -197,7 +197,7 @@ export default function Friends({
                       setInviteEmail(e.target.value);
                       if (inviteFeedback) setInviteFeedback(null);
                   }}
-                  placeholder="Scrivi qui l’email della persona da invitare"
+                  placeholder="email della persona da invitare"
                   style={{ ...styles.input, marginBottom: 8 }}
               />
 
