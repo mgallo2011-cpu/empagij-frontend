@@ -24,11 +24,25 @@ export default function Home({
       <h2 style={styles.h2}>Cosa succede intorno a te?</h2>
 
       <div style={styles.cardsCol}>
-        <div
+               <div
           style={styles.card}
           onClick={() => setScreen({ name: "cerchiaPassaggi" })}
         >
-          <div style={styles.cardTitle}>nella tua cerchia</div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <div style={styles.cardTitle}>nella tua cerchia</div>
+
+            {passaggiAttivi > 0 && (
+              <div style={styles.redDot} />
+            )}
+          </div>
+
           <div style={styles.cardSub}>
             {passaggiAttivi === 0
               ? "nessun passaggio attivo"
@@ -44,7 +58,7 @@ export default function Home({
         >
           <div style={styles.cardTitle}>dai produttori</div>
           <div style={styles.cardSub}>Novità dai produttori</div>
-        </div>
+         </div>
       </div>
 
       <div
