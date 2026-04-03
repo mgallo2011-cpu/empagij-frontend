@@ -3128,10 +3128,19 @@ const [password, setPassword] = useState("");
 
             <button
                 type="button"
-               onClick={async () => {
+              onClick={async () => {
     setError("");
 
     try {
+        if ("Notification" in window && Notification.permission === "default") {
+            try {
+                const permission = await Notification.requestPermission();
+                console.log("LoginBox permission result:", permission);
+            } catch (permErr) {
+                console.error("LoginBox permission request error:", permErr);
+            }
+        }
+
         const out = await apiPost<{
             ok: true;
             token: string;
