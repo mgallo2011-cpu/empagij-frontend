@@ -8,6 +8,7 @@ import Home from "./components/Home";
 import Disponibilita from "./components/Disponibilita";
 import Cerchia from "./components/Cerchia";
 import { PROVINCES } from "./data/provinces";
+import { registerPush } from "./index";
 type Tab = "home" | "cerchia" | "disponibilita" | "impostazioni";
 type Screen =
   | { name: "tabs"; tab: Tab }
@@ -3163,6 +3164,12 @@ const [password, setPassword] = useState("");
             email: out.user.email,
             selected_province_code: out.user.province_code,
         });
+
+        try {
+            await registerPush();
+        } catch (pushErr) {
+            console.error("Register push post-login error:", pushErr);
+        }
 
         try {
             await acceptInviteTokenIfPresent();
