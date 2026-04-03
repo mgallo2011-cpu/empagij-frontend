@@ -8,7 +8,7 @@ const root = ReactDOM.createRoot(rootElement);
 
 const API_BASE = "https://empagij-backend-delsud.onrender.com";
 const VAPID_PUBLIC_KEY =
-  "BAhvmiLyHCnTuGE7BHbeMuSiI1vnLdQwBJveRzrId3Chaqm35_2th5J1svizT4xI5Tswt1N9dwzqvFfpyUTBlv4";
+  "BDinge_jIJxkS6sFmdCCNsxH-nBbrOJVyXqML1xbMYqU799LaYXG21RMvOV1eTXMLt-JoN3BZy4zrB-MmgWgToE";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
