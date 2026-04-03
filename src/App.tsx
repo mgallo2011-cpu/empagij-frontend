@@ -172,11 +172,12 @@ function mapBackendRichieste(items: any[]): Richiesta[] {
         };
     });
 }
- type AuthUser = {
+type AuthUser = {
   id: string;
   name: string;
   email: string;
   selected_province_code: string;
+  province_name?: string;
 };
 type Circle = {
   id: string;
@@ -1584,7 +1585,29 @@ if (!activeCircleId) {
       }
       case "joinPassaggio": {
   const passaggio = passaggi.find((p) => p.id === screen.passaggioId);
-  if (!passaggio) return null;
+
+  if (!passaggio) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.headerRow}>
+          <button
+            style={styles.backBtn}
+            onClick={() => setScreen({ name: "tabs", tab: "home" })}
+          >
+            ← Indietro
+          </button>
+          <div style={styles.avatar}>🙂</div>
+        </div>
+
+        <div style={styles.card}>
+          <div style={styles.cardTitle}>Passaggio non trovato</div>
+          <div style={{ ...styles.muted, marginTop: 6 }}>
+            Questo passaggio potrebbe essere stato eliminato.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <JoinPassaggio
@@ -1695,6 +1718,7 @@ apiGet={apiGet}
     producers={producers}
     followedProducerIds={followedProducerIds}
     selectedProvinceCode={user?.selected_province_code || "-"}
+    selectedProvinceName={user?.province_name}
     onToggleFollow={onToggleFollow}
     onOpenProducer={(producer) =>
       setScreen({
@@ -2460,10 +2484,13 @@ function CerchiaPassaggi({
                                     </div>
                                 </div>
 
-                                <button
+                                                               <button
                                     type="button"
                                     style={styles.btnSecondary}
-                                    onClick={() => onDeletePassaggio(p.id)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDeletePassaggio(p.id);
+                                    }}
                                 >
                                     Elimina passaggio
                                 </button>
@@ -3157,13 +3184,14 @@ const [password, setPassword] = useState("");
         );
 
         localStorage.setItem(LS_TOKEN, out.token);
-        localStorage.setItem(
+                localStorage.setItem(
             LS_USER,
             JSON.stringify({
                 id: out.user.id,
                 name: out.user.name,
                 email: out.user.email,
                 selected_province_code: out.user.province_code,
+                province_name: out.user.province_name,
             })
         );
 
@@ -3172,6 +3200,7 @@ const [password, setPassword] = useState("");
             name: out.user.name,
             email: out.user.email,
             selected_province_code: out.user.province_code,
+            province_name: out.user.province_name,
         });
 
         try {
@@ -3314,13 +3343,14 @@ function RegisterBox({
 
         localStorage.setItem(LS_TOKEN, out.token);
 
-        localStorage.setItem(
+               localStorage.setItem(
             LS_USER,
             JSON.stringify({
                 id: out.user.id,
                 name: out.user.name,
                 email: out.user.email,
                 selected_province_code: out.user.province_code,
+                province_name: out.user.province_name,
             })
         );
 
@@ -3329,6 +3359,7 @@ function RegisterBox({
             name: out.user.name,
             email: out.user.email,
             selected_province_code: out.user.province_code,
+            province_name: out.user.province_name,
         });
 
         try {

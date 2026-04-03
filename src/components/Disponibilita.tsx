@@ -33,6 +33,7 @@ type Props = {
   producers: Producer[];
   followedProducerIds: string[];
   selectedProvinceCode: string;
+  selectedProvinceName?: string;
   onToggleFollow: (producerId: string) => void;
   onOpenProducer: (producer: Producer) => void;
   onUpdateProducer: (p: Producer) => void;
@@ -46,6 +47,7 @@ export default function Disponibilita({
   producers,
   followedProducerIds,
   selectedProvinceCode,
+  selectedProvinceName,
   onToggleFollow,
   onOpenProducer,
   onBack,
@@ -71,13 +73,13 @@ export default function Disponibilita({
       </button>
 
       <h2 style={styles.h2}>Produttori del tuo territorio</h2>
-      <p style={{ ...styles.muted, marginTop: 6 }}>
-        Tocca "Segui" per aggiungere un produttore alla tua lista.
+           <p style={{ ...styles.muted, marginTop: 6 }}>
+        Tocca "Segui" per poter creare un passaggio da quel produttore.
       </p>
       <p style={{ ...styles.muted, marginTop: 6 }}>
-        Stai guardando i produttori della provincia attiva:{" "}
-        <strong>{selectedProvinceCode}</strong>
-      </p>
+  Produttori provincia:{" "}
+  <strong>{selectedProvinceName || selectedProvinceCode}</strong>
+</p>
 
       <div style={styles.tabsRow}>
         <button
@@ -112,7 +114,7 @@ export default function Disponibilita({
 
       <div style={{ marginTop: 12 }}>
         <div style={{ ...styles.muted, marginBottom: 6 }}>
-          Vuoi vedere solo una categoria di produttori? Sceglila nell'elenco
+          Per vedere solo una categoria di produttori scegli nell'elenco
         </div>
         <select
           value={categoryFilter}
