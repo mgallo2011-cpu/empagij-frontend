@@ -3088,8 +3088,8 @@ function LoginBox({
         selected_province_code: string;
     }) => void;
 }) {
-    const [email, setEmail] = useState("maria@test.it");
-    const [password, setPassword] = useState("Prova123!");
+    const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
     const [error, setError] = useState<string>("");
 
     return (
