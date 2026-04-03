@@ -393,7 +393,14 @@ export default function Friends({
 
                   <button
                     type="button"
-                    style={styles.primaryButton}
+                                       style={{
+                      ...styles.primaryButton,
+                      background: "#2f4a3d",
+                      color: "#fff",
+                      fontWeight: 800,
+                      border: "2px solid #2f4a3d",
+                      boxShadow: "0 6px 16px rgba(47,74,61,0.28)",
+                    }}
                     onClick={async () => {
                       try {
                         const res = await fetch(
