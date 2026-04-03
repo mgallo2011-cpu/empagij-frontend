@@ -3112,48 +3112,52 @@ function LoginBox({
 
             <button
                 type="button"
-                onClick={async () => {
-                    setError("");
-                                       try {
-                                      const out = await apiPost<{
-                                          ok: true;
-                                          token: string;
-                                          user: {
-                                              id: string;
-                                              name: string;
-                                              email: string;
-                                              province_code: string;
-                                              province_name?: string;
-                                          };
-                                      }>(
-                                          "/auth/login",
-                                          { email, password }
-                                      );
+               onClick={async () => {
+    setError("");
 
-                                      localStorage.setItem(LS_TOKEN, out.token);
-                                      console.log("TOKEN SALVATO:", out.token);
-                                      localStorage.setItem(
-                                          "empagij_user",
-                                          JSON.stringify({
-                                              id: out.user.id,
-                                              name: out.user.name,
-                                              email: out.user.email,
-                                              selected_province_code: out.user.province_code,
-                                          })
-                                      );
+    try {
+        const out = await apiPost<{
+            ok: true;
+            token: string;
+            user: {
+                id: string;
+                name: string;
+                email: string;
+                province_code: string;
+                province_name?: string;
+            };
+        }>(
+            "/auth/login",
+            { email, password }
+        );
 
-                                      await acceptInviteTokenIfPresent();
+        localStorage.setItem(LS_TOKEN, out.token);
+        localStorage.setItem(
+            LS_USER,
+            JSON.stringify({
+                id: out.user.id,
+                name: out.user.name,
+                email: out.user.email,
+                selected_province_code: out.user.province_code,
+            })
+        );
 
-                                      onLogged({
-                                          id: out.user.id,
-                                          name: out.user.name,
-                                          email: out.user.email,
-                                          selected_province_code: out.user.province_code,
-                                      });
-                                  } catch (e: any) {
-                                      setError(String(e?.message || e));
-                                  }
-                }}
+        onLogged({
+            id: out.user.id,
+            name: out.user.name,
+            email: out.user.email,
+            selected_province_code: out.user.province_code,
+        });
+
+        try {
+            await acceptInviteTokenIfPresent();
+        } catch (inviteErr) {
+            console.error("Accept invite post-login error:", inviteErr);
+        }
+    } catch (e: any) {
+        setError(String(e?.message || e));
+    }
+}}
                style={{
                                       padding: "12px 14px",
                                       borderRadius: 10,
@@ -3255,51 +3259,56 @@ function RegisterBox({
 
             <button
                 type="button"
-                onClick={async () => {
-                    setError("");
-                                       try {
-                                      const out = await apiPost<{
-                                          ok: true;
-                                          token: string;
-                                          user: {
-                                              id: string;
-                                              name: string;
-                                              email: string;
-                                              province_code: string;
-                                              province_name: string;
-                                          };
-                                      }>("/auth/register", {
-                                          name,
-                                          email,
-                                          password,
-                                          province_code: provinceCode,
-                                          province_name: provinceName,
-                                      });
+              onClick={async () => {
+    setError("");
 
-                                      localStorage.setItem(LS_TOKEN, out.token);
+    try {
+        const out = await apiPost<{
+            ok: true;
+            token: string;
+            user: {
+                id: string;
+                name: string;
+                email: string;
+                province_code: string;
+                province_name: string;
+            };
+        }>("/auth/register", {
+            name,
+            email,
+            password,
+            province_code: provinceCode,
+            province_name: provinceName,
+        });
 
-                                      localStorage.setItem(
-                                          LS_USER,
-                                          JSON.stringify({
-                                              id: out.user.id,
-                                              name: out.user.name,
-                                              email: out.user.email,
-                                              selected_province_code: out.user.province_code,
-                                          })
-                                      );
+        localStorage.setItem(LS_TOKEN, out.token);
 
-                                      await acceptInviteTokenIfPresent();
+        localStorage.setItem(
+            LS_USER,
+            JSON.stringify({
+                id: out.user.id,
+                name: out.user.name,
+                email: out.user.email,
+                selected_province_code: out.user.province_code,
+            })
+        );
 
-                                      onLogged({
-                                          id: out.user.id,
-                                          name: out.user.name,
-                                          email: out.user.email,
-                                          selected_province_code: out.user.province_code,
-                                      });
-                                  } catch (e: any) {
-                                      setError(String(e?.message || e));
-                                  }
-                }}
+        onLogged({
+            id: out.user.id,
+            name: out.user.name,
+            email: out.user.email,
+            selected_province_code: out.user.province_code,
+        });
+
+        try {
+            await acceptInviteTokenIfPresent();
+        } catch (inviteErr) {
+            console.error("Accept invite post-register error:", inviteErr);
+        }
+    } catch (e: any) {
+        setError(String(e?.message || e));
+    }
+}}
                 style={{
                                       padding: "12px 14px",
                                       borderRadius: 10,
