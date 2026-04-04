@@ -72,50 +72,54 @@ export default function Disponibilita({
         + Aggiungi
       </button>
 
-      <h2 style={styles.h2}>Produttori del tuo territorio</h2>
-           <p style={{ ...styles.muted, marginTop: 6 }}>
-        Tocca "Segui" per poter creare un passaggio da quel produttore.
-      </p>
-      <p style={{ ...styles.muted, marginTop: 6 }}>
-  Produttori provincia:{" "}
-  <strong>{selectedProvinceName || selectedProvinceCode}</strong>
-</p>
+          <h2 style={styles.h2}>Produttori del tuo territorio</h2>
 
-      <div style={styles.tabsRow}>
-        <button
-          type="button"
-          style={{
-            ...styles.tabBtn,
-            ...(prodTab === "area" ? styles.tabBtnActive : {}),
-          }}
-          onClick={() => setProdTab("area")}
-        >
-          Produttori
-        </button>
+          <p style={{ ...styles.muted, marginTop: 6 }}>
+              Provincia attuale: <strong>{selectedProvinceName || selectedProvinceCode}</strong>
+          </p>
 
-        <button
-          type="button"
-          style={{
-            ...styles.tabBtn,
-            ...(prodTab === "seguiti" ? styles.tabBtnActive : {}),
-          }}
-          onClick={() => setProdTab("seguiti")}
-        >
-          Seguiti
-        </button>
-      </div>
+          <div style={styles.tabsRow}>
+              <button
+                  type="button"
+                  style={{
+                      ...styles.tabBtn,
+                      ...(prodTab === "area" ? styles.tabBtnActive : {}),
+                  }}
+                  onClick={() => setProdTab("area")}
+              >
+                  PRODUTTORI
+              </button>
 
-      <p style={{ ...styles.muted, marginTop: 10 }}>
-        “In alto trovi chi ha aggiornato di recente. Sotto c’è l’elenco
-        completo.”
-        <br />
-        Gli aggiornamenti possono arrivare in qualsiasi momento.
-      </p>
+              <button
+                  type="button"
+                  style={{
+                      ...styles.tabBtn,
+                      ...(prodTab === "seguiti" ? styles.tabBtnActive : {}),
+                  }}
+                  onClick={() => setProdTab("seguiti")}
+              >
+                  SEGUITI
+              </button>
+          </div>
 
-      <div style={{ marginTop: 12 }}>
-        <div style={{ ...styles.muted, marginBottom: 6 }}>
-          Per vedere solo una categoria di produttori scegli nell'elenco
-        </div>
+          <p style={{ ...styles.muted, marginTop: 10 }}>
+              Per creare il passaggio da un produttore devi seguirlo.
+          </p>
+
+          <div style={{ marginTop: 12 }}>
+              <div style={{ ...styles.muted, marginBottom: 10 }}>
+                  In alto trovi chi ha aggiornato di recente. Poi c’è l’elenco completo.
+              </div>
+              <div
+                  style={{
+                      ...styles.muted,
+                      marginBottom: 6,
+                      fontSize: 13,
+                      fontStyle: "italic",
+                  }}
+              >
+                  Per vedere solo una categoria di produttori scegli nell'elenco
+              </div>
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
