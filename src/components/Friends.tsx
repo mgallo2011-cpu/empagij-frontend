@@ -202,10 +202,14 @@ export default function Friends({
 
               <button
                   type="button"
-                  style={{
-                      ...styles.primaryBtn,
-                      opacity: !inviteEmail.trim() || isInviting ? 0.5 : 1,
-                  }}
+                      style={{
+                          ...styles.primaryBtn,
+                          background: "#1b2f25",
+                          color: "#ffffff",
+                          border: "1px solid #16271f",
+                          boxShadow: "0 6px 18px rgba(27,47,37,0.34)",
+                          opacity: !inviteEmail.trim() || isInviting ? 0.82 : 1,
+                      }}
                   disabled={!inviteEmail.trim() || isInviting}
                   onClick={async () => {
                       if (!activeCircleId) return;
@@ -509,35 +513,44 @@ export default function Friends({
                                                         {r.producerName || "Produttore"}
                                                     </div>
 
-                                                    <div style={styles.cardSub}>
-                                                        Proposto da:{" "}
-                                                        {r.fromName?.trim() ? r.fromName : "Anonimo"}
+                                                    <div
+                                                        style={{
+                                                            ...styles.cardSub,
+                                                            marginTop: 2,
+                                                            display: "flex",
+                                                            flexWrap: "wrap",
+                                                            gap: 6,
+                                                        }}
+                                                    >
+                                                        <span>
+                                                            {r.fromName?.trim() ? r.fromName : "Anonimo"}
+                                                        </span>
+
+                                                        <span>→</span>
+
+                                                        <span>
+                                                            {r.targetUserIds && r.targetUserIds.length > 0
+                                                                ? r.targetUserIds
+                                                                    .map((targetUserId) => {
+                                                                        const displayName =
+                                                                            memberNameById[targetUserId] || "Utente";
+                                                                        const s = r.statusByUserId?.[targetUserId];
+
+                                                                        const label =
+                                                                            s === "accepted"
+                                                                                ? "✅"
+                                                                                : s === "declined"
+                                                                                    ? "❌"
+                                                                                    : "⏳";
+
+                                                                        return `${displayName} ${label}`;
+                                                                    })
+                                                                    .join(", ")
+                                                                : "—"}
+                                                        </span>
                                                     </div>
 
-                                                    <div style={styles.cardSub}>
-                                                        A:{" "}
-                                                        {r.targetUserIds && r.targetUserIds.length > 0
-                                                            ? r.targetUserIds
-                                                                  .map((targetUserId) => {
-                                                                      const displayName =
-                                                                          memberNameById[targetUserId] || "Utente";
-                                                                      const s =
-                                                                          r.statusByUserId?.[targetUserId];
-
-                                                                      const label =
-                                                                          s === "accepted"
-                                                                              ? "✅"
-                                                                              : s === "declined"
-                                                                                  ? "❌"
-                                                                                  : "⏳";
-
-                                                                      return `${displayName} ${label}`;
-                                                                  })
-                                                                  .join(", ")
-                                                            : "—"}
-                                                    </div>
-
-                                                    <div style={styles.cardQuote}>
+                                                    <div style={{ ...styles.cardQuote, marginTop: 2 }}>
                                                         “{r.itemsText?.trim() ? r.itemsText : "Richiesta"}”
                                                     </div>
                                                 </div>
