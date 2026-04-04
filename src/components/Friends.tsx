@@ -487,69 +487,81 @@ export default function Friends({
                                     LE TUE RICHIESTE
                                 </div>
 
-                                <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-                                    {richieste
-                                        .filter((r) => r.status === "open" && r.fromUserId === userId)
-                                        .map((r) => (
-                                            <div key={r.id} style={styles.card}>
-                                                <div style={styles.cardTop}>
-                                                    <div style={styles.avatarSmall}>🙂</div>
+                                                   <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
+                        {richieste
+                            .filter((r) => r.fromUserId === userId)
+                            .map((r) => {
+                                const isClosed = r.status === "closed";
 
-                                                    <div style={{ flex: 1 }}>
-                                                        <div style={styles.cardTitle}>
-                                                            {r.producerName || "Produttore"}
-                                                        </div>
+                                return (
+                                    <div
+                                        key={r.id}
+                                        style={{
+                                            ...styles.card,
+                                            ...(isClosed ? { opacity: 0.78 } : {}),
+                                        }}
+                                    >
+                                        <div style={styles.cardTop}>
+                                            <div style={styles.avatarSmall}>🙂</div>
 
-                                                        <div style={styles.cardSub}>
-                                                            Proposto da:{" "}
-                                                            {r.fromName?.trim() ? r.fromName : "Anonimo"}
-                                                        </div>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={styles.cardTitle}>
+                                                    {r.producerName || "Produttore"}
+                                                </div>
 
-                                                        <div style={styles.cardSub}>
-                                                            A:{" "}
-                                                            {r.targetUserIds && r.targetUserIds.length > 0
-                                                                ? r.targetUserIds
-                                                                    .map((targetUserId) => {
-                                                                        const displayName =
-                                                                            memberNameById[targetUserId] || "Utente";
-                                                                        const s = r.statusByUserId?.[targetUserId];
+                                                <div style={styles.cardSub}>
+                                                    Proposto da:{" "}
+                                                    {r.fromName?.trim() ? r.fromName : "Anonimo"}
+                                                </div>
 
-                                                                        const label =
-                                                                            s === "accepted"
-                                                                                ? "✅"
-                                                                                : s === "declined"
-                                                                                    ? "❌"
-                                                                                    : "⏳";
+                                                <div style={styles.cardSub}>
+                                                    A:{" "}
+                                                    {r.targetUserIds && r.targetUserIds.length > 0
+                                                        ? r.targetUserIds
+                                                            .map((targetUserId) => {
+                                                                const displayName =
+                                                                    memberNameById[targetUserId] || "Utente";
+                                                                const s = r.statusByUserId?.[targetUserId];
 
-                                                                        return `${displayName} ${label}`;
-                                                                    })
-                                                                    .join(", ")
-                                                                : "—"}
-                                                        </div>
+                                                                const label =
+                                                                    s === "accepted"
+                                                                        ? "✅"
+                                                                        : s === "declined"
+                                                                            ? "❌"
+                                                                            : "⏳";
 
-                                                        <div style={styles.cardQuote}>
-                                                            “{r.itemsText?.trim() ? r.itemsText : "Richiesta"}”
-                                                        </div>
-                                                    </div>
+                                                                return `${displayName} ${label}`;
+                                                            })
+                                                            .join(", ")
+                                                        : "—"}
+                                                </div>
 
-                                                    <button
-                                                        type="button"
-                                                        style={styles.btnSecondary}
-                                                        onClick={() => {
-                                                            if (!window.confirm("Eliminare questa richiesta?")) {
-                                                                return;
-                                                            }
-                                                            onDeleteRequest(r.id);
-                                                        }}
-                                                    >
-                                                        Elimina richiesta
-                                                    </button>
-
-                                                    <div style={styles.pill}>aperta</div>
+                                                <div style={styles.cardQuote}>
+                                                    “{r.itemsText?.trim() ? r.itemsText : "Richiesta"}”
                                                 </div>
                                             </div>
-                                        ))}
-                                </div>
+
+                                            <button
+                                                type="button"
+                                                style={styles.btnSecondary}
+                                                onClick={() => {
+                                                    if (!window.confirm("Eliminare questa richiesta?")) {
+                                                        return;
+                                                    }
+                                                    onDeleteRequest(r.id);
+                                                }}
+                                            >
+                                                Elimina richiesta
+                                            </button>
+
+                                            <div style={styles.pill}>
+                                                {isClosed ? "chiusa" : "aperta"}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                    </div>
                             </div>
                         )}
                 </div>
