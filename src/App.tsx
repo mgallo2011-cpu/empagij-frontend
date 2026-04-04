@@ -1487,71 +1487,74 @@ const content = (() => {
 }
 
       case "stoAndando": {
-        const { producer, fromTab } = screen;
+          const { producer, fromTab } = screen;
 
-        return (
-            <StoAndando
-                producer={producer}
-                onBack={() => {
-                    if (fromTab === "home") {
-                        setScreen({ name: "producersFollowed", mode: "stoAndando" });
-                    } else {
-                        setScreen({ name: "producerDetail", producer, fromTab });
-                    }
-                }}
-                onStoAndando={async (draft) => {
-                    if (publishingRef.current) return;
-                    publishingRef.current = true;
+          return (
+              <StoAndando
+                  producer={producer}
+                  onBack={() => {
+                      if (fromTab === "home") {
+                          setScreen({ name: "producersFollowed", mode: "stoAndando" });
+                      } else {
+                          setScreen({ name: "producerDetail", producer, fromTab });
+                      }
+                  }}
+                  onStoAndando={async (draft) => {
+                      if (publishingRef.current) return;
+                      publishingRef.current = true;
 
-                    try {
-                        if (!user?.id) {
-                            alert("Devi effettuare il login");
-                            return;
-                        }
-if (!activeCircleId) {
-    alert("Devi prima selezionare o creare una cerchia");
-    return;
-}
-                        const whenLabel =
-                            draft.when === "oggi"
-                                ? "Oggi"
-                                : draft.when === "domani"
-                                    ? "Domani"
-                                    : "Altra data";
+                      try {
+                          if (!user?.id) {
+                              alert("Devi effettuare il login");
+                              return;
+                          }
 
-                        const created = await addPassaggio(user.id, {
-                            fromName: myNameLocal,
-                            circleId: activeCircleId || "",
-                            producerId: producer.id,
-                            producerName: producer.name,
-                            fromUserId: user.id,
-                            producerCategory: producer.category,
-                            whenLabel,
-                            dateISO: draft.dateISO || "",
-                            note: (draft.note ?? "").trim(),
-                            createdAt: Date.now(),
-                            createdAtISO: new Date().toISOString(),
-                        });
+                          if (!activeCircleId) {
+                              alert("Devi prima selezionare o creare una cerchia");
+                              return;
+                          }
 
-                        setPassaggi((prev) => {
-                            if (prev.some((x) => x.id === created.id)) return prev;
-                            return [created, ...prev];
-                        });
+                          const whenLabel =
+                              draft.when === "oggi"
+                                  ? "Oggi"
+                                  : draft.when === "domani"
+                                      ? "Domani"
+                                      : "Altra data";
 
-                        setScreen({ name: "passaggi" });
-                    } catch (e: any) {
-                        alert(
-                            "Errore di rete: backend non raggiungibile.\n\n" +
-                            String(e?.message || e)
-                        );
-                    } finally {
-                        publishingRef.current = false;
-                    }
-                }}
-               onUpdateProducer={handleUpdateProducer}
-            onDeleteProducer={handleDeleteProducer}
-            />
-        );
+                          const created = await addPassaggio(user.id, {
+                              fromName: myNameLocal,
+                              circleId: activeCircleId,
+                              producerId: producer.id,
+                              producerName: producer.name,
+                              fromUserId: user.id,
+                              producerCategory: producer.category,
+                              whenLabel,
+                              dateISO: draft.dateISO || "",
+                              note: (draft.note ?? "").trim(),
+                              createdAt: Date.now(),
+                              createdAtISO: new Date().toISOString(),
+                          });
+
+                          setPassaggi((prev) => {
+                              if (prev.some((x) => x.id === created.id)) return prev;
+                              return [created, ...prev];
+                          });
+
+                          alert("Passaggio creato");
+                          setScreen({ name: "tabs", tab: "home" });
+                      } catch (e: any) {
+                          alert(
+                              "Errore di rete: backend non raggiungibile.\n\n" +
+                              String(e?.message || e)
+                          );
+                      } finally {
+                          publishingRef.current = false;
+                      }
+                  }}
+                  onUpdateProducer={handleUpdateProducer}
+                  onDeleteProducer={handleDeleteProducer}
+              />
+          );
       }
        case "passaggi": {
     return (
@@ -1608,41 +1611,41 @@ if (!activeCircleId) {
         );
       }
       case "joinPassaggio": {
-  const passaggio = passaggi.find((p) => p.id === screen.passaggioId);
+          const passaggio = passaggi.find((p) => p.id === screen.passaggioId);
 
-  if (!passaggio) {
-    return (
-      <div style={styles.page}>
-        <div style={styles.headerRow}>
-          <button
-            style={styles.backBtn}
-            onClick={() => setScreen({ name: "tabs", tab: "home" })}
-          >
-            ← Indietro
-          </button>
-          <div style={styles.avatar}>🙂</div>
-        </div>
+          if (!passaggio) {
+              return (
+                  <div style={styles.page}>
+                      <div style={styles.headerRow}>
+                          <button
+                              style={styles.backBtn}
+                              onClick={() => setScreen({ name: "cerchiaPassaggi" })}
+                          >
+                              ← Indietro
+                          </button>
+                          <div style={styles.avatar}>🙂</div>
+                      </div>
 
-        <div style={styles.card}>
-          <div style={styles.cardTitle}>Passaggio non trovato</div>
-          <div style={{ ...styles.muted, marginTop: 6 }}>
-            Questo passaggio potrebbe essere stato eliminato.
-          </div>
-        </div>
-      </div>
-    );
-  }
+                      <div style={styles.card}>
+                          <div style={styles.cardTitle}>Passaggio non trovato</div>
+                          <div style={{ ...styles.muted, marginTop: 6 }}>
+                              Questo passaggio potrebbe essere stato eliminato.
+                          </div>
+                      </div>
+                  </div>
+              );
+          }
 
-  return (
-    <JoinPassaggio
-      passaggio={passaggio}
-      onBack={() => setScreen({ name: "passaggi" })}
-      onSend={() => {
-        alert("Funzione non ancora disponibile in questa versione");
-      }}
-    />
-  );
-}
+          return (
+              <JoinPassaggio
+                  passaggio={passaggio}
+                  onBack={() => setScreen({ name: "cerchiaPassaggi" })}
+                  onSend={() => {
+                      alert("Funzione non ancora disponibile in questa versione");
+                  }}
+              />
+          );
+      }
       case "cerchia":
           return (
               <Friends
@@ -2342,82 +2345,87 @@ function ProducerDetail({
 /* -------------------- UI PIECES -------------------- */
 
 function PassaggiList({
-  items,
-  onBack,
-  onDelete,
-  onOpenJoinPassaggio,
+    items,
+    onBack,
+    onDelete,
+    onOpenJoinPassaggio,
 }: {
-  items: Passaggio[];
-  onBack: () => void;
-  onDelete: (id: string) => void;
-  onOpenJoinPassaggio: (passaggioId: string) => void;
+    items: Passaggio[];
+    onBack: () => void;
+    onDelete: (id: string) => void;
+    onOpenJoinPassaggio: (passaggioId: string) => void;
 }) {
-  return (
-    <div style={styles.page}>
-      <div style={styles.headerRow}>
-        <button style={styles.backBtn} onClick={onBack}>
-          ← Indietro
-        </button>
-        <div style={styles.avatar}>🙂</div>
-      </div>
-
-      <h2 style={styles.h2}>Passaggi</h2>
-
-      {items.length === 0 ? (
-        <p style={styles.muted}>Nessun passaggio pubblicato per ora.</p>
-      ) : (
-        <div style={styles.cardsCol}>
-          {items.map((p) => (
-            <div key={p.id} style={styles.card}>
-              <div style={styles.cardTop}>
-                <div style={styles.iconCircle}>⭕</div>
-
-                <div style={{ flex: 1 }}>
-                  <div style={styles.cardTitle}>{p.producerName}</div>
-                  <div style={styles.cardSub}>
-                    {p.whenLabel}
-                    {p.dateISO ? ` • ${formatDateIT(p.dateISO)}` : ""}
-                    {p.producerCategory ? ` • ${p.producerCategory}` : ""}
-                  </div>
-
-                  {p.note?.trim() ? (
-                    <div style={{ marginTop: 8, ...styles.muted }}>
-                      {p.note}
-                    </div>
-                  ) : null}
-                 {null} // LEGACY richieste disattivato
-                </div>
-                <button
-  type="button"
-  title="Elimina passaggio"
-                          onClick={() => {
-    onDelete(p.id);
-}}
-                  style={{
-                    border: "2px solid black",
-                    background: "white",
-                    color: "black",
-                    cursor: "pointer",
-                    fontSize: 12,
-                    padding: "6px 10px",
-                    borderRadius: 8,
-                    marginLeft: 10,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    minWidth: 70,
-                    zIndex: 9999,
-                  }}
-                >
-                  Elimina LISTA
+    return (
+        <div style={styles.page}>
+            <div style={styles.headerRow}>
+                <button style={styles.backBtn} onClick={onBack}>
+                    ← Indietro
                 </button>
-              </div>
+                <div style={styles.avatar}>🙂</div>
             </div>
-          ))}
+
+            <h2 style={styles.h2}>Passaggi</h2>
+
+            {items.length === 0 ? (
+                <p style={styles.muted}>Nessun passaggio pubblicato per ora.</p>
+            ) : (
+                <div style={styles.cardsCol}>
+                    {items.map((p) => (
+                        <div
+                            key={p.id}
+                            style={{ ...styles.card, cursor: "pointer" }}
+                            onClick={() => onOpenJoinPassaggio(p.id)}
+                        >
+                            <div style={styles.cardTop}>
+                                <div style={styles.iconCircle}>⭕</div>
+
+                                <div style={{ flex: 1 }}>
+                                    <div style={styles.cardTitle}>{p.producerName}</div>
+                                    <div style={styles.cardSub}>
+                                        {p.whenLabel}
+                                        {p.dateISO ? ` • ${formatDateIT(p.dateISO)}` : ""}
+                                        {p.producerCategory ? ` • ${p.producerCategory}` : ""}
+                                    </div>
+
+                                    {p.note?.trim() ? (
+                                        <div style={{ marginTop: 8, ...styles.muted }}>
+                                            {p.note}
+                                        </div>
+                                    ) : null}
+                                </div>
+
+                                <button
+                                    type="button"
+                                    title="Elimina passaggio"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDelete(p.id);
+                                    }}
+                                    style={{
+                                        border: "2px solid black",
+                                        background: "white",
+                                        color: "black",
+                                        cursor: "pointer",
+                                        fontSize: 12,
+                                        padding: "6px 10px",
+                                        borderRadius: 8,
+                                        marginLeft: 10,
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        minWidth: 70,
+                                        zIndex: 9999,
+                                    }}
+                                >
+                                    Elimina passaggio
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }
 function CerchiaPassaggi({
     passaggi,
