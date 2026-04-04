@@ -491,19 +491,42 @@ const [isSavingProducer, setIsSavingProducer] = useState(false);
       console.error("RESPOND ERROR:", data, res.status);
       throw new Error(data?.error || `HTTP ${res.status}`);
     }
-      if (!activeCircleId) {
-          throw new Error("Cerchia attiva non trovata");
-      }
-      try {
-          const out = await apiGet<{ ok: true; items: any[] }>(
-              `/richieste?circle_id=${encodeURIComponent(activeCircleId)}`
-          );
 
-          const items = Array.isArray(out.items) ? out.items : [];
-          setRichieste(mapBackendRichieste(items));
-      } catch (err) {
-          console.error("Errore reload richieste:", err);
-      }
+    setRichieste((prev) =>
+      prev.map((r) => {
+        if (r.id !== requestId) return r;
+
+        const nextStatusByUserId = {
+          ...(r.statusByUserId || {}),
+          [userId]: status,
+        };
+
+        const hasPendingTargets = (r.targetUserIds || []).some(
+          (targetId) => nextStatusByUserId[targetId] === "pending"
+        );
+
+        return {
+          ...r,
+          statusByUserId: nextStatusByUserId,
+          status: hasPendingTargets ? "open" : "closed",
+        };
+      })
+    );
+
+    if (!activeCircleId) {
+      throw new Error("Cerchia attiva non trovata");
+    }
+
+    try {
+      const out = await apiGet<{ ok: true; items: any[] }>(
+        `/richieste?circle_id=${encodeURIComponent(activeCircleId)}`
+      );
+
+      const items = Array.isArray(out.items) ? out.items : [];
+      setRichieste(mapBackendRichieste(items));
+    } catch (err) {
+      console.error("Errore reload richieste:", err);
+    }
   } catch (err: any) {
     console.error("FRONT RESPOND ERROR:", err);
     alert("Errore nella risposta alla richiesta");
