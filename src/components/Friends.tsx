@@ -496,7 +496,9 @@ export default function Friends({
                                             key={r.id}
                                             style={{
                                                 ...styles.card,
-                                                ...(isClosed ? { opacity: 0.78 } : {}),
+                                                padding: 12,
+                                                borderRadius: 12,
+                                                ...(isClosed ? { background: "#fffaf2" } : {}),
                                             }}
                                         >
                                             <div style={styles.cardTop}>
@@ -607,23 +609,27 @@ export default function Friends({
                     key={r.id}
                     style={{
                         ...styles.card,
-                        ...(!isPending ? { opacity: 0.78 } : {}),
+                        padding: "10px 12px",
+                        borderRadius: 12,
+                        minHeight: "unset",
+                        ...(!isPending ? { background: "#fffaf2" } : {}),
                     }}
                 >
                     <div style={{ fontWeight: 800 }}>{r.producerName}</div>
 
-                    <div style={{ marginTop: 10 }}>
+                    <div style={{ marginTop: 4 }}>
                         <div
                             style={{
                                 fontSize: 12,
-                                opacity: 0.75,
-                                marginBottom: 8,
-                                lineHeight: "16px",
+                                opacity: 1,
+                                color: "#2f281f",
+                                marginBottom: 0,
+                                lineHeight: "14px",
                             }}
                         >
                             <div>Da: {r.fromName || "Un amico"}</div>
                             <div>Prodotto: {r.itemsText?.trim() ? r.itemsText : "-"}</div>
-                            <div style={{ marginTop: 8, fontWeight: 700 }}>
+                            <div style={{ marginTop: 4, fontWeight: 700, fontSize: 12 }}>
                                 Stato:{" "}
                                 {myDecision === "accepted"
                                     ? "✅ Hai accettato"
@@ -650,11 +656,7 @@ export default function Friends({
                                     No, mi spiace
                                 </button>
                             </>
-                        ) : (
-                            <div style={styles.pill}>
-                                {myDecision === "accepted" ? "accettata" : "rifiutata"}
-                            </div>
-                        )}
+                        ) : null}
                     </div>
                 </div>
             );

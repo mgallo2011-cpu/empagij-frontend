@@ -173,11 +173,12 @@ function mapBackendRichieste(items: any[]): Richiesta[] {
     });
 }
 type AuthUser = {
-  id: string;
-  name: string;
-  email: string;
-  selected_province_code: string;
-  province_name?: string;
+    id: string;
+    name: string;
+    email: string;
+    selected_province_code: string;
+    province_code?: string;
+    province_name?: string;
 };
 type Circle = {
   id: string;
@@ -2638,23 +2639,24 @@ const styles: Record<string, React.CSSProperties> = {
 
   cardsCol: { display: "grid", gap: 12, marginTop: 8 },
 
-  card: {
-    background: "#ffffff",
-    borderRadius: 16,
-    padding: 28,
-    border: "1px solid #eee6d7",
-    boxShadow: "0 1px 0 rgba(0,0,0,0.02)",
-  },
-  cardTop: { display: "flex", alignItems: "flex-start", gap: 12 },
+    card: {
+        background: "#fffdf9",
+        borderRadius: 14,
+        padding: 14,
+        border: "1px solid #cfc2ad",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+    },
+    cardTop: { display: "flex", alignItems: "flex-start", gap: 10 },
 
-  cardTitle: { fontWeight: 800, color: "#1a1a1a", fontSize: 16 },
-cardSub: { color: "#3f3a33", fontSize: 14, marginTop: 3 },
-  cardQuote: {
-    color: "#6f6b62",
-    fontSize: 13,
-    marginTop: 6,
-    fontStyle: "italic",
-  },
+    cardTitle: { fontWeight: 800, color: "#1f1a14", fontSize: 15 },
+    cardSub: { color: "#433b31", fontSize: 12, marginTop: 2, lineHeight: 1.3 },
+    cardQuote: {
+        color: "#2f281f",
+        fontSize: 12,
+        marginTop: 4,
+        fontStyle: "italic",
+        lineHeight: 1.3,
+    },
 
   iconCircle: {
     width: 34,
@@ -2760,15 +2762,15 @@ cardSub: { color: "#3f3a33", fontSize: 14, marginTop: 3 },
     lineHeight: "18px",
   },
 
-  pill: {
-    fontSize: 12,
-    color: "#6f6b62",
-    background: "#f3efe8",
-    border: "1px solid #eee6d7",
-    padding: "4px 8px",
-    borderRadius: 999,
-    whiteSpace: "nowrap",
-  },
+    pill: {
+        fontSize: 12,
+        color: "#5a4b3c",
+        background: "#efe4d4",
+        border: "1px solid #d7c2aa",
+        padding: "4px 8px",
+        borderRadius: 999,
+        whiteSpace: "nowrap",
+    },
   smallPill: {
     fontSize: 12,
     color: "#c84a3a",
@@ -3223,7 +3225,6 @@ const [password, setPassword] = useState("");
             name: out.user.name,
             email: out.user.email,
             selected_province_code: out.user.province_code,
-            province_name: out.user.province_name,
         });
 
         try {
@@ -3368,21 +3369,20 @@ function RegisterBox({
 
                localStorage.setItem(
             LS_USER,
-            JSON.stringify({
-                id: out.user.id,
-                name: out.user.name,
-                email: out.user.email,
-                selected_province_code: out.user.province_code,
-                province_name: out.user.province_name,
-            })
-        );
+                   JSON.stringify({
+                       id: out.user.id,
+                       name: out.user.name,
+                       email: out.user.email,
+                       selected_province_code: out.user.province_code,
+                       province_name: out.user.province_name,
+                   })
+               );
 
         onLogged({
             id: out.user.id,
             name: out.user.name,
             email: out.user.email,
             selected_province_code: out.user.province_code,
-            province_name: out.user.province_name,
         });
 
         try {
