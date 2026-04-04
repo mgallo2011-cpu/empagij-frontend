@@ -105,13 +105,12 @@ export default function Friends({
 }: FriendsProps) {
     const selecting = mode === "selectForRequest";
 
-    const received = !selecting
-        ? richieste.filter((r) => {
-            const ids = Array.isArray(r.targetUserIds) ? r.targetUserIds : [];
-            const statusMap = r.statusByUserId || {};
-            return ids.includes(userId) && statusMap[userId] === "pending";
-        })
-        : [];
+      const received = !selecting
+      ? richieste.filter((r) => {
+          const ids = Array.isArray(r.targetUserIds) ? r.targetUserIds : [];
+          return ids.includes(userId);
+      })
+      : [];
 
     const selectableMembers = useMemo(
         () =>
@@ -471,101 +470,103 @@ export default function Friends({
         </div>
       )}
 
-            {!selecting && (
-                <div style={{ marginBottom: 12 }}>
-                    {richieste.filter((r) => r.status === "open" && r.fromUserId === userId)
-                        .length > 0 && (
-                            <div style={{ marginTop: 12 }}>
-                                <div
-                                    style={{
-                                        fontWeight: 800,
-                                        fontSize: 12,
-                                        letterSpacing: 0.4,
-                                        opacity: 0.7,
-                                    }}
-                                >
-                                    LE TUE RICHIESTE
-                                </div>
+                   {!selecting && (
+            <div style={{ marginBottom: 12 }}>
+                {richieste.filter((r) => r.fromUserId === userId).length > 0 && (
+                    <div style={{ marginTop: 12 }}>
+                        <div
+                            style={{
+                                fontWeight: 800,
+                                fontSize: 12,
+                                letterSpacing: 0.4,
+                                opacity: 0.7,
+                            }}
+                        >
+                            LE TUE RICHIESTE
+                        </div>
 
-                                                   <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-                        {richieste
-                            .filter((r) => r.fromUserId === userId)
-                            .map((r) => {
-                                const isClosed = r.status === "closed";
+                        <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
+                            {richieste
+                                .filter((r) => r.fromUserId === userId)
+                                .map((r) => {
+                                    const isClosed = r.status === "closed";
 
-                                return (
-                                    <div
-                                        key={r.id}
-                                        style={{
-                                            ...styles.card,
-                                            ...(isClosed ? { opacity: 0.78 } : {}),
-                                        }}
-                                    >
-                                        <div style={styles.cardTop}>
-                                            <div style={styles.avatarSmall}>🙂</div>
+                                    return (
+                                        <div
+                                            key={r.id}
+                                            style={{
+                                                ...styles.card,
+                                                ...(isClosed ? { opacity: 0.78 } : {}),
+                                            }}
+                                        >
+                                            <div style={styles.cardTop}>
+                                                <div style={styles.avatarSmall}>🙂</div>
 
-                                            <div style={{ flex: 1 }}>
-                                                <div style={styles.cardTitle}>
-                                                    {r.producerName || "Produttore"}
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={styles.cardTitle}>
+                                                        {r.producerName || "Produttore"}
+                                                    </div>
+
+                                                    <div style={styles.cardSub}>
+                                                        Proposto da:{" "}
+                                                        {r.fromName?.trim() ? r.fromName : "Anonimo"}
+                                                    </div>
+
+                                                    <div style={styles.cardSub}>
+                                                        A:{" "}
+                                                        {r.targetUserIds && r.targetUserIds.length > 0
+                                                            ? r.targetUserIds
+                                                                  .map((targetUserId) => {
+                                                                      const displayName =
+                                                                          memberNameById[targetUserId] || "Utente";
+                                                                      const s =
+                                                                          r.statusByUserId?.[targetUserId];
+
+                                                                      const label =
+                                                                          s === "accepted"
+                                                                              ? "✅"
+                                                                              : s === "declined"
+                                                                                  ? "❌"
+                                                                                  : "⏳";
+
+                                                                      return `${displayName} ${label}`;
+                                                                  })
+                                                                  .join(", ")
+                                                            : "—"}
+                                                    </div>
+
+                                                    <div style={styles.cardQuote}>
+                                                        “{r.itemsText?.trim() ? r.itemsText : "Richiesta"}”
+                                                    </div>
                                                 </div>
 
-                                                <div style={styles.cardSub}>
-                                                    Proposto da:{" "}
-                                                    {r.fromName?.trim() ? r.fromName : "Anonimo"}
+                                                <button
+                                                    type="button"
+                                                    style={styles.btnSecondary}
+                                                    onClick={() => {
+                                                        if (
+                                                            !window.confirm("Eliminare questa richiesta?")
+                                                        ) {
+                                                            return;
+                                                        }
+                                                        onDeleteRequest(r.id);
+                                                    }}
+                                                >
+                                                    Elimina richiesta
+                                                </button>
+
+                                                <div style={styles.pill}>
+                                                    {isClosed ? "chiusa" : "aperta"}
                                                 </div>
-
-                                                <div style={styles.cardSub}>
-                                                    A:{" "}
-                                                    {r.targetUserIds && r.targetUserIds.length > 0
-                                                        ? r.targetUserIds
-                                                            .map((targetUserId) => {
-                                                                const displayName =
-                                                                    memberNameById[targetUserId] || "Utente";
-                                                                const s = r.statusByUserId?.[targetUserId];
-
-                                                                const label =
-                                                                    s === "accepted"
-                                                                        ? "✅"
-                                                                        : s === "declined"
-                                                                            ? "❌"
-                                                                            : "⏳";
-
-                                                                return `${displayName} ${label}`;
-                                                            })
-                                                            .join(", ")
-                                                        : "—"}
-                                                </div>
-
-                                                <div style={styles.cardQuote}>
-                                                    “{r.itemsText?.trim() ? r.itemsText : "Richiesta"}”
-                                                </div>
-                                            </div>
-
-                                            <button
-                                                type="button"
-                                                style={styles.btnSecondary}
-                                                onClick={() => {
-                                                    if (!window.confirm("Eliminare questa richiesta?")) {
-                                                        return;
-                                                    }
-                                                    onDeleteRequest(r.id);
-                                                }}
-                                            >
-                                                Elimina richiesta
-                                            </button>
-
-                                            <div style={styles.pill}>
-                                                {isClosed ? "chiusa" : "aperta"}
                                             </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                        </div>
                     </div>
-                            </div>
-                        )}
-                </div>
-            )}
+                )}
+            </div>
+        )}
 
             {selectableMembers.length === 0 ? (
                 <div style={styles.muted}>Nessun membro in questa cerchia.</div>
@@ -597,42 +598,67 @@ export default function Friends({
                                 Richieste ricevute
                             </div>
 
-                            {received.map((r) => (
-                                <div key={r.id} style={styles.card}>
-                                    <div style={{ fontWeight: 800 }}>{r.producerName}</div>
+                                   {received.map((r) => {
+            const myDecision = r.statusByUserId?.[userId] || "pending";
+            const isPending = myDecision === "pending";
 
-                                    <div style={{ marginTop: 10 }}>
-                                        <div
-                                            style={{
-                                                fontSize: 12,
-                                                opacity: 0.75,
-                                                marginBottom: 8,
-                                                lineHeight: "16px",
-                                            }}
-                                        >
-                                            <div>Da: {r.fromName || "Un amico"}</div>
-                                            <div style={{ marginBottom: 16 }}>
-                                                Prodotto: {r.itemsText?.trim() ? r.itemsText : "-"}
-                                            </div>
-                                        </div>
+            return (
+                <div
+                    key={r.id}
+                    style={{
+                        ...styles.card,
+                        ...(!isPending ? { opacity: 0.78 } : {}),
+                    }}
+                >
+                    <div style={{ fontWeight: 800 }}>{r.producerName}</div>
 
-                                        <button
-                                            type="button"
-                                            style={styles.primaryButton}
-                                            onClick={() => onRespondRequest(r.id, userId, "accepted")}
-                                        >
-                                            Sì certo
-                                        </button>
-                                        <button
-                                            type="button"
-                                            style={styles.secondaryButton}
-                                            onClick={() => onRespondRequest(r.id, userId, "declined")}
-                                        >
-                                            No, mi spiace
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
+                    <div style={{ marginTop: 10 }}>
+                        <div
+                            style={{
+                                fontSize: 12,
+                                opacity: 0.75,
+                                marginBottom: 8,
+                                lineHeight: "16px",
+                            }}
+                        >
+                            <div>Da: {r.fromName || "Un amico"}</div>
+                            <div>Prodotto: {r.itemsText?.trim() ? r.itemsText : "-"}</div>
+                            <div style={{ marginTop: 8, fontWeight: 700 }}>
+                                Stato:{" "}
+                                {myDecision === "accepted"
+                                    ? "✅ Hai accettato"
+                                    : myDecision === "declined"
+                                    ? "❌ Hai rifiutato"
+                                    : "⏳ In attesa"}
+                            </div>
+                        </div>
+
+                        {isPending ? (
+                            <>
+                                <button
+                                    type="button"
+                                    style={styles.primaryButton}
+                                    onClick={() => onRespondRequest(r.id, userId, "accepted")}
+                                >
+                                    Sì certo
+                                </button>
+                                <button
+                                    type="button"
+                                    style={styles.secondaryButton}
+                                    onClick={() => onRespondRequest(r.id, userId, "declined")}
+                                >
+                                    No, mi spiace
+                                </button>
+                            </>
+                        ) : (
+                            <div style={styles.pill}>
+                                {myDecision === "accepted" ? "accettata" : "rifiutata"}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        })}
                         </div>
                     )}
 
