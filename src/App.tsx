@@ -1469,22 +1469,23 @@ const content = (() => {
         );
       }
 
-    case "cerchiaPassaggi": {
-    return (
-       <CerchiaPassaggi
-    passaggi={passaggi.filter((p) => p.circleId === activeCircleId)}
-    onBack={() => setScreen({ name: "tabs", tab: "home" })}
-    onAddPassaggio={() =>
-        setScreen({ name: "producersFollowed", mode: "stoAndando" })
-    }
-    onOpenJoinPassaggio={(passaggioId) =>
-        setScreen({ name: "joinPassaggio", passaggioId })
-    }
-    myName={myNameLocal}
-    onDeletePassaggio={handleDeletePassaggio}
-/>
-    );
-}
+      case "cerchiaPassaggi": {
+          return (
+              <CerchiaPassaggi
+                  passaggi={passaggi.filter((p) => p.circleId === activeCircleId)}
+                  onBack={() => setScreen({ name: "tabs", tab: "home" })}
+                  onAddPassaggio={() =>
+                      setScreen({ name: "producersFollowed", mode: "stoAndando" })
+                  }
+                  onOpenJoinPassaggio={(passaggioId) =>
+                      setScreen({ name: "joinPassaggio", passaggioId })
+                  }
+                  myName={myNameLocal}
+                  onDeletePassaggio={handleDeletePassaggio}
+                  currentUserId={user?.id || ""}
+              />
+          );
+      }
 
       case "stoAndando": {
           const { producer, fromTab } = screen;
@@ -2434,6 +2435,7 @@ function CerchiaPassaggi({
     onOpenJoinPassaggio,
     myName,
     onDeletePassaggio,
+    currentUserId,
 }: {
     passaggi: Passaggio[];
     onBack: () => void;
@@ -2441,6 +2443,7 @@ function CerchiaPassaggi({
     onOpenJoinPassaggio: (passaggioId: string) => void;
     myName: string;
     onDeletePassaggio: (id: string) => void;
+    currentUserId: string;
 }) {
     return (
         <div style={styles.page}>
@@ -2474,12 +2477,12 @@ function CerchiaPassaggi({
                 </div>
             ) : (
                 <div style={{ display: "grid", gap: 12 }}>
-                   {passaggi.map((p) => (
-    <div
-        key={p.id}
-        style={{ ...styles.card, cursor: "pointer" }}
-        onClick={() => onOpenJoinPassaggio(p.id)}
-    >
+                    {passaggi.map((p) => (
+                        <div
+                            key={p.id}
+                            style={{ ...styles.card, cursor: "pointer" }}
+                            onClick={() => onOpenJoinPassaggio(p.id)}
+                        >
                             <div style={styles.cardTop}>
                                 <div style={styles.iconCircle}>🚗</div>
 
@@ -2498,25 +2501,27 @@ function CerchiaPassaggi({
                                         {p.producerCategory ? ` • ${p.producerCategory}` : ""}
                                     </div>
 
-                                                                       {p.note?.trim() ? (
+                                    {p.note?.trim() ? (
                                         <div style={styles.cardQuote}>
                                             “{p.note.trim()}”
                                         </div>
                                     ) : null}
 
-                                    <div
-                                        style={{
-                                            marginTop: 10,
-                                            fontSize: 13,
-                                            fontWeight: 700,
-                                            color: "#2f4a3d",
-                                        }}
-                                    >
-                                        Tocca per associarti a questo passaggio
-                                    </div>
+                                    {p.fromUserId !== currentUserId ? (
+                                        <div
+                                            style={{
+                                                marginTop: 10,
+                                                fontSize: 13,
+                                                fontWeight: 700,
+                                                color: "#2f4a3d",
+                                            }}
+                                        >
+                                            Tocca per associarti a questo passaggio
+                                        </div>
+                                    ) : null}
                                 </div>
 
-                                                               <button
+                                <button
                                     type="button"
                                     style={styles.btnSecondary}
                                     onClick={(e) => {
