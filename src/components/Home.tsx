@@ -61,14 +61,14 @@ export default function Home({
          </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gap: 10,
-          marginTop: 12,
-          justifyItems: "center",
-        }}
-      >
+          <div
+              style={{
+                  display: "grid",
+                  gap: 16,
+                  marginTop: 18,
+                  justifyItems: "center",
+              }}
+          >
         <button
           type="button"
           style={{ ...styles.primaryBtn, minWidth: 240, maxWidth: 320 }}
@@ -79,27 +79,40 @@ export default function Home({
           Sto andando
         </button>
 
-        <button
-          type="button"
-          style={{ ...styles.secondaryBtn, minWidth: 240, maxWidth: 320 }}
-          onClick={() =>
-            setScreen({ name: "piccolaRichiesta", fromTab: "home" })
-          }
-        >
-          Richiesta
-        </button>
+              <button
+                  type="button"
+                  style={{
+                      ...styles.secondaryBtn,
+                      minWidth: 240,
+                      maxWidth: 320,
+                      border: "1px solid #b7c9d7",
+                  }}
+                  onClick={() =>
+                      setScreen({ name: "piccolaRichiesta", fromTab: "home" })
+                  }
+              >
+                  Richiesta
+              </button>
       </div>
 
-      <div style={{ paddingTop: 10, paddingBottom: 10, textAlign: "right" }}>
-        <span style={styles.muted}>Ripasso veloce? </span>
-        <button
-          type="button"
-          style={styles.linkBtn}
-          onClick={() => setScreen({ name: "intro" })}
-        >
-          Come funziona empagij
-        </button>
-      </div>
+          <div
+              style={{
+                  paddingTop: 34,
+                  paddingBottom: 10,
+                  textAlign: "center",
+              }}
+          >
+              <div style={{ ...styles.muted, marginBottom: 6 }}>
+                  Ripasso veloce?
+              </div>
+              <button
+                  type="button"
+                  style={styles.linkBtn}
+                  onClick={() => setScreen({ name: "intro" })}
+              >
+                  Come funziona empagij
+              </button>
+          </div>
 
       <div style={{ flex: 1 }} />
     </div>
@@ -165,7 +178,14 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#3f3a33",
     fontSize: 14,
     marginTop: 3,
-  },
+    },
+    redDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 999,
+        background: "#c84a3a",
+        flex: "0 0 auto",
+    },
   primaryBtn: {
     alignSelf: "center",
     minWidth: 260,
@@ -180,30 +200,33 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: "pointer",
     boxShadow: "0 6px 18px rgba(47,74,61,0.28)",
   },
-  secondaryBtn: {
-    alignSelf: "center",
-    minWidth: 220,
-    maxWidth: 320,
-    padding: "12px 14px",
-    borderRadius: 999,
-    background: "#d7e7f2",
-    color: "#1f2a33",
-    fontWeight: 700,
-    border: "none",
-    cursor: "pointer",
-  },
+    secondaryBtn: {
+        alignSelf: "center",
+        minWidth: 220,
+        maxWidth: 320,
+        padding: "12px 14px",
+        borderRadius: 999,
+        background: "#d7e7f2",
+        color: "#1f2a33",
+        fontWeight: 700,
+        border: "1px solid #b7c9d7",
+        cursor: "pointer",
+    },
   muted: {
     color: "#242827",
     fontSize: 14,
     margin: 0,
     lineHeight: 1.45,
   },
-  linkBtn: {
-    background: "none",
-    border: "none",
-    color: "#2f4a3d",
-    cursor: "pointer",
-    fontWeight: 700,
-    padding: 0,
-  },
+    linkBtn: {
+        display: "inline-block",
+        background: "#f4b183",
+        border: "1px solid #e39a67",
+        color: "#5a2f12",
+        cursor: "pointer",
+        fontWeight: 700,
+        padding: "8px 14px",
+        borderRadius: 999,
+        boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+    },
 };
