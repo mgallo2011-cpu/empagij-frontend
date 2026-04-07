@@ -1871,25 +1871,25 @@ apiGet={apiGet}
                            lineHeight: 1.3,
                        }}
                    >
-                       Per iniziare, registra un account
+                       Registrati e scegli la provincia
                        <br />
-                       e scegli la provincia per vedere i produttori
+                       per vedere i produttori del tuo territorio
                        <br />
-                       del tuo territorio, già presenti in SpesaConTe.
+                       già presenti in SpesaConTe.
                    </p>
 
-                <p
-                    style={{
-                        opacity: 0.8,
-                        margin: "8px 0 0 0",
-                        textAlign: "left",
-                        lineHeight: 1.3,
-                    }}
-                >
-                    Puoi cambiare quando vuoi la provincia di
-                    <br />
-                    riferimento.
-                </p>
+                   <p
+                       style={{
+                           opacity: 0.8,
+                           margin: "8px 0 0 0",
+                           textAlign: "left",
+                           lineHeight: 1.3,
+                       }}
+                   >
+                       La provincia si può cambiare
+                       <br />
+                       in qualsiasi momento.
+                   </p>
             </div>
 
                <div style={{ ...styles.card, padding: 20 }}>

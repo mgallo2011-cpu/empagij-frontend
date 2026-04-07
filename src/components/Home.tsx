@@ -110,7 +110,7 @@ export default function Home({
                   style={styles.linkBtn}
                   onClick={() => setScreen({ name: "intro" })}
               >
-                  Come funziona empagij
+                  Come funziona SpesaConTe
               </button>
           </div>
 
