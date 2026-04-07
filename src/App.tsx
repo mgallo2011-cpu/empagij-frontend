@@ -451,10 +451,18 @@ export default function App() {
     const loadingRichiesteRef = useRef(false);
     const [isCreatingRichiesta, setIsCreatingRichiesta] = useState(false);
     const [richiestaError, setRichiestaError] = useState<string>("");
+    const [introStep, setIntroStep] = useState<1 | 2 | 3>(1);
+    const [introAction, setIntroAction] = useState<"see" | "go" | null>(null);
     const [screen, setScreen] = useState<Screen>(() => {
         const seen = localStorage.getItem("empagij_hasSeenIntro") === "1";
         return seen ? { name: "tabs", tab: "home" } : { name: "intro" };
     });
+    useEffect(() => {
+        if (screen.name === "intro") {
+            setIntroStep(1);
+            setIntroAction(null);
+        }
+    }, [screen.name]);
   const [producerDraft, setProducerDraft] = useState<ProducerDraft>({
   name: "",
   category: "",
@@ -1424,49 +1432,96 @@ const content = (() => {
                 </div>
 
                 <div style={{ display: "grid", gap: 10 }}>
-                    {producers.map((p) => {
-                        const isFollowed = followedProducerIds.includes(p.id);
-                        return (
-                            <div key={p.id} style={styles.card}>
-                                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
-                                    <div style={{ minWidth: 0 }}>
-                                        <div style={styles.cardTitle}>{p.name}</div>
-                                        <div style={styles.cardSub}>
-                                            {p.category} • {p.address} {p.city}
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        style={isFollowed ? styles.secondaryButton : styles.primaryButton}
-                                        onClick={() => {
-                                            setFollowedProducerIds((prev) =>
-                                                prev.includes(p.id)
-                                                    ? prev.filter((x) => x !== p.id)
-                                                    : [p.id, ...prev]
-                                            );
-                                        }}
-                                    >
-                                        {isFollowed ? "Non seguire" : "Segui"}
-                                    </button>
-                                </div>
+                    {producers.length === 0 ? (
+                        <div style={styles.card}>
+                            <div style={styles.cardTitle}>Non ci sono ancora produttori visibili</div>
+                            <div style={{ ...styles.muted, marginTop: 6 }}>
+                                Controlla la provincia attiva nelle impostazioni oppure aggiungi un produttore.
                             </div>
-                        );
-                    })}
+                        </div>
+                    ) : (
+                        producers.map((p) => {
+                            const isFollowed = followedProducerIds.includes(p.id);
+                            return (
+                                <div key={p.id} style={styles.card}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
+                                        <div style={{ minWidth: 0 }}>
+                                            <div style={styles.cardTitle}>{p.name}</div>
+                                            <div style={styles.cardSub}>
+                                                {p.category} • {p.address} {p.city}
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            style={isFollowed ? styles.secondaryButton : styles.primaryButton}
+                                            onClick={() => {
+                                                setFollowedProducerIds((prev) =>
+                                                    prev.includes(p.id)
+                                                        ? prev.filter((x) => x !== p.id)
+                                                        : [p.id, ...prev]
+                                                );
+                                            }}
+                                        >
+                                            {isFollowed ? "Non seguire" : "Segui"}
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
                 </div>
           </div>
         );
       }
 
       case "intro": {
-        return (
-          <Intro
-            onStart={() => {
-              localStorage.setItem("empagij_hasSeenIntro", "1");
-              setScreen({ name: "tabs", tab: "home" });
-            }}
-          />
-        );
+          return (
+              <Intro
+                  introStep={introStep}
+                  introAction={introAction}
+                  hasPassaggi={passaggi.filter((p) => p.circleId === activeCircleId).length > 0}
+                  hasActiveCircle={!!activeCircleId}
+                  onChooseSee={() => {
+                      setIntroAction("see");
+
+                      const hasVisiblePassaggi =
+                          passaggi.filter((p) => p.circleId === activeCircleId).length > 0;
+
+                      if (hasVisiblePassaggi) {
+                          localStorage.setItem("empagij_hasSeenIntro", "1");
+                          setScreen({ name: "tabs", tab: "home" });
+                          return;
+                      }
+
+                      setIntroStep(2);
+                  }}
+                  onChooseGo={() => {
+                      setIntroAction("go");
+
+                      if (activeCircleId) {
+                          localStorage.setItem("empagij_hasSeenIntro", "1");
+                          setScreen({ name: "producersFollowed", mode: "stoAndando" });
+                          return;
+                      }
+
+                      setIntroStep(3);
+                  }}
+                  onAskIfSomeoneGoes={() => {
+                      if (activeCircleId) {
+                          localStorage.setItem("empagij_hasSeenIntro", "1");
+                          setScreen({ name: "piccolaRichiesta", fromTab: "home" });
+                          return;
+                      }
+
+                      setIntroStep(3);
+                  }}
+                  onInvitePeople={() => {
+                      localStorage.setItem("empagij_hasSeenIntro", "1");
+                      setScreen({ name: "cerchia", mode: "manage", from: "home" });
+                  }}
+              />
+          );
       }
 
       case "cerchiaPassaggi": {
@@ -1804,24 +1859,24 @@ apiGet={apiGet}
             }}
         >
                     <div style={{ ...styles.card, padding: "14px 20px 12px" }}>
-                <div style={{ ...styles.brand, textAlign: "center", marginBottom: 8 }}>
-                    empagij
-                </div>
+                   <div style={{ ...styles.brand, textAlign: "center", marginBottom: 8 }}>
+                       SpesaConTe
+                   </div>
 
-                <p
-                    style={{
-                        opacity: 0.8,
-                        margin: 0,
-                        textAlign: "left",
-                        lineHeight: 1.3,
-                    }}
-                >
-                    Per iniziare, registra un account
-                    <br />
-                    scegli la provincia per vedere i produttori
-                    <br />
-                    del tuo territorio, già presenti in empagij.
-                </p>
+                   <p
+                       style={{
+                           opacity: 0.8,
+                           margin: 0,
+                           textAlign: "left",
+                           lineHeight: 1.3,
+                       }}
+                   >
+                       Per iniziare, registra un account
+                       <br />
+                       e scegli la provincia per vedere i produttori
+                       <br />
+                       del tuo territorio, già presenti in SpesaConTe.
+                   </p>
 
                 <p
                     style={{
@@ -1837,20 +1892,38 @@ apiGet={apiGet}
                 </p>
             </div>
 
-            <div style={{ ...styles.card, padding: 20 }}>
-                <h2 style={{ margin: 0 }}>Registrazione</h2>
-                <RegisterBox onLogged={(u) => setUser(u)} />
-            </div>
+               <div style={{ ...styles.card, padding: 20 }}>
+                   <h2 style={{ margin: 0 }}>Registrazione</h2>
+                   <RegisterBox
+                       onLogged={(u) => {
+                           setUser(u);
+                           setIntroStep(1);
+                           setIntroAction(null);
 
-            <div style={{ ...styles.card, padding: 20 }}>
-                <h2 style={{ margin: 0 }}>Hai già un account?</h2>
-                <p style={{ opacity: 0.8, marginTop: 8 }}>
-                    Accedi con la tua email e vedrai
-                    <br />
-                    passaggi e richieste dalla tua Cerchia
-                </p>
-                <LoginBox onLogged={(u) => setUser(u)} />
-            </div>
+                           const seen = localStorage.getItem("empagij_hasSeenIntro") === "1";
+                           setScreen(seen ? { name: "tabs", tab: "home" } : { name: "intro" });
+                       }}
+                   />
+               </div>
+
+               <div style={{ ...styles.card, padding: 20 }}>
+                   <h2 style={{ margin: 0 }}>Hai già un account?</h2>
+                   <p style={{ opacity: 0.8, marginTop: 8 }}>
+                       Accedi con la tua email e vedrai
+                       <br />
+                       passaggi e richieste delle persone con cui ti organizzi
+                   </p>
+                   <LoginBox
+                       onLogged={(u) => {
+                           setUser(u);
+                           setIntroStep(1);
+                           setIntroAction(null);
+
+                           const seen = localStorage.getItem("empagij_hasSeenIntro") === "1";
+                           setScreen(seen ? { name: "tabs", tab: "home" } : { name: "intro" });
+                       }}
+                   />
+               </div>
         </div>
     ) : (
         content
@@ -1883,64 +1956,126 @@ apiGet={apiGet}
 
 /* -------------------- SCREENS -------------------- */
 
-function Intro({ onStart }: { onStart: () => void }) {
-  return (
-    <div style={{ ...styles.page, fontSize: 14, lineHeight: "22px" }}>
-      <div style={styles.headerRow}>
-        <div style={{ width: 28 }} />
-        <div style={styles.brand}>empagij</div>
-        <div style={{ width: 28 }} />
-      </div>
+function Intro({
+    introStep,
+    introAction,
+    hasPassaggi,
+    hasActiveCircle,
+    onChooseSee,
+    onChooseGo,
+    onAskIfSomeoneGoes,
+    onInvitePeople,
+}: {
+    introStep: 1 | 2 | 3;
+    introAction: "see" | "go" | null;
+    hasPassaggi: boolean;
+    hasActiveCircle: boolean;
+    onChooseSee: () => void;
+    onChooseGo: () => void;
+    onAskIfSomeoneGoes: () => void;
+    onInvitePeople: () => void;
+}) {
+    return (
+        <div style={{ ...styles.page, fontSize: 14, lineHeight: "22px" }}>
+            <div style={styles.headerRow}>
+                <div style={{ width: 28 }} />
+                <div style={styles.brand}>SpesaConTe</div>
+                <div style={{ width: 28 }} />
+            </div>
 
-      <h2 style={styles.h1}>Guida rapida</h2>
+            {introStep === 1 && (
+                <>
+                    <h2 style={styles.h2}>Vuoi evitare un viaggio?</h2>
 
-      <div style={styles.card}>
-        <div style={{ fontWeight: 700, marginBottom: 8 }}>
-  
-                  empagij ti aiuta a coordinare la spesa dai produttori locali con la tua cerchia.
+                    <div style={styles.card}>
+                        <div style={{ fontWeight: 700, marginBottom: 8 }}>
+                            Scopri se qualcuno sta già andando da un produttore oppure inizia tu.
+                        </div>
+
+                        <div style={{ ...styles.muted, marginTop: 6 }}>
+                            Nessun termine complicato: scegli solo cosa vuoi fare adesso.
+                        </div>
+                    </div>
+
+                    <div style={{ height: 18 }} />
+
+                    <div style={{ display: "grid", gap: 12 }}>
+                        <button
+                            type="button"
+                            style={styles.primaryBtn}
+                            onClick={onChooseSee}
+                        >
+                            Vedi chi sta andando
+                        </button>
+
+                        <button
+                            type="button"
+                            style={styles.secondaryBtn}
+                            onClick={onChooseGo}
+                        >
+                            Farò io un passaggio
+                        </button>
+                    </div>
+                </>
+            )}
+
+            {introStep === 2 && (
+                <>
+                    <h2 style={styles.h2}>Nessuno ancora oggi… puoi iniziare tu</h2>
+
+                    <div style={styles.card}>
+                        <div style={{ fontWeight: 700, marginBottom: 8 }}>
+                            Al momento non ci sono passaggi visibili.
+                        </div>
+
+                        <div style={{ ...styles.muted, marginTop: 6 }}>
+                            Puoi chiedere se qualcuno ha in programma di andarci.
+                        </div>
+                    </div>
+
+                    <div style={{ height: 18 }} />
+
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                        <button
+                            type="button"
+                            style={styles.primaryBtn}
+                            onClick={onAskIfSomeoneGoes}
+                        >
+                            Chiedi se qualcuno ci va
+                        </button>
+                    </div>
+                </>
+            )}
+
+            {introStep === 3 && (
+                <>
+                    <h2 style={styles.h2}>Per iniziare servono 2–3 persone</h2>
+
+                    <div style={styles.card}>
+                        <div style={{ fontWeight: 700, marginBottom: 8 }}>
+                            In 2 minuti potete già usarla.
+                        </div>
+
+                        <div style={{ ...styles.muted, marginTop: 6 }}>
+                            Prima crea o completa la tua cerchia, poi potrai scambiarvi passaggi e richieste.
+                        </div>
+                    </div>
+
+                    <div style={{ height: 18 }} />
+
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                        <button
+                            type="button"
+                            style={styles.primaryBtn}
+                            onClick={onInvitePeople}
+                        >
+                            Invita 2 persone
+                        </button>
+                    </div>
+                </>
+            )}
         </div>
-
-       <div style={{ ...styles.bulletRow, marginTop: 18 }}>
-          <div style={styles.bulletIcon}>🚗</div>
-          <div>
-            <b>Sto andando</b>: Puoi avvisare la tua cerchia di amici quando
-                      stai andando a fare la spesa da un produttore, così chi vuole può unirsi alla tua spesa.
-                      Un viaggio in meno per gli altri e meno “benzina nell’aria” 😉
-          </div>
-        </div>
-
-        <div style={{ ...styles.bulletRow, marginTop: 18 }}>
-          <div style={styles.bulletIcon}>🧺</div>
-          <div>
-            <b>Richiesta</b>: Puoi chiedere se qualcuno della tua
-            cerchia ha in programma di andare da un produttore e scrivere cosa ti serve (es.
-            “2 kg orecchiette”).
-          </div>
-        </div>
-
-        <div style={{ ...styles.bulletRow, marginTop: 18 }}>
-          <div style={styles.bulletIcon}>📍</div>
-          <div>
-            <b>Produttori del tuo territorio</b>: Puoi controllare se i produttori che hai
-            scelto nella tua zona hanno novità o (se sei in viaggio) vedere se stai
-            passando vicino a qualcuno di loro.
-          </div>
-        </div>
-      </div>
-
-      <div style={{ height: 26 }} />
-
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <button
-          type="button"
-          style={{ ...styles.primaryBtn, minWidth: 220 }}
-          onClick={onStart}
-        >
-          Inizia
-        </button>
-      </div>
-    </div>
-  );
+    );
 }
 
 
@@ -2368,7 +2503,15 @@ function PassaggiList({
             <h2 style={styles.h2}>Passaggi</h2>
 
             {items.length === 0 ? (
-                <p style={styles.muted}>Nessun passaggio pubblicato per ora.</p>
+                <div style={styles.card}>
+                    <div style={styles.cardTitle}>Ancora nessun passaggio disponibile</div>
+                    <div style={{ ...styles.muted, marginTop: 6 }}>
+                        Quando qualcuno pubblica un passaggio, lo vedrai qui.
+                    </div>
+                    <div style={{ ...styles.muted, marginTop: 6 }}>
+                        Per ora puoi tornare indietro e creare tu il primo passaggio.
+                    </div>
+                </div>
             ) : (
                 <div style={styles.cardsCol}>
                     {items.map((p) => (
@@ -2470,10 +2613,17 @@ function CerchiaPassaggi({
 
             {passaggi.length === 0 ? (
                 <div style={styles.card}>
-                    <div style={styles.cardTitle}>Nessun passaggio attivo</div>
+                    <div style={styles.cardTitle}>Nessuno ancora oggi… puoi iniziare tu</div>
                     <div style={{ ...styles.muted, marginTop: 6 }}>
-                        Quando qualcuno pubblica “Sto andando”, comparirà qui.
+                        Se pubblichi un passaggio, le persone della tua cerchia lo vedranno qui.
                     </div>
+                    <button
+                        type="button"
+                        style={{ ...styles.primaryBtn, marginTop: 12 }}
+                        onClick={onAddPassaggio}
+                    >
+                        Pubblica un passaggio
+                    </button>
                 </div>
             ) : (
                 <div style={{ display: "grid", gap: 12 }}>
@@ -2901,7 +3051,7 @@ function PiccolaRichiesta({
         <button style={styles.backBtn} onClick={onBack}>
           ←
         </button>
-        <div style={styles.brand}>empagij</div>
+              <div style={styles.brand}>SpesaConTe</div>
         <div style={styles.avatar}>🙂</div>
       </div>
 
@@ -2911,26 +3061,38 @@ function PiccolaRichiesta({
         Chiedi alla tua cerchia se qualcuno ha in programma di andare da uno di questi produttori.
       </p>
 
-      <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-        {visibleProducers.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            style={{
-              ...styles.card,
-              cursor: "pointer",
-              width: "100%",
-              textAlign: "left",
-            }}
-            onClick={() => onSelectProducer(p)}
-          >
-            <div style={{ fontWeight: 700 }}>{p.name}</div>
-            <div style={styles.cardMeta}>
-              {p.category} · {p.address} {p.city ? `· ${p.city}` : ""}
-            </div>
-          </button>
-        ))}
-      </div>
+          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+              {visibleProducers.length === 0 ? (
+                  <div style={styles.card}>
+                      <div style={styles.cardTitle}>Non ci sono ancora produttori visibili</div>
+                      <div style={{ ...styles.muted, marginTop: 6 }}>
+                          Per creare una richiesta, prima serve almeno un produttore del tuo territorio.
+                      </div>
+                      <div style={{ ...styles.muted, marginTop: 6 }}>
+                          Torna indietro e aggiungine o seguine uno.
+                      </div>
+                  </div>
+              ) : (
+                  visibleProducers.map((p) => (
+                      <button
+                          key={p.id}
+                          type="button"
+                          style={{
+                              ...styles.card,
+                              cursor: "pointer",
+                              width: "100%",
+                              textAlign: "left",
+                          }}
+                          onClick={() => onSelectProducer(p)}
+                      >
+                          <div style={{ fontWeight: 700 }}>{p.name}</div>
+                          <div style={styles.cardSub}>
+                              {p.category} · {p.address} {p.city ? `· ${p.city}` : ""}
+                          </div>
+                      </button>
+                  ))
+              )}
+          </div>
     </div>
   );
 }
@@ -3135,7 +3297,7 @@ function JoinPassaggio({
         <button style={styles.backBtn} onClick={onBack}>
           ←
         </button>
-        <div style={styles.brand}>empagij</div>
+              <div style={styles.brand}>SpesaConTe</div>
         <div style={styles.avatar}>🙂</div>
       </div>
 

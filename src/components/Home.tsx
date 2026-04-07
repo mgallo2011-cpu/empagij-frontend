@@ -17,7 +17,7 @@ export default function Home({
     <div style={styles.page}>
       <div style={styles.topbar}>
         <div />
-        <div style={styles.brand}>empagij</div>
+              <div style={styles.brand}>SpesaConTe</div>
         <div style={styles.avatar}>🙂</div>
       </div>
 

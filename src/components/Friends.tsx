@@ -187,9 +187,9 @@ export default function Friends({
          
             {!selecting && activeCircleId && circleMembers.length < 5 && (
           <div style={{ marginBottom: 12 }}>
-            <div style={{ ...styles.muted, marginBottom: 6 }}>
-                  Se vuoi aggiungere alla cerchia una persona inserisci qui la sua email.
-              </div>
+                  <div style={{ ...styles.muted, marginBottom: 6 }}>
+                      Per iniziare davvero, invita una persona con la sua email.
+                  </div>
           <input
                   value={inviteEmail}
                   onChange={(e) => {
@@ -268,7 +268,7 @@ export default function Friends({
                       }
                   }}
               >
-                  {isInviting ? "Invio..." : "Invita"}
+                      {isInviting ? "Invio..." : "Invita una persona"}
               </button>
 
               {inviteFeedback && (
@@ -291,10 +291,10 @@ export default function Friends({
           {circles.length === 0 && (
               <div style={styles.card}>
                   <div style={styles.cardTitle}>
-                      Non fai ancora parte di nessuna cerchia
+                      Per iniziare servono 2–3 persone
                   </div>
                   <div style={{ ...styles.muted, marginTop: 6 }}>
-                      Crea la tua cerchia per iniziare a invitare altre persone.
+                      Crea la tua prima cerchia e invita almeno una persona.
                   </div>
 
                   <div style={{ marginTop: 12 }}>
@@ -342,7 +342,7 @@ export default function Friends({
                               }
                           }}
                       >
-                          {isCreatingCircle ? "Creazione..." : "Crea la tua cerchia"}
+                          {isCreatingCircle ? "Creazione..." : "Crea la prima cerchia"}
                       </button>
                   </div>
               </div>
@@ -474,119 +474,136 @@ export default function Friends({
         </div>
       )}
 
-                   {!selecting && (
-            <div style={{ marginBottom: 12 }}>
-                {richieste.filter((r) => r.fromUserId === userId).length > 0 && (
-                    <div style={{ marginTop: 12 }}>
-                        <div
-                            style={{
-                                fontWeight: 800,
-                                fontSize: 12,
-                                letterSpacing: 0.4,
-                                opacity: 0.7,
-                            }}
-                        >
-                            LE TUE RICHIESTE
-                        </div>
+          {!selecting && (
+              <div style={{ marginBottom: 12 }}>
+                  <div style={{ marginTop: 12 }}>
+                      <div
+                          style={{
+                              fontWeight: 800,
+                              fontSize: 12,
+                              letterSpacing: 0.4,
+                              opacity: 0.7,
+                          }}
+                      >
+                          LE TUE RICHIESTE
+                      </div>
 
-                        <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-                            {richieste
-                                .filter((r) => r.fromUserId === userId)
-                                .map((r) => {
-                                    const isClosed = r.status === "closed";
+                      {richieste.filter((r) => r.fromUserId === userId).length === 0 ? (
+                          <div style={{ marginTop: 10 }}>
+                              <div style={styles.card}>
+                                  <div style={styles.cardTitle}>Non hai ancora creato richieste</div>
+                                  <div style={{ ...styles.muted, marginTop: 6 }}>
+                                      Quando chiederai qualcosa a una persona della tua cerchia, lo vedrai qui.
+                                  </div>
+                              </div>
+                          </div>
+                      ) : (
+                          <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
+                              {richieste
+                                  .filter((r) => r.fromUserId === userId)
+                                  .map((r) => {
+                                      const isClosed = r.status === "closed";
 
-                                    return (
-                                        <div
-                                            key={r.id}
-                                            style={{
-                                                ...styles.card,
-                                                padding: 12,
-                                                borderRadius: 12,
-                                                ...(isClosed ? { background: "#fffaf2" } : {}),
-                                            }}
-                                        >
-                                            <div style={styles.cardTop}>
-                                                <div style={styles.avatarSmall}>🙂</div>
+                                      return (
+                                          <div
+                                              key={r.id}
+                                              style={{
+                                                  ...styles.card,
+                                                  padding: 12,
+                                                  borderRadius: 12,
+                                                  ...(isClosed ? { background: "#fffaf2" } : {}),
+                                              }}
+                                          >
+                                              <div style={styles.cardTop}>
+                                                  <div style={styles.avatarSmall}>🙂</div>
 
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={styles.cardTitle}>
-                                                        {r.producerName || "Produttore"}
-                                                    </div>
+                                                  <div style={{ flex: 1 }}>
+                                                      <div style={styles.cardTitle}>
+                                                          {r.producerName || "Produttore"}
+                                                      </div>
 
-                                                    <div
-                                                        style={{
-                                                            ...styles.cardSub,
-                                                            marginTop: 2,
-                                                            display: "flex",
-                                                            flexWrap: "wrap",
-                                                            gap: 6,
-                                                        }}
-                                                    >
-                                                        <span>
-                                                            {r.fromName?.trim() ? r.fromName : "Anonimo"}
-                                                        </span>
+                                                      <div
+                                                          style={{
+                                                              ...styles.cardSub,
+                                                              marginTop: 2,
+                                                              display: "flex",
+                                                              flexWrap: "wrap",
+                                                              gap: 6,
+                                                          }}
+                                                      >
+                                                          <span>
+                                                              {r.fromName?.trim() ? r.fromName : "Anonimo"}
+                                                          </span>
 
-                                                        <span>→</span>
+                                                          <span>→</span>
 
-                                                        <span>
-                                                            {r.targetUserIds && r.targetUserIds.length > 0
-                                                                ? r.targetUserIds
-                                                                    .map((targetUserId) => {
-                                                                        const displayName =
-                                                                            memberNameById[targetUserId] || "Utente";
-                                                                        const s = r.statusByUserId?.[targetUserId];
+                                                          <span>
+                                                              {r.targetUserIds && r.targetUserIds.length > 0
+                                                                  ? r.targetUserIds
+                                                                      .map((targetUserId) => {
+                                                                          const displayName =
+                                                                              memberNameById[targetUserId] || "Utente";
+                                                                          const s = r.statusByUserId?.[targetUserId];
 
-                                                                        const label =
-                                                                            s === "accepted"
-                                                                                ? "✅"
-                                                                                : s === "declined"
-                                                                                    ? "❌"
-                                                                                    : "⏳";
+                                                                          const label =
+                                                                              s === "accepted"
+                                                                                  ? "✅"
+                                                                                  : s === "declined"
+                                                                                      ? "❌"
+                                                                                      : "⏳";
 
-                                                                        return `${displayName} ${label}`;
-                                                                    })
-                                                                    .join(", ")
-                                                                : "—"}
-                                                        </span>
-                                                    </div>
+                                                                          return `${displayName} ${label}`;
+                                                                      })
+                                                                      .join(", ")
+                                                                  : "—"}
+                                                          </span>
+                                                      </div>
 
-                                                    <div style={{ ...styles.cardQuote, marginTop: 2 }}>
-                                                        “{r.itemsText?.trim() ? r.itemsText : "Richiesta"}”
-                                                    </div>
-                                                </div>
+                                                      <div style={{ ...styles.cardQuote, marginTop: 2 }}>
+                                                          “{r.itemsText?.trim() ? r.itemsText : "Richiesta"}”
+                                                      </div>
+                                                  </div>
 
-                                                <button
-                                                    type="button"
-                                                    style={styles.btnSecondary}
-                                                    onClick={() => {
-                                                        if (
-                                                            !window.confirm("Eliminare questa richiesta?")
-                                                        ) {
-                                                            return;
-                                                        }
-                                                        onDeleteRequest(r.id);
-                                                    }}
-                                                >
-                                                    Elimina richiesta
-                                                </button>
+                                                  <button
+                                                      type="button"
+                                                      style={styles.btnSecondary}
+                                                      onClick={() => {
+                                                          if (
+                                                              !window.confirm("Eliminare questa richiesta?")
+                                                          ) {
+                                                              return;
+                                                          }
+                                                          onDeleteRequest(r.id);
+                                                      }}
+                                                  >
+                                                      Elimina richiesta
+                                                  </button>
 
-                                                <div style={styles.pill}>
-                                                    {isClosed ? "chiusa" : "aperta"}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                        </div>
-                    </div>
-                )}
-            </div>
-        )}
+                                                  <div style={styles.pill}>
+                                                      {isClosed ? "chiusa" : "aperta"}
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      );
+                                  })}
+                          </div>
+                      )}
+                  </div>
+              </div>
+          )}
 
-            {selectableMembers.length === 0 ? (
-                <div style={styles.muted}>Nessun membro in questa cerchia.</div>
-            ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {selectableMembers.length === 0 ? (
+              <div style={styles.card}>
+                  <div style={styles.cardTitle}>Per iniziare servono 2–3 persone</div>
+                  <div style={{ ...styles.muted, marginTop: 6 }}>
+                      In questa cerchia non ci sono ancora altri membri disponibili.
+                  </div>
+                  <div style={{ ...styles.muted, marginTop: 6 }}>
+                      Invita almeno una persona così potrete iniziare a usarla davvero.
+                  </div>
+              </div>
+          ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     {selecting && (
                         <div style={{ ...styles.muted, marginBottom: 10 }}>
                             Seleziona una o più persone della cerchia.
@@ -607,75 +624,84 @@ export default function Friends({
                         </div>
                     )}
 
-                    {!selecting && received.length > 0 && (
-                        <div style={{ marginBottom: 14 }}>
-                            <div style={{ fontWeight: 800, marginBottom: 8 }}>
-                                Richieste ricevute
-                            </div>
+                      {!selecting && (
+                          <div style={{ marginBottom: 14 }}>
+                              <div style={{ fontWeight: 800, marginBottom: 8 }}>
+                                  Richieste ricevute
+                              </div>
 
-                                   {received.map((r) => {
-            const myDecision = r.statusByUserId?.[userId] || "pending";
-            const isPending = myDecision === "pending";
+                              {received.length === 0 ? (
+                                  <div style={styles.card}>
+                                      <div style={styles.cardTitle}>Ancora nessuna richiesta ricevuta</div>
+                                      <div style={{ ...styles.muted, marginTop: 6 }}>
+                                          Quando una persona della tua cerchia ti chiederà qualcosa, lo vedrai qui.
+                                      </div>
+                                  </div>
+                              ) : (
+                                  received.map((r) => {
+                                      const myDecision = r.statusByUserId?.[userId] || "pending";
+                                      const isPending = myDecision === "pending";
 
-            return (
-                <div
-                    key={r.id}
-                    style={{
-                        ...styles.card,
-                        padding: "10px 12px",
-                        borderRadius: 12,
-                        minHeight: "unset",
-                        ...(!isPending ? { background: "#fffaf2" } : {}),
-                    }}
-                >
-                    <div style={{ fontWeight: 800 }}>{r.producerName}</div>
+                                      return (
+                                          <div
+                                              key={r.id}
+                                              style={{
+                                                  ...styles.card,
+                                                  padding: "10px 12px",
+                                                  borderRadius: 12,
+                                                  minHeight: "unset",
+                                                  ...(!isPending ? { background: "#fffaf2" } : {}),
+                                              }}
+                                          >
+                                              <div style={{ fontWeight: 800 }}>{r.producerName}</div>
 
-                    <div style={{ marginTop: 4 }}>
-                        <div
-                            style={{
-                                fontSize: 12,
-                                opacity: 1,
-                                color: "#2f281f",
-                                marginBottom: 0,
-                                lineHeight: "14px",
-                            }}
-                        >
-                            <div>Da: {r.fromName || "Un amico"}</div>
-                            <div>Prodotto: {r.itemsText?.trim() ? r.itemsText : "-"}</div>
-                            <div style={{ marginTop: 4, fontWeight: 700, fontSize: 12 }}>
-                                Stato:{" "}
-                                {myDecision === "accepted"
-                                    ? "✅ Hai accettato"
-                                    : myDecision === "declined"
-                                    ? "❌ Hai rifiutato"
-                                    : "⏳ In attesa"}
-                            </div>
-                        </div>
+                                              <div style={{ marginTop: 4 }}>
+                                                  <div
+                                                      style={{
+                                                          fontSize: 12,
+                                                          opacity: 1,
+                                                          color: "#2f281f",
+                                                          marginBottom: 0,
+                                                          lineHeight: "14px",
+                                                      }}
+                                                  >
+                                                      <div>Da: {r.fromName || "Un amico"}</div>
+                                                      <div>Prodotto: {r.itemsText?.trim() ? r.itemsText : "-"}</div>
+                                                      <div style={{ marginTop: 4, fontWeight: 700, fontSize: 12 }}>
+                                                          Stato:{" "}
+                                                          {myDecision === "accepted"
+                                                              ? "✅ Hai accettato"
+                                                              : myDecision === "declined"
+                                                                  ? "❌ Hai rifiutato"
+                                                                  : "⏳ In attesa"}
+                                                      </div>
+                                                  </div>
 
-                        {isPending ? (
-                            <>
-                                <button
-                                    type="button"
-                                    style={styles.primaryButton}
-                                    onClick={() => onRespondRequest(r.id, userId, "accepted")}
-                                >
-                                    Sì certo
-                                </button>
-                                <button
-                                    type="button"
-                                    style={styles.secondaryButton}
-                                    onClick={() => onRespondRequest(r.id, userId, "declined")}
-                                >
-                                    No, mi spiace
-                                </button>
-                            </>
-                        ) : null}
-                    </div>
-                </div>
-            );
-        })}
-                        </div>
-                    )}
+                                                  {isPending ? (
+                                                      <>
+                                                          <button
+                                                              type="button"
+                                                              style={styles.primaryButton}
+                                                              onClick={() => onRespondRequest(r.id, userId, "accepted")}
+                                                          >
+                                                              Sì certo
+                                                          </button>
+                                                          <button
+                                                              type="button"
+                                                              style={styles.secondaryButton}
+                                                              onClick={() => onRespondRequest(r.id, userId, "declined")}
+                                                          >
+                                                              No, mi spiace
+                                                          </button>
+                                                      </>
+                                                  ) : null}
+                                              </div>
+                                          </div>
+                                      );
+                                  })
+                              )}
+                          </div>
+                      )}
 
                     {selectableMembers.map((member) => (
                         <div key={member.id} style={styles.card}>
