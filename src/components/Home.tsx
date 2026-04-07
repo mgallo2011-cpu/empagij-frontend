@@ -21,9 +21,7 @@ export default function Home({
         <div style={styles.avatar}>🙂</div>
       </div>
 
-          <h2 style={{ ...styles.h2, color: "#D97706" }}>
-              Cosa succede intorno a te?
-          </h2>
+          <h2 style={styles.h2}>Organizza la tua spesa insieme agli altri</h2>
 
       <div style={styles.cardsCol}>
                <div

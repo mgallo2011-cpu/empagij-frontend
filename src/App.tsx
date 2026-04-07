@@ -1985,15 +1985,19 @@ function Intro({
 
             {introStep === 1 && (
                 <>
-                    <h2 style={styles.h2}>Vuoi evitare un viaggio?</h2>
+                    <h2 style={styles.h2}>Vuoi evitare un viaggio per la spesa?</h2>
 
                     <div style={styles.card}>
-                        <div style={{ fontWeight: 700, marginBottom: 8 }}>
-                            Scopri se qualcuno sta già andando da un produttore oppure inizia tu.
-                        </div>
+                        <<p style={styles.muted}>
+                            Scopri se qualcuno sta già andando a fare la spesa da un produttore oppure inizia tu.
+                        </p>
+
+                        <p style={{ ...styles.muted, marginTop: 6 }}>
+                            Oggi aiuti tu, domani qualcuno aiuterà te.
+                        </p>
 
                         <div style={{ ...styles.muted, marginTop: 6 }}>
-                            Nessun termine complicato: scegli solo cosa vuoi fare adesso.
+                            Scegli facilmente come organizzare la tua spesa.
                         </div>
                     </div>
 
