@@ -1988,7 +1988,7 @@ function Intro({
                     <h2 style={styles.h2}>Vuoi evitare un viaggio per la spesa?</h2>
 
                     <div style={styles.card}>
-                        <<p style={styles.muted}>
+                        <p style={styles.muted}>
                             Scopri se qualcuno sta già andando a fare la spesa da un produttore oppure inizia tu.
                         </p>
 

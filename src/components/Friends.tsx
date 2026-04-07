@@ -477,116 +477,107 @@ export default function Friends({
           {!selecting && (
               <div style={{ marginBottom: 12 }}>
                   <div style={{ marginTop: 12 }}>
-                      <div
-                          style={{
-                              fontWeight: 800,
-                              fontSize: 12,
-                              letterSpacing: 0.4,
-                              opacity: 0.7,
-                          }}
-                      >
-                          LE TUE RICHIESTE
-                      </div>
-
-                      {richieste.filter((r) => r.fromUserId === userId).length === 0 ? (
-                          <div style={{ marginTop: 10 }}>
-                              <div style={styles.card}>
-                                  <div style={styles.cardTitle}>Non hai ancora creato richieste</div>
-                                  <div style={{ ...styles.muted, marginTop: 6 }}>
-                                      Quando chiederai qualcosa a una persona della tua cerchia, lo vedrai qui.
-                                  </div>
+                      {richieste.filter((r) => r.fromUserId === userId).length > 0 && (
+                          <>
+                              <div
+                                  style={{
+                                      fontWeight: 800,
+                                      fontSize: 12,
+                                      letterSpacing: 0.4,
+                                      opacity: 0.7,
+                                  }}
+                              >
+                                  LE TUE RICHIESTE
                               </div>
-                          </div>
-                      ) : (
-                          <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-                              {richieste
-                                  .filter((r) => r.fromUserId === userId)
-                                  .map((r) => {
-                                      const isClosed = r.status === "closed";
 
-                                      return (
-                                          <div
-                                              key={r.id}
-                                              style={{
-                                                  ...styles.card,
-                                                  padding: 12,
-                                                  borderRadius: 12,
-                                                  ...(isClosed ? { background: "#fffaf2" } : {}),
-                                              }}
-                                          >
-                                              <div style={styles.cardTop}>
-                                                  <div style={styles.avatarSmall}>🙂</div>
+                              <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
+                                  {richieste
+                                      .filter((r) => r.fromUserId === userId)
+                                      .map((r) => {
+                                          const isClosed = r.status === "closed";
 
-                                                  <div style={{ flex: 1 }}>
-                                                      <div style={styles.cardTitle}>
-                                                          {r.producerName || "Produttore"}
+                                          return (
+                                              <div
+                                                  key={r.id}
+                                                  style={{
+                                                      ...styles.card,
+                                                      padding: 12,
+                                                      borderRadius: 12,
+                                                      ...(isClosed ? { background: "#fffaf2" } : {}),
+                                                  }}
+                                              >
+                                                  <div style={styles.cardTop}>
+                                                      <div style={styles.avatarSmall}>🙂</div>
+
+                                                      <div style={{ flex: 1 }}>
+                                                          <div style={styles.cardTitle}>
+                                                              {r.producerName || "Produttore"}
+                                                          </div>
+
+                                                          <div
+                                                              style={{
+                                                                  ...styles.cardSub,
+                                                                  marginTop: 2,
+                                                                  display: "flex",
+                                                                  flexWrap: "wrap",
+                                                                  gap: 6,
+                                                              }}
+                                                          >
+                                                              <span>
+                                                                  {r.fromName?.trim() ? r.fromName : "Anonimo"}
+                                                              </span>
+
+                                                              <span>→</span>
+
+                                                              <span>
+                                                                  {r.targetUserIds && r.targetUserIds.length > 0
+                                                                      ? r.targetUserIds
+                                                                          .map((targetUserId) => {
+                                                                              const displayName =
+                                                                                  memberNameById[targetUserId] || "Utente";
+                                                                              const s = r.statusByUserId?.[targetUserId];
+
+                                                                              const label =
+                                                                                  s === "accepted"
+                                                                                      ? "✅"
+                                                                                      : s === "declined"
+                                                                                          ? "❌"
+                                                                                          : "⏳";
+
+                                                                              return `${displayName} ${label}`;
+                                                                          })
+                                                                          .join(", ")
+                                                                      : "—"}
+                                                              </span>
+                                                          </div>
+
+                                                          <div style={{ ...styles.cardQuote, marginTop: 2 }}>
+                                                              “{r.itemsText?.trim() ? r.itemsText : "Richiesta"}”
+                                                          </div>
                                                       </div>
 
-                                                      <div
-                                                          style={{
-                                                              ...styles.cardSub,
-                                                              marginTop: 2,
-                                                              display: "flex",
-                                                              flexWrap: "wrap",
-                                                              gap: 6,
+                                                      <button
+                                                          type="button"
+                                                          style={styles.btnSecondary}
+                                                          onClick={() => {
+                                                              if (!window.confirm("Eliminare questa richiesta?")) {
+                                                                  return;
+                                                              }
+                                                              onDeleteRequest(r.id);
                                                           }}
                                                       >
-                                                          <span>
-                                                              {r.fromName?.trim() ? r.fromName : "Anonimo"}
-                                                          </span>
+                                                          Elimina richiesta
+                                                      </button>
 
-                                                          <span>→</span>
-
-                                                          <span>
-                                                              {r.targetUserIds && r.targetUserIds.length > 0
-                                                                  ? r.targetUserIds
-                                                                      .map((targetUserId) => {
-                                                                          const displayName =
-                                                                              memberNameById[targetUserId] || "Utente";
-                                                                          const s = r.statusByUserId?.[targetUserId];
-
-                                                                          const label =
-                                                                              s === "accepted"
-                                                                                  ? "✅"
-                                                                                  : s === "declined"
-                                                                                      ? "❌"
-                                                                                      : "⏳";
-
-                                                                          return `${displayName} ${label}`;
-                                                                      })
-                                                                      .join(", ")
-                                                                  : "—"}
-                                                          </span>
+                                                      <div style={styles.pill}>
+                                                          {isClosed ? "chiusa" : "aperta"}
                                                       </div>
-
-                                                      <div style={{ ...styles.cardQuote, marginTop: 2 }}>
-                                                          “{r.itemsText?.trim() ? r.itemsText : "Richiesta"}”
-                                                      </div>
-                                                  </div>
-
-                                                  <button
-                                                      type="button"
-                                                      style={styles.btnSecondary}
-                                                      onClick={() => {
-                                                          if (
-                                                              !window.confirm("Eliminare questa richiesta?")
-                                                          ) {
-                                                              return;
-                                                          }
-                                                          onDeleteRequest(r.id);
-                                                      }}
-                                                  >
-                                                      Elimina richiesta
-                                                  </button>
-
-                                                  <div style={styles.pill}>
-                                                      {isClosed ? "chiusa" : "aperta"}
                                                   </div>
                                               </div>
-                                          </div>
-                                      );
-                                  })}
-                          </div>
+                                          );
+                                      })}
+                              </div>
+                          </>
                       )}
                   </div>
               </div>
