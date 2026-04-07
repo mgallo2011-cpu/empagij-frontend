@@ -243,7 +243,8 @@ const styles: Record<string, React.CSSProperties> = {
   h2: {
     fontSize: 18,
     fontWeight: 800,
-    margin: "6px 0 10px",
+      margin: "6px 0 10px",
+      color: "#D97706",
   },
   muted: {
     color: "#242827",

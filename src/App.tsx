@@ -2738,11 +2738,12 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 14,
   },
 
-  h2: {
-    fontSize: 18,
-    fontWeight: 800,
-    margin: "6px 0 10px",
-  },
+    h2: {
+        fontSize: 18,
+        fontWeight: 800,
+        margin: "6px 0 10px",
+        color: "#D97706",
+    },
   muted: { color: "#242827", fontSize: 14, margin: 0, lineHeight: 1.45 },
  primaryBtn: {
   alignSelf: "center",

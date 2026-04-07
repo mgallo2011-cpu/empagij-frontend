@@ -68,6 +68,7 @@ const styles: Record<string, React.CSSProperties> = {
         fontSize: 18,
         fontWeight: 800,
         margin: "6px 0 12px",
+        color: "#D97706",
     },
     label: {
         fontSize: 13,
