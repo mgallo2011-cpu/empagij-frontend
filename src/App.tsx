@@ -1847,7 +1847,7 @@ apiGet={apiGet}
       }
     }
   })();
-       const main = !user ? (
+             const main = !user ? (
         <div
             style={{
                 padding: 16,
@@ -1858,72 +1858,79 @@ apiGet={apiGet}
                 width: "100%",
             }}
         >
-                    <div style={{ ...styles.card, padding: "14px 20px 12px" }}>
-                   <div style={{ ...styles.brand, textAlign: "center", marginBottom: 8 }}>
-                       SpesaConTe
-                   </div>
+            <div style={{ ...styles.card, padding: "14px 20px 12px" }}>
+                <div
+                    style={{
+                        ...styles.brand,
+                        textAlign: "center",
+                        marginBottom: 8,
+                        color: "#D97706",
+                    }}
+                >
+                    SpesaConTe
+                </div>
 
-                   <p
-                       style={{
-                           opacity: 0.8,
-                           margin: 0,
-                           textAlign: "left",
-                           lineHeight: 1.3,
-                       }}
-                   >
-                       Registrati e scegli la provincia
-                       <br />
-                       per vedere i produttori del tuo territorio
-                       <br />
-                       già presenti in SpesaConTe.
-                   </p>
+                <p
+                    style={{
+                        opacity: 0.8,
+                        margin: 0,
+                        textAlign: "left",
+                        lineHeight: 1.3,
+                    }}
+                >
+                    Registrati e scegli la provincia
+                    <br />
+                    per vedere i produttori del tuo territorio
+                    <br />
+                    già presenti in SpesaConTe.
+                </p>
 
-                   <p
-                       style={{
-                           opacity: 0.8,
-                           margin: "8px 0 0 0",
-                           textAlign: "left",
-                           lineHeight: 1.3,
-                       }}
-                   >
-                       La provincia si può cambiare
-                       <br />
-                       in qualsiasi momento.
-                   </p>
+                <p
+                    style={{
+                        opacity: 0.8,
+                        margin: "8px 0 0 0",
+                        textAlign: "left",
+                        lineHeight: 1.3,
+                    }}
+                >
+                    La provincia si può cambiare
+                    <br />
+                    in qualsiasi momento.
+                </p>
             </div>
 
-               <div style={{ ...styles.card, padding: 20 }}>
-                   <h2 style={{ margin: 0 }}>Registrazione</h2>
-                   <RegisterBox
-                       onLogged={(u) => {
-                           setUser(u);
-                           setIntroStep(1);
-                           setIntroAction(null);
+            <div style={{ ...styles.card, padding: 20 }}>
+                <h2 style={{ ...styles.h2, margin: 0 }}>Registrazione</h2>
+                <RegisterBox
+                    onLogged={(u) => {
+                        setUser(u);
+                        setIntroStep(1);
+                        setIntroAction(null);
 
-                           const seen = localStorage.getItem("empagij_hasSeenIntro") === "1";
-                           setScreen(seen ? { name: "tabs", tab: "home" } : { name: "intro" });
-                       }}
-                   />
-               </div>
+                        const seen = localStorage.getItem("empagij_hasSeenIntro") === "1";
+                        setScreen(seen ? { name: "tabs", tab: "home" } : { name: "intro" });
+                    }}
+                />
+            </div>
 
-               <div style={{ ...styles.card, padding: 20 }}>
-                   <h2 style={{ margin: 0 }}>Hai già un account?</h2>
-                   <p style={{ opacity: 0.8, marginTop: 8 }}>
-                       Accedi con la tua email e vedrai
-                       <br />
-                       passaggi e richieste delle persone con cui ti organizzi
-                   </p>
-                   <LoginBox
-                       onLogged={(u) => {
-                           setUser(u);
-                           setIntroStep(1);
-                           setIntroAction(null);
+            <div style={{ ...styles.card, padding: 20 }}>
+                <h2 style={{ ...styles.h2, margin: 0 }}>Hai già un account?</h2>
+                <p style={{ opacity: 0.8, marginTop: 8 }}>
+                    Accedi con la tua email e vedrai
+                    <br />
+                    passaggi e richieste delle persone con cui ti organizzi
+                </p>
+                <LoginBox
+                    onLogged={(u) => {
+                        setUser(u);
+                        setIntroStep(1);
+                        setIntroAction(null);
 
-                           const seen = localStorage.getItem("empagij_hasSeenIntro") === "1";
-                           setScreen(seen ? { name: "tabs", tab: "home" } : { name: "intro" });
-                       }}
-                   />
-               </div>
+                        const seen = localStorage.getItem("empagij_hasSeenIntro") === "1";
+                        setScreen(seen ? { name: "tabs", tab: "home" } : { name: "intro" });
+                    }}
+                />
+            </div>
         </div>
     ) : (
         content
@@ -1989,7 +1996,7 @@ function Intro({
 
                     <div style={styles.card}>
                         <p style={styles.muted}>
-                            Scopri se qualcuno sta già andando a fare la spesa da un produttore oppure inizia tu.
+                            Scopri se qualcuno sta già andando per la spesa da un produttore oppure inizia tu.
                         </p>
 
                         <p style={{ ...styles.muted, marginTop: 6 }}>
@@ -3479,11 +3486,12 @@ function RegisterBox({
             />
 
                                            <div>
-                <div
+                             <div
                     style={{
                         fontSize: 14,
                         fontWeight: 700,
                         marginBottom: 6,
+                        color: "#D97706",
                     }}
                 >
                     Provincia

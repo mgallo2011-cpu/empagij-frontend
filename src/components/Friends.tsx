@@ -149,6 +149,8 @@ export default function Friends({
             ) as Record<string, string>,
         [circleMembers]
     );
+        const hasNoCircles = circles.length === 0;
+    const hasOnlyMeInCircle = !hasNoCircles && selectableMembers.length === 0;
   return (
       <div style={styles?.page || {}}>
       <div style={styles.headerRow}>
@@ -187,8 +189,8 @@ export default function Friends({
          
             {!selecting && activeCircleId && circleMembers.length < 5 && (
           <div style={{ marginBottom: 12 }}>
-                  <div style={{ ...styles.muted, marginBottom: 6 }}>
-                      Per iniziare davvero, invita una persona con la sua email.
+                                   <div style={{ ...styles.muted, marginBottom: 6 }}>
+                      Invita una persona della tua cerchia.
                   </div>
           <input
                   value={inviteEmail}
@@ -583,14 +585,11 @@ export default function Friends({
               </div>
           )}
 
-          {selectableMembers.length === 0 ? (
-              <div style={styles.card}>
-                  <div style={styles.cardTitle}>Per iniziare servono 2–3 persone</div>
+                   {hasNoCircles ? null : hasOnlyMeInCircle ? (
+                           <div style={styles.card}>
+                  <div style={styles.cardTitle}>Inizia la spesa insieme</div>
                   <div style={{ ...styles.muted, marginTop: 6 }}>
-                      In questa cerchia non ci sono ancora altri membri disponibili.
-                  </div>
-                  <div style={{ ...styles.muted, marginTop: 6 }}>
-                      Invita almeno una persona così potrete iniziare a usarla davvero.
+                      Per usare SpesaConTe serve almeno un’altra persona nella tua cerchia.
                   </div>
               </div>
           ) : (

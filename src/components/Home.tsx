@@ -15,16 +15,16 @@ export default function Home({
 
   return (
     <div style={styles.page}>
-      <div style={styles.topbar}>
+           <div style={styles.topbar}>
         <div />
-              <div style={styles.brand}>SpesaConTe</div>
+        <div style={styles.brand}>SpesaConTe</div>
         <div style={styles.avatar}>🙂</div>
       </div>
 
-          <h2 style={styles.h2}>Organizza la tua spesa insieme agli altri</h2>
+      <h2 style={styles.h2}>Organizza la spesa con la tua cerchia</h2>
 
       <div style={styles.cardsCol}>
-               <div
+        <div
           style={styles.card}
           onClick={() => setScreen({ name: "cerchiaPassaggi" })}
         >
@@ -36,19 +36,17 @@ export default function Home({
               gap: 12,
             }}
           >
-            <div style={styles.cardTitle}>nella tua cerchia</div>
+            <div style={styles.cardTitle}>Passaggi della tua cerchia</div>
 
-            {passaggiAttivi > 0 && (
-              <div style={styles.redDot} />
-            )}
+            {passaggiAttivi > 0 && <div style={styles.redDot} />}
           </div>
 
           <div style={styles.cardSub}>
             {passaggiAttivi === 0
-              ? "nessun passaggio attivo"
+              ? "Nessun passaggio attivo per la spesa"
               : passaggiAttivi === 1
-              ? "1 passaggio attivo"
-              : `${passaggiAttivi} passaggi attivi`}
+              ? "1 passaggio attivo per la spesa"
+              : `${passaggiAttivi} passaggi attivi per la spesa`}
           </div>
         </div>
 
@@ -56,9 +54,11 @@ export default function Home({
           style={styles.card}
           onClick={() => setScreen({ name: "tabs", tab: "disponibilita" })}
         >
-          <div style={styles.cardTitle}>dai produttori</div>
-          <div style={styles.cardSub}>Novità dai produttori</div>
-         </div>
+          <div style={styles.cardTitle}>Produttori del tuo territorio</div>
+          <div style={styles.cardSub}>
+            Cerca dove organizzare la tua prossima spesa
+          </div>
+        </div>
       </div>
 
           <div
@@ -134,10 +134,10 @@ const styles: Record<string, React.CSSProperties> = {
     marginTop: 6,
     marginBottom: 18,
   },
-  brand: {
+   brand: {
     fontWeight: 700,
     letterSpacing: 0.2,
-    color: "#2f4a3d",
+    color: "#D97706",
     fontSize: 20,
   },
   avatar: {
@@ -151,10 +151,11 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid #e1d8c9",
     fontSize: 14,
   },
-  h2: {
+   h2: {
     fontSize: 18,
     fontWeight: 800,
     margin: "6px 0 10px",
+    color: "#D97706",
   },
   cardsCol: {
     display: "grid",

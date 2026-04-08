@@ -102,13 +102,13 @@ export default function Disponibilita({
               </button>
           </div>
 
-          <p style={{ ...styles.muted, marginTop: 10 }}>
-              Per creare il passaggio da un produttore devi seguirlo.
+                   <p style={{ ...styles.muted, marginTop: 10 }}>
+              Per pubblicare un passaggio di spesa devi seguire il produttore.
           </p>
 
           <div style={{ marginTop: 12 }}>
               <div style={{ ...styles.muted, marginBottom: 10 }}>
-                  In alto trovi chi ha aggiornato di recente. Poi c’è l’elenco completo.
+                  In alto trovi chi ha aggiornato di recente. Sotto c’è l’elenco completo.
               </div>
               <div
                   style={{
@@ -118,7 +118,7 @@ export default function Disponibilita({
                       fontStyle: "italic",
                   }}
               >
-                  Per vedere solo una categoria di produttori scegli nell'elenco
+                  Per vedere solo una categoria, sceglila nell’elenco.
               </div>
         <select
           value={categoryFilter}
