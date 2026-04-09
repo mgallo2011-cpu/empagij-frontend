@@ -12,7 +12,20 @@ export default function Home({
   passaggi,
 }: Props) {
   const passaggiAttivi = passaggi.length;
+  const [tripsSaved, setTripsSaved] = React.useState(0);
 
+React.useEffect(() => {
+  fetch("https://empagij-backend-delsud.onrender.com/metrics/trips-saved")
+    .then((res) => res.json())
+    .then((data) => {
+      if (data?.ok) {
+        setTripsSaved(data.tripsSaved || 0);
+      }
+    })
+    .catch((err) => {
+      console.error("Trips saved fetch error:", err);
+    });
+}, []);
   return (
     <div style={styles.page}>
           <div style={styles.topbar}>
@@ -71,7 +84,7 @@ export default function Home({
         </div>
       </div>
           <div style={styles.impactCard}>
-              <div style={styles.impactNumber}>0</div>
+              <div style={styles.impactNumber}>{tripsSaved}</div>
               <div style={styles.impactTitle}>Viaggi risparmiati insieme</div>
               <div style={styles.impactSub}>Basato sui passaggi condivisi</div>
           </div>
