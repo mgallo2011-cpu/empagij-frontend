@@ -160,118 +160,128 @@ export default function Friends({
         <div style={styles.avatar}>🙂</div>
       </div>
 
-      <h2 style={styles.h2}>La tua cerchia</h2>
+            <h2 style={styles.h2}>Chi fa la spesa con te</h2>
 
-          {activeCircleId && (
+    {hasOnlyMeInCircle && (
+    <div>
+        <div style={styles.card}>
+            <div style={styles.cardTitle}>Per iniziare invita un amico</div>
+            <div style={{ ...styles.muted, marginTop: 6 }}>
+                Appena sarete in due, potrete fare la prima spesa insieme.
+            </div>
+        </div>
+
+        <div style={{ ...styles.muted, marginBottom: 6, marginTop: 12 }}>
+            Email dell’amico da invitare
+        </div>
+        <input
+            value={inviteEmail}
+            onChange={(e) => {
+                setInviteEmail(e.target.value);
+                if (inviteFeedback) setInviteFeedback(null);
+            }}
+            placeholder="email"
+            style={{ ...styles.input, marginBottom: 8 }}
+        />
+
+        <button
+            type="button"
+            style={{
+                ...styles.primaryBtn,
+                background: "#D97706",
+                color: "#ffffff",
+                border: "1px solid #B45309",
+                boxShadow: "0 6px 18px rgba(217,119,6,0.28)",
+                opacity: !inviteEmail.trim() || isInviting ? 0.82 : 1,
+                marginBottom: 14,
+            }}
+            disabled={!inviteEmail.trim() || isInviting}
+            onClick={async () => {
+                if (!activeCircleId) return;
+
+                setInviteFeedback(null);
+                setIsInviting(true);
+
+                try {
+                    const email = inviteEmail.trim();
+
+                    const res = await fetch(
+                        `${apiBase}/circles/${encodeURIComponent(activeCircleId)}/invite`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                ...getBearerHeaders(),
+                            },
+                            body: JSON.stringify({
+                                invitee_email: email,
+                            }),
+                        }
+                    );
+
+                    const data = await res.json().catch(() => ({}));
+
+                    if (!res.ok || data?.ok === false) {
+                        throw new Error(data?.error || `HTTP ${res.status}`);
+                    }
+
+                    setInviteEmail("");
+
+                    if (data?.email_sent) {
+                        setInviteFeedback({
+                            type: "success",
+                            text:
+                                `Invito inviato a ${email}. ` +
+                                `La persona riceverà un'email con il link per entrare nella cerchia.`,
+                        });
+                    } else {
+                        setInviteFeedback({
+                            type: "error",
+                            text:
+                                `Invito salvato per ${email}, ma l'email non è stata inviata. ` +
+                                `Errore: ${data?.email_error || "invio email non disponibile"}`,
+                        });
+                    }
+                } catch (err: any) {
+                    console.error("Errore invito:", err);
+                    setInviteFeedback({
+                        type: "error",
+                        text: String(err?.message || err),
+                    });
+                } finally {
+                    setIsInviting(false);
+                }
+            }}
+        >
+            {isInviting ? "Invio..." : "Invita un amico"}
+        </button>
+    </div>
+)}
+
+                   {activeCircleId && circles.length === 1 && (
               <div
                   style={{
-                      marginBottom: 14,
-                      fontSize: 14,
-                      lineHeight: 1.5,
-                      background: "#f7f3ec",
-                      border: "1px solid #eee6d7",
-                      borderRadius: 14,
-                      padding: 14,
-                  }}
+    marginBottom: 1,
+    fontSize: 14,
+    lineHeight: 0.8,
+    background: "#f7f3ec",
+    border: "1px solid #eee6d7",
+    borderRadius: 14,
+    padding: 14,
+}}
               >
                   <div>
-                      Sei parte di questa cerchia:{" "}
+                      La tua cerchia:{" "}
                       <strong>
                           {circles.find((c) => c.id === activeCircleId)?.name || "—"}
                       </strong>
-                  </div>
-
-                  <div style={{ marginTop: 6, opacity: 0.75 }}>
-                      Ogni cerchia può contenere massimo 5 utenti.
                   </div>
               </div>
           )}
          
             {!selecting && activeCircleId && circleMembers.length < 5 && (
           <div style={{ marginBottom: 12 }}>
-                                   <div style={{ ...styles.muted, marginBottom: 6 }}>
-                      Invita una persona della tua cerchia.
-                  </div>
-          <input
-                  value={inviteEmail}
-                  onChange={(e) => {
-                      setInviteEmail(e.target.value);
-                      if (inviteFeedback) setInviteFeedback(null);
-                  }}
-                  placeholder="email della persona da invitare"
-                  style={{ ...styles.input, marginBottom: 8 }}
-              />
-
-              <button
-                  type="button"
-                      style={{
-                          ...styles.primaryBtn,
-                          background: "#1b2f25",
-                          color: "#ffffff",
-                          border: "1px solid #16271f",
-                          boxShadow: "0 6px 18px rgba(27,47,37,0.34)",
-                          opacity: !inviteEmail.trim() || isInviting ? 0.82 : 1,
-                      }}
-                  disabled={!inviteEmail.trim() || isInviting}
-                  onClick={async () => {
-                      if (!activeCircleId) return;
-
-                      setInviteFeedback(null);
-                      setIsInviting(true);
-
-                      try {
-                          const email = inviteEmail.trim();
-
-                          const res = await fetch(
-                              `${apiBase}/circles/${encodeURIComponent(activeCircleId)}/invite`,
-                              {
-                                  method: "POST",
-                                  headers: {
-                                      "Content-Type": "application/json",
-                                      ...getBearerHeaders(),
-                                  },
-                                  body: JSON.stringify({
-                                      invitee_email: email,
-                                  }),
-                              }
-                          );
-
-                          const data = await res.json().catch(() => ({}));
-
-                          if (!res.ok || data?.ok === false) {
-                              throw new Error(data?.error || `HTTP ${res.status}`);
-                          }
-
-                                                    setInviteEmail("");
-
-            if (data?.email_sent) {
-                setInviteFeedback({
-                    type: "success",
-                    text:
-                        `Invito inviato a ${email}. ` +
-                        `La persona riceverà un'email con il link per entrare nella cerchia.`,
-                });
-            } else {
-                setInviteFeedback({
-                    type: "error",
-                    text:
-                        `Invito salvato per ${email}, ma l'email non è stata inviata. ` +
-                        `Errore: ${data?.email_error || "invio email non disponibile"}`,
-                });
-            }
-                      } catch (err: any) {
-                          console.error("Errore invito:", err);
-                          setInviteFeedback({
-                              type: "error",
-                              text: String(err?.message || err),
-                          });
-                      } finally {
-                          setIsInviting(false);
-                      }
-                  }}
-              >
-                      {isInviting ? "Invio..." : "Invita una persona"}
-              </button>
+                                  
 
               {inviteFeedback && (
                   <div
@@ -370,229 +380,9 @@ export default function Friends({
         </div>
       )}
 
-      {!selecting && myInvites.length > 0 && (
-        <div style={{ marginBottom: 12 }}>
-          <div
-            style={{
-              fontWeight: 800,
-              fontSize: 12,
-              letterSpacing: 0.4,
-              opacity: 0.7,
-            }}
-          >
-            INVITI RICEVUTI
-          </div>
+     
 
-          <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-            {myInvites.map((inv) => (
-              <div key={inv.id} style={styles.card}>
-                <div style={styles.cardTop}>
-                  <div style={styles.avatarSmall}>📩</div>
-
-                  <div style={{ flex: 1 }}>
-                    <div style={styles.cardTitle}>
-                      {inv.circle_name || "Cerchia"}
-                    </div>
-                    <div style={styles.cardSub}>Invito in attesa</div>
-                  </div>
-
-                  <button
-                    type="button"
-                                       style={{
-                      ...styles.primaryButton,
-                      background: "#2f4a3d",
-                      color: "#fff",
-                      fontWeight: 800,
-                      border: "2px solid #2f4a3d",
-                      boxShadow: "0 6px 16px rgba(47,74,61,0.28)",
-                    }}
-                    onClick={async () => {
-                      try {
-                        const res = await fetch(
-                          `${apiBase}/invites/${encodeURIComponent(inv.id)}/accept`,
-                          {
-                            method: "POST",
-                            headers: {
-                              ...getBearerHeaders(),
-                            },
-                          }
-                        );
-
-                        const data = await res.json().catch(() => ({}));
-
-                        if (!res.ok || data?.ok === false) {
-                          throw new Error(data?.error || `HTTP ${res.status}`);
-                        }
-
-                        setMyInvites((prev) =>
-                          prev.filter((x) => x.id !== inv.id)
-                        );
-                        await refreshCircles();
-                        alert("Invito accettato");
-                      } catch (err: any) {
-                        alert(String(err?.message || err));
-                      }
-                    }}
-                  >
-                    Accetta
-                  </button>
-
-                  <button
-                    type="button"
-                    style={styles.secondaryButton}
-                    onClick={async () => {
-                      try {
-                        const res = await fetch(
-                          `${apiBase}/invites/${encodeURIComponent(inv.id)}/decline`,
-                          {
-                            method: "POST",
-                            headers: {
-                              ...getBearerHeaders(),
-                            },
-                          }
-                        );
-
-                        const data = await res.json().catch(() => ({}));
-
-                        if (!res.ok || data?.ok === false) {
-                          throw new Error(data?.error || `HTTP ${res.status}`);
-                        }
-
-                        setMyInvites((prev) =>
-                          prev.filter((x) => x.id !== inv.id)
-                        );
-                        alert("Invito rifiutato");
-                      } catch (err: any) {
-                        alert(String(err?.message || err));
-                      }
-                    }}
-                  >
-                    Rifiuta
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-          {!selecting && (
-              <div style={{ marginBottom: 12 }}>
-                  <div style={{ marginTop: 12 }}>
-                      {richieste.filter((r) => r.fromUserId === userId).length > 0 && (
-                          <>
-                              <div
-                                  style={{
-                                      fontWeight: 800,
-                                      fontSize: 12,
-                                      letterSpacing: 0.4,
-                                      opacity: 0.7,
-                                  }}
-                              >
-                                  LE TUE RICHIESTE
-                              </div>
-
-                              <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-                                  {richieste
-                                      .filter((r) => r.fromUserId === userId)
-                                      .map((r) => {
-                                          const isClosed = r.status === "closed";
-
-                                          return (
-                                              <div
-                                                  key={r.id}
-                                                  style={{
-                                                      ...styles.card,
-                                                      padding: 12,
-                                                      borderRadius: 12,
-                                                      ...(isClosed ? { background: "#fffaf2" } : {}),
-                                                  }}
-                                              >
-                                                  <div style={styles.cardTop}>
-                                                      <div style={styles.avatarSmall}>🙂</div>
-
-                                                      <div style={{ flex: 1 }}>
-                                                          <div style={styles.cardTitle}>
-                                                              {r.producerName || "Produttore"}
-                                                          </div>
-
-                                                          <div
-                                                              style={{
-                                                                  ...styles.cardSub,
-                                                                  marginTop: 2,
-                                                                  display: "flex",
-                                                                  flexWrap: "wrap",
-                                                                  gap: 6,
-                                                              }}
-                                                          >
-                                                              <span>
-                                                                  {r.fromName?.trim() ? r.fromName : "Anonimo"}
-                                                              </span>
-
-                                                              <span>→</span>
-
-                                                              <span>
-                                                                  {r.targetUserIds && r.targetUserIds.length > 0
-                                                                      ? r.targetUserIds
-                                                                          .map((targetUserId) => {
-                                                                              const displayName =
-                                                                                  memberNameById[targetUserId] || "Utente";
-                                                                              const s = r.statusByUserId?.[targetUserId];
-
-                                                                              const label =
-                                                                                  s === "accepted"
-                                                                                      ? "✅"
-                                                                                      : s === "declined"
-                                                                                          ? "❌"
-                                                                                          : "⏳";
-
-                                                                              return `${displayName} ${label}`;
-                                                                          })
-                                                                          .join(", ")
-                                                                      : "—"}
-                                                              </span>
-                                                          </div>
-
-                                                          <div style={{ ...styles.cardQuote, marginTop: 2 }}>
-                                                              “{r.itemsText?.trim() ? r.itemsText : "Richiesta"}”
-                                                          </div>
-                                                      </div>
-
-                                                      <button
-                                                          type="button"
-                                                          style={styles.btnSecondary}
-                                                          onClick={() => {
-                                                              if (!window.confirm("Eliminare questa richiesta?")) {
-                                                                  return;
-                                                              }
-                                                              onDeleteRequest(r.id);
-                                                          }}
-                                                      >
-                                                          Elimina richiesta
-                                                      </button>
-
-                                                      <div style={styles.pill}>
-                                                          {isClosed ? "chiusa" : "aperta"}
-                                                      </div>
-                                                  </div>
-                                              </div>
-                                          );
-                                      })}
-                              </div>
-                          </>
-                      )}
-                  </div>
-              </div>
-          )}
-
-                   {hasNoCircles ? null : hasOnlyMeInCircle ? (
-                           <div style={styles.card}>
-                  <div style={styles.cardTitle}>Inizia la spesa insieme</div>
-                  <div style={{ ...styles.muted, marginTop: 6 }}>
-                      Per usare SpesaConTe serve almeno un’altra persona nella tua cerchia.
-                  </div>
-              </div>
-          ) : (
+                           {hasNoCircles ? null : (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     {selecting && (
                         <div style={{ ...styles.muted, marginBottom: 10 }}>
@@ -613,85 +403,6 @@ export default function Friends({
                             />
                         </div>
                     )}
-
-                      {!selecting && (
-                          <div style={{ marginBottom: 14 }}>
-                              <div style={{ fontWeight: 800, marginBottom: 8 }}>
-                                  Richieste ricevute
-                              </div>
-
-                              {received.length === 0 ? (
-                                  <div style={styles.card}>
-                                      <div style={styles.cardTitle}>Ancora nessuna richiesta ricevuta</div>
-                                      <div style={{ ...styles.muted, marginTop: 6 }}>
-                                          Quando una persona della tua cerchia ti chiederà qualcosa, lo vedrai qui.
-                                      </div>
-                                  </div>
-                              ) : (
-                                  received.map((r) => {
-                                      const myDecision = r.statusByUserId?.[userId] || "pending";
-                                      const isPending = myDecision === "pending";
-
-                                      return (
-                                          <div
-                                              key={r.id}
-                                              style={{
-                                                  ...styles.card,
-                                                  padding: "10px 12px",
-                                                  borderRadius: 12,
-                                                  minHeight: "unset",
-                                                  ...(!isPending ? { background: "#fffaf2" } : {}),
-                                              }}
-                                          >
-                                              <div style={{ fontWeight: 800 }}>{r.producerName}</div>
-
-                                              <div style={{ marginTop: 4 }}>
-                                                  <div
-                                                      style={{
-                                                          fontSize: 12,
-                                                          opacity: 1,
-                                                          color: "#2f281f",
-                                                          marginBottom: 0,
-                                                          lineHeight: "14px",
-                                                      }}
-                                                  >
-                                                      <div>Da: {r.fromName || "Un amico"}</div>
-                                                      <div>Prodotto: {r.itemsText?.trim() ? r.itemsText : "-"}</div>
-                                                      <div style={{ marginTop: 4, fontWeight: 700, fontSize: 12 }}>
-                                                          Stato:{" "}
-                                                          {myDecision === "accepted"
-                                                              ? "✅ Hai accettato"
-                                                              : myDecision === "declined"
-                                                                  ? "❌ Hai rifiutato"
-                                                                  : "⏳ In attesa"}
-                                                      </div>
-                                                  </div>
-
-                                                  {isPending ? (
-                                                      <>
-                                                          <button
-                                                              type="button"
-                                                              style={styles.primaryButton}
-                                                              onClick={() => onRespondRequest(r.id, userId, "accepted")}
-                                                          >
-                                                              Sì certo
-                                                          </button>
-                                                          <button
-                                                              type="button"
-                                                              style={styles.secondaryButton}
-                                                              onClick={() => onRespondRequest(r.id, userId, "declined")}
-                                                          >
-                                                              No, mi spiace
-                                                          </button>
-                                                      </>
-                                                  ) : null}
-                                              </div>
-                                          </div>
-                                      );
-                                  })
-                              )}
-                          </div>
-                      )}
 
                     {selectableMembers.map((member) => (
                         <div key={member.id} style={styles.card}>
@@ -780,6 +491,200 @@ export default function Friends({
                         </div>
                     ))}
 
+                    
+
+                    {!selecting && !hasOnlyMeInCircle && (
+                        <div style={{ marginTop: 40, marginBottom: 14 }}>
+                            <div
+                                style={{
+    fontWeight: 800,
+    fontSize: 14,
+    lineHeight: 1.0,
+    color: "#5FAE32",
+    marginBottom: 10,
+}}
+                            >
+                                Richieste ricevute
+                            </div>
+
+                            {received.length === 0 ? (
+                                <div style={styles.card}>
+                                    <div style={styles.cardTitle}>Ancora nessuna richiesta ricevuta</div>
+                                    <div style={{ ...styles.muted, marginTop: 6 }}>
+                                        Quando una persona della tua cerchia ti chiederà qualcosa, lo vedrai qui.
+                                    </div>
+                                </div>
+                            ) : (
+                                received.map((r) => {
+                                    const myDecision = r.statusByUserId?.[userId] || "pending";
+                                    const isPending = myDecision === "pending";
+
+                                    return (
+                                        <div
+                                            key={r.id}
+                                            style={{
+                                                ...styles.card,
+                                                padding: "10px 12px",
+                                                borderRadius: 12,
+                                                minHeight: "unset",
+                                                ...(!isPending ? { background: "#fffaf2" } : {}),
+                                            }}
+                                        >
+                                            <div style={{ fontWeight: 800 }}>{r.producerName}</div>
+
+                                            <div style={{ marginTop: 4 }}>
+                                                <div
+                                                    style={{
+                                                        fontSize: 12,
+                                                        opacity: 1,
+                                                        color: "#2f281f",
+                                                        marginBottom: 0,
+                                                        lineHeight: "14px",
+                                                    }}
+                                                >
+                                                    <div>Da: {r.fromName || "Un amico"}</div>
+                                                    <div>Prodotto: {r.itemsText?.trim() ? r.itemsText : "-"}</div>
+                                                    <div style={{ marginTop: 4, fontWeight: 700, fontSize: 12 }}>
+                                                        Stato:{" "}
+                                                        {myDecision === "accepted"
+                                                            ? "✅ Hai accettato"
+                                                            : myDecision === "declined"
+                                                                ? "❌ Hai rifiutato"
+                                                                : "⏳ In attesa"}
+                                                    </div>
+                                                </div>
+
+                                                {isPending ? (
+                                                    <>
+                                                        <button
+                                                            type="button"
+                                                            style={styles.primaryButton}
+                                                            onClick={() => onRespondRequest(r.id, userId, "accepted")}
+                                                        >
+                                                            Sì certo
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            style={styles.secondaryButton}
+                                                            onClick={() => onRespondRequest(r.id, userId, "declined")}
+                                                        >
+                                                            No, mi spiace
+                                                        </button>
+                                                    </>
+                                                ) : null}
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                                                 )}
+                        </div>
+                    )}
+                    {!selecting && myInvites.length > 0 && (
+                        <div style={{ marginTop: 60, marginBottom: 12 }}>
+                            <div
+                               style={{
+    fontWeight: 800,
+    fontSize: 14,
+    lineHeight: 1.0,
+    color: "#5FAE32",
+    marginBottom: 10,
+}}
+                            >
+                                Inviti ricevuti
+                            </div>
+
+                            <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
+                                {myInvites.map((inv) => (
+                                    <div key={inv.id} style={styles.card}>
+                                        <div style={styles.cardTop}>
+                                            <div style={styles.avatarSmall}>📩</div>
+
+                                            <div style={{ flex: 1 }}>
+                                                <div style={styles.cardTitle}>
+                                                    {inv.circle_name || "Cerchia"}
+                                                </div>
+                                                <div style={styles.cardSub}>Invito in attesa</div>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                style={{
+                                                    ...styles.primaryButton,
+                                                    background: "#2f4a3d",
+                                                    color: "#fff",
+                                                    fontWeight: 800,
+                                                    border: "2px solid #2f4a3d",
+                                                    boxShadow: "0 6px 16px rgba(47,74,61,0.28)",
+                                                }}
+                                                onClick={async () => {
+                                                    try {
+                                                        const res = await fetch(
+                                                            `${apiBase}/invites/${encodeURIComponent(inv.id)}/accept`,
+                                                            {
+                                                                method: "POST",
+                                                                headers: {
+                                                                    ...getBearerHeaders(),
+                                                                },
+                                                            }
+                                                        );
+
+                                                        const data = await res.json().catch(() => ({}));
+
+                                                        if (!res.ok || data?.ok === false) {
+                                                            throw new Error(data?.error || `HTTP ${res.status}`);
+                                                        }
+
+                                                        setMyInvites((prev) =>
+                                                            prev.filter((x) => x.id !== inv.id)
+                                                        );
+                                                        await refreshCircles();
+                                                        alert("Invito accettato");
+                                                    } catch (err: any) {
+                                                        alert(String(err?.message || err));
+                                                    }
+                                                }}
+                                            >
+                                                Accetta
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                style={styles.secondaryButton}
+                                                onClick={async () => {
+                                                    try {
+                                                        const res = await fetch(
+                                                            `${apiBase}/invites/${encodeURIComponent(inv.id)}/decline`,
+                                                            {
+                                                                method: "POST",
+                                                                headers: {
+                                                                    ...getBearerHeaders(),
+                                                                },
+                                                            }
+                                                        );
+
+                                                        const data = await res.json().catch(() => ({}));
+
+                                                        if (!res.ok || data?.ok === false) {
+                                                            throw new Error(data?.error || `HTTP ${res.status}`);
+                                                        }
+
+                                                        setMyInvites((prev) =>
+                                                            prev.filter((x) => x.id !== inv.id)
+                                                        );
+                                                        alert("Invito rifiutato");
+                                                    } catch (err: any) {
+                                                        alert(String(err?.message || err));
+                                                    }
+                                                }}
+                                            >
+                                                Rifiuta
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     {selecting && (
                         <div style={{ marginTop: 20 }}>
                             <button
@@ -838,16 +743,26 @@ export default function Friends({
                                 {isSubmittingLocal || isCreatingRichiesta
                                     ? "Invio..."
                                     : "Invia richiesta"}
-                              </button>
-                              {richiestaError && (
-                                  <div style={{ color: "crimson", marginTop: 8, fontSize: 13 }}>
-                                      {richiestaError}
-                                  </div>
-                              )}
+                            </button>
+                            {richiestaError && (
+                                <div style={{ color: "crimson", marginTop: 8, fontSize: 13 }}>
+                                    {richiestaError}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
             )}
-        </div>
-    );
+                  <div
+              style={{
+                  ...styles.muted,
+                  fontSize: 12,
+                  marginTop: 18,
+                  textAlign: "center",
+              }}
+          >
+              Max 5 persone per cerchia
+          </div>
+      </div>
+  );
 }

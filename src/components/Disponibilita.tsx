@@ -108,7 +108,7 @@ export default function Disponibilita({
 
           <div style={{ marginTop: 12 }}>
               <div style={{ ...styles.muted, marginBottom: 10 }}>
-                  In alto trovi chi ha aggiornato di recente. Sotto c’è l’elenco completo.
+                  In alto trovi chi ha aggiornato di recente.
               </div>
               <div
                   style={{
@@ -118,7 +118,7 @@ export default function Disponibilita({
                       fontStyle: "italic",
                   }}
               >
-                  Per vedere solo una categoria, sceglila nell’elenco.
+                  Per vedere solo una categoria, scegli nell’elenco.
               </div>
         <select
           value={categoryFilter}
@@ -143,10 +143,10 @@ export default function Disponibilita({
       </div>
 
       <div style={{ marginTop: 14, ...styles.sectionTitle }}>
-        ELENCO COMPLETO (A–Z)
+        ELENCO COMPLETO
       </div>
 
-      <div style={{ marginTop: 10, display: "grid", gap: 12 }}>
+      <div style={{ marginTop: 10, display: "grid", gap: 2 }}>
         {(() => {
           const filtered = (
             prodTab === "seguiti"
@@ -286,30 +286,32 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: "0 1px 0 rgba(0,0,0,0.02)",
   },
   cardSub: { color: "#3f3a33", fontSize: 14, marginTop: 3 },
-  primaryBtn: {
-    alignSelf: "center",
-    minWidth: 260,
-    maxWidth: 360,
-    padding: "15px 20px",
-    borderRadius: 999,
-    background: "#2f4a3d",
-    color: "#fff",
-    fontWeight: 800,
-    fontSize: 16,
-    border: "none",
-    cursor: "pointer",
-    boxShadow: "0 6px 18px rgba(47,74,61,0.28)",
-  },
-  secondaryButton: {
-    alignSelf: "center",
-    minWidth: 220,
-    maxWidth: 320,
-    padding: "12px 14px",
-    borderRadius: 999,
-    background: "#d7e7f2",
-    color: "#1f2a33",
-    fontWeight: 700,
-    border: "none",
-    cursor: "pointer",
-  },
+    primaryBtn: {
+        alignSelf: "center",
+        minWidth: 210,
+        maxWidth: 300,
+        padding: "12px 18px",
+        borderRadius: 999,
+        background: "#466b5a",
+        color: "#fff",
+        fontWeight: 700,
+        fontSize: 15,
+        border: "none",
+        cursor: "pointer",
+        boxShadow: "0 4px 12px rgba(70,107,90,0.18)",
+    },
+    secondaryButton: {
+        alignSelf: "center",
+        minWidth: 0,
+        maxWidth: "none",
+        padding: "2px 4px",
+        borderRadius: 0,
+        background: "transparent",
+        color: "#6f6b62",
+        fontWeight: 500,
+        fontSize: 12,
+        border: "none",
+        cursor: "pointer",
+        opacity: 0.8,
+    },
 };

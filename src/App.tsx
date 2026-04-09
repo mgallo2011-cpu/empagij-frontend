@@ -2608,32 +2608,37 @@ function CerchiaPassaggi({
                 <div style={styles.avatar}>🙂</div>
             </div>
 
-            <h2 style={styles.h2}>Passaggi della cerchia</h2>
+            <h2 style={styles.h2}>Chi sta andando?</h2>
 
             <div style={{ ...styles.muted, marginBottom: 12 }}>
-                Qui vedi i passaggi pubblicati nella tua cerchia.
+                Qui vedi i passaggi pubblicati dalle persone della tua cerchia.
             </div>
 
-            <button
-                type="button"
-                style={{ ...styles.primaryBtn, marginBottom: 14 }}
-                onClick={onAddPassaggio}
-            >
-                + Pubblica un passaggio
-            </button>
+            {passaggi.length > 0 && (
+                <button
+                    type="button"
+                    style={{ ...styles.primaryBtn, marginBottom: 14 }}
+                    onClick={onAddPassaggio}
+                >
+                    + Pubblica un passaggio
+                </button>
+            )}
 
             {passaggi.length === 0 ? (
                 <div style={styles.card}>
-                    <div style={styles.cardTitle}>Nessuno ancora oggi… puoi iniziare tu</div>
+                    <div style={styles.cardTitle}>Nessuno sta andando in questo momento</div>
                     <div style={{ ...styles.muted, marginTop: 6 }}>
-                        Se pubblichi un passaggio, le persone della tua cerchia lo vedranno qui.
+                        Se devi fare la spesa, puoi dirlo alla tua cerchia.
+                    </div>
+                    <div style={{ ...styles.muted, marginTop: 6 }}>
+                        Appena qualcuno pubblica un passaggio, lo vedrai qui.
                     </div>
                     <button
                         type="button"
-                        style={{ ...styles.primaryBtn, marginTop: 12 }}
+                        style={{ ...styles.primaryBtn, marginTop: 14 }}
                         onClick={onAddPassaggio}
                     >
-                        Pubblica un passaggio
+                        Pubblica il primo passaggio
                     </button>
                 </div>
             ) : (
@@ -2731,12 +2736,12 @@ const styles: Record<string, React.CSSProperties> = {
     marginTop: 6,
     marginBottom: 18,
   },
-  brand: {
-    fontWeight: 700,
-    letterSpacing: 0.2,
-    color: "#2f4a3d",
-    fontSize: 20,
-  },
+ brand: {
+  fontWeight: 900,
+  fontSize: 18,
+  color: "#14b414",
+  letterSpacing: 0.3,
+},
   avatar: {
     justifySelf: "end",
     width: 28,
@@ -2910,15 +2915,17 @@ const styles: Record<string, React.CSSProperties> = {
     marginTop: 6,
     marginBottom: 14,
   },
-  back: { color: "#6f6b62", fontSize: 13 },
-  backBtn: {
-    border: "none",
-    background: "transparent",
-    color: "#6f6b62",
-    fontSize: 13,
-    cursor: "pointer",
-    padding: 0,
-  },
+    back: { color: "#6f6b62", fontSize: 12 },
+
+    backBtn: {
+        border: "none",
+        background: "transparent",
+        color: "#6f6b62",
+        fontSize: 12,
+        cursor: "pointer",
+        padding: "2px 4px",
+        opacity: 0.8,
+    },
 
   titleRow: {
     display: "flex",

@@ -30,12 +30,11 @@ type ProducerCardProps = {
 };
 
 const styles = {
-  card: {
-    background: "#ffffff",
-    borderRadius: 16,
-    padding: 28,
-    border: "1px solid #eee6d7",
-    boxShadow: "0 1px 0 rgba(0,0,0,0.02)",
+    card: {
+    padding: 0,
+    background: "transparent",
+    border: "none",
+    boxShadow: "none",
   } as React.CSSProperties,
   producerBtn: {
     width: "100%",
@@ -68,11 +67,12 @@ const styles = {
     color: "#1a1a1a",
     fontSize: 16,
   } as React.CSSProperties,
-  cardSub: {
-    color: "#3f3a33",
-    fontSize: 14,
-    marginTop: 3,
-  } as React.CSSProperties,
+    cardSub: {
+        color: "#3f3a33",
+        fontSize: 13,
+        marginTop: 1,
+        lineHeight: 1.25,
+    } as React.CSSProperties,
   chev: {
     color: "#6f6b62",
     fontSize: 20,
@@ -103,7 +103,7 @@ export default function ProducerCard({
           <div style={{ flex: 1, textAlign: "left" }}>
             <div style={styles.cardTitle}>{name}</div>
             <div style={styles.cardSub}>{meta}</div>
-            <div style={{ ...styles.cardSub, marginTop: 6 }}>{desc}</div>
+                      <div style={{ ...styles.cardSub, marginTop: 3 }}>{desc}</div>
           </div>
 
           <div>

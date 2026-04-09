@@ -15,13 +15,27 @@ export default function Home({
 
   return (
     <div style={styles.page}>
-           <div style={styles.topbar}>
-        <div />
-        <div style={styles.brand}>SpesaConTe</div>
-        <div style={styles.avatar}>🙂</div>
-      </div>
+          <div style={styles.topbar}>
+              <div />
+              <div
+                  style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                  }}
+              >
+                  <img
+                      src="/logo192-B.png"
+                      alt="Logo SpesaConTe"
+                      style={{ width: 36, height: 36, objectFit: "contain" }}
+                  />
+                  <div style={styles.brand}>SpesaConTe</div>
+              </div>
+              <div style={styles.avatar}>🙂</div>
+          </div>
 
-      <h2 style={styles.h2}>Organizza la spesa con la tua cerchia</h2>
+      <h2 style={styles.h2}>Risparmia un viaggio: fate la spesa insieme</h2>
 
       <div style={styles.cardsCol}>
         <div
@@ -36,17 +50,13 @@ export default function Home({
               gap: 12,
             }}
           >
-            <div style={styles.cardTitle}>Passaggi della tua cerchia</div>
+            <div style={styles.cardTitle}>Chi sta andando?</div>
 
             {passaggiAttivi > 0 && <div style={styles.redDot} />}
           </div>
 
           <div style={styles.cardSub}>
-            {passaggiAttivi === 0
-              ? "Nessun passaggio attivo per la spesa"
-              : passaggiAttivi === 1
-              ? "1 passaggio attivo per la spesa"
-              : `${passaggiAttivi} passaggi attivi per la spesa`}
+            Vedi i passaggi nella tua cerchia
           </div>
         </div>
 
@@ -54,18 +64,22 @@ export default function Home({
           style={styles.card}
           onClick={() => setScreen({ name: "tabs", tab: "disponibilita" })}
         >
-          <div style={styles.cardTitle}>Produttori del tuo territorio</div>
+          <div style={styles.cardTitle}>Produttori vicini a te</div>
           <div style={styles.cardSub}>
-            Cerca dove organizzare la tua prossima spesa
+            Scopri cosa puoi comprare
           </div>
         </div>
       </div>
-
+          <div style={styles.impactCard}>
+              <div style={styles.impactNumber}>0</div>
+              <div style={styles.impactTitle}>Viaggi risparmiati insieme</div>
+              <div style={styles.impactSub}>Basato sui passaggi condivisi</div>
+          </div>
           <div
               style={{
                   display: "grid",
-                  gap: 16,
-                  marginTop: 18,
+                  gap: 20,
+                  marginTop: 46,
                   justifyItems: "center",
               }}
           >
@@ -76,7 +90,7 @@ export default function Home({
             setScreen({ name: "producersFollowed", mode: "stoAndando" })
           }
         >
-          Sto andando
+          Vado io a fare la spesa
         </button>
 
               <button
@@ -91,7 +105,7 @@ export default function Home({
                       setScreen({ name: "piccolaRichiesta", fromTab: "home" })
                   }
               >
-                  Richiesta
+                  Chiedi se qualcuno sta andando
               </button>
       </div>
 
@@ -110,7 +124,7 @@ export default function Home({
                   style={styles.linkBtn}
                   onClick={() => setScreen({ name: "intro" })}
               >
-                  Come funziona SpesaConTe
+                  Come funziona in 30 secondi
               </button>
           </div>
 
@@ -135,9 +149,9 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: 18,
   },
    brand: {
-    fontWeight: 700,
-    letterSpacing: 0.2,
-    color: "#D97706",
+    fontWeight: 900,
+    letterSpacing: 0.3,
+    color: "#14b414",
     fontSize: 20,
   },
   avatar: {
@@ -186,6 +200,35 @@ const styles: Record<string, React.CSSProperties> = {
         borderRadius: 999,
         background: "#c84a3a",
         flex: "0 0 auto",
+    },
+    impactCard: {
+        background: "#eaf7ff",
+        borderRadius: 16,
+        padding: "12px 16px",
+        border: "1px solid #bfe3f7",
+        boxShadow: "0 1px 0 rgba(0,0,0,0.02)",
+        marginTop: 12,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        textAlign: "center",
+    },
+    impactNumber: {
+        fontSize: 18,
+        lineHeight: 1,
+        fontWeight: 900,
+        color: "#1f7a8c",
+        marginBottom: 4,
+    },
+    impactTitle: {
+        fontWeight: 800,
+        color: "#1a1a1a",
+        fontSize: 14,
+        marginBottom: 2,
+    },
+    impactSub: {
+        color: "#4e6772",
+        fontSize: 12,
     },
   primaryBtn: {
     alignSelf: "center",
