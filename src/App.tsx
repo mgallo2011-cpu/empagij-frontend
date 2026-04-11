@@ -1539,23 +1539,24 @@ const content = (() => {
           );
       }
 
-      case "cerchiaPassaggi": {
-          return (
-              <CerchiaPassaggi
-                  passaggi={passaggi.filter((p) => p.circleId === activeCircleId)}
-                  onBack={() => setScreen({ name: "tabs", tab: "home" })}
-                  onAddPassaggio={() =>
-                      setScreen({ name: "producersFollowed", mode: "stoAndando" })
-                  }
-                  onOpenJoinPassaggio={(passaggioId) =>
-                      setScreen({ name: "joinPassaggio", passaggioId })
-                  }
-                  myName={myNameLocal}
-                  onDeletePassaggio={handleDeletePassaggio}
-                  currentUserId={user?.id || ""}
-              />
-          );
-      }
+     case "cerchiaPassaggi": {
+    return (
+        <CerchiaPassaggi
+            passaggi={passaggi.filter((p) => p.circleId === activeCircleId)}
+            richieste={richieste.filter((r) => r.circleId === activeCircleId)}
+            onBack={() => setScreen({ name: "tabs", tab: "home" })}
+            onAddPassaggio={() =>
+                setScreen({ name: "producersFollowed", mode: "stoAndando" })
+            }
+            onOpenJoinPassaggio={(passaggioId) =>
+                setScreen({ name: "joinPassaggio", passaggioId })
+            }
+            myName={myNameLocal}
+            onDeletePassaggio={handleDeletePassaggio}
+            currentUserId={user?.id || ""}
+        />
+    );
+}
 
       case "stoAndando": {
           const { producer, fromTab } = screen;
@@ -2637,6 +2638,7 @@ function PassaggiList({
 }
 function CerchiaPassaggi({
     passaggi,
+    richieste,
     onBack,
     onAddPassaggio,
     onOpenJoinPassaggio,
@@ -2645,6 +2647,7 @@ function CerchiaPassaggi({
     currentUserId,
 }: {
     passaggi: Passaggio[];
+    richieste: Richiesta[];
     onBack: () => void;
     onAddPassaggio: () => void;
     onOpenJoinPassaggio: (passaggioId: string) => void;
@@ -2652,6 +2655,13 @@ function CerchiaPassaggi({
     onDeletePassaggio: (id: string) => void;
     currentUserId: string;
 }) {
+    const hasJoinedPassaggio = (passaggio: Passaggio) => {
+    return richieste.some((r) => {
+        if (r.fromUserId !== currentUserId) return false;
+        if (r.producerId !== passaggio.producerId) return false;
+        return (r.targetUserIds || []).includes(passaggio.fromUserId);
+    });
+};
     return (
         <div style={styles.page}>
             <div style={styles.headerRow}>
@@ -2726,18 +2736,31 @@ function CerchiaPassaggi({
                                         </div>
                                     ) : null}
 
-                                    {p.fromUserId !== currentUserId ? (
-                                        <div
-                                            style={{
-                                                marginTop: 10,
-                                                fontSize: 13,
-                                                fontWeight: 700,
-                                                color: "#2f4a3d",
-                                            }}
-                                        >
-                                            Tocca per associarti a questo passaggio
-                                        </div>
-                                    ) : null}
+                                 {p.fromUserId !== currentUserId ? (
+    hasJoinedPassaggio(p) ? (
+        <div
+            style={{
+                marginTop: 10,
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#1f7a3d",
+            }}
+        >
+            ✅ Hai aderito a questo passaggio
+        </div>
+    ) : (
+        <div
+            style={{
+                marginTop: 10,
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#2f4a3d",
+            }}
+        >
+            Tocca per associarti a questo passaggio
+        </div>
+    )
+) : null}
                                 </div>
 
                                 <button
