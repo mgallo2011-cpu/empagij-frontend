@@ -1730,14 +1730,15 @@ const content = (() => {
                                   "Content-Type": "application/json",
                                   ...getBearerHeaders(),
                               },
-                              body: JSON.stringify({
-                                  circle_id: activeCircleId,
-                                  from_name: user.name || "Anonimo",
-                                  producer_id: passaggio.producerId,
-                                  producer_name: passaggio.producerName,
-                                  request_text: text.trim(),
-                                  target_user_ids: [passaggio.fromUserId],
-                              }),
+                             body: JSON.stringify({
+    circle_id: activeCircleId,
+    from_name: user.name || "Anonimo",
+    producer_id: passaggio.producerId,
+    producer_name: passaggio.producerName,
+    request_text: text.trim(),
+    target_user_ids: [passaggio.fromUserId],
+    is_join_passaggio: true,
+}),
                           });
 
                           const postOut = await postRes.json().catch(() => ({}));
