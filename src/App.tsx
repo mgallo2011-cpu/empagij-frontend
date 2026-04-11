@@ -1745,7 +1745,7 @@ const content = (() => {
                               throw new Error(postOut?.error || `HTTP ${postRes.status}`);
                           }
 
-                          alert("RICHIESTA INVIATA TEST 999");
+                          alert("Richiesta inviata");
                           setScreen({ name: "tabs", tab: "home" });
                       } catch (err: any) {
                           console.error("Errore invio richiesta da passaggio:", err);
