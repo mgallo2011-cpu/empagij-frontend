@@ -4,14 +4,28 @@ type Props = {
   setScreen: any;
   producers: any[];
   passaggi: any[];
+  cerchie: any[];
 };
 
 export default function Home({
   setScreen,
   producers,
   passaggi,
+  cerchie,
 }: Props) {
- const passaggiAttivi = passaggi.length;
+const passaggiConCerchia = passaggi.map((p) => {
+  const cerchia = cerchie.find((c) => c.id === p.circleId);
+  return {
+    ...p,
+    circleName: cerchia?.name || "Cerchia",
+  };
+});
+
+const passaggiAttivi = passaggiConCerchia.length;
+const titoloDinamico =
+  passaggiAttivi > 0
+    ? "C’è qualcuno che sta andando: unisciti"
+    : "Devi fare la spesa? Avvisa la tua cerchia";
 const [tripsSaved, setTripsSaved] = React.useState(0);
 const [haAderito, setHaAderito] = React.useState(false);
 
@@ -58,7 +72,7 @@ React.useEffect(() => {
               <div style={styles.avatar}>🙂</div>
           </div>
 
-      <h2 style={styles.h2}>Risparmia un viaggio: fate la spesa insieme</h2>
+      <h2 style={styles.h2}>{titoloDinamico}</h2>
 
       <div style={styles.cardsCol}>
         <div
@@ -79,7 +93,7 @@ React.useEffect(() => {
           </div>
 
           <div style={styles.cardSub}>
-            Vedi i passaggi nella tua cerchia
+            Vedi i passaggi attivi nelle tue cerchie
           </div>
         </div>
 
@@ -120,30 +134,10 @@ React.useEffect(() => {
 
              </div>
 
-          <div
-              style={{
-                  paddingTop: 34,
-                  paddingBottom: 10,
-                  textAlign: "center",
-              }}
-          >
-              <div style={{ ...styles.muted, marginBottom: 6 }}>
-                  Ripasso veloce?
-              </div>
-              <button
-                  type="button"
-                  style={styles.linkBtn}
-                  onClick={() => setScreen({ name: "intro" })}
-              >
-                  Come funziona in 30 secondi
-              </button>
-          </div>
-
-      <div style={{ flex: 1 }} />
+         <div style={{ flex: 1 }} />
     </div>
   );
 }
-
 const styles: Record<string, React.CSSProperties> = {
   page: {
     width: "min(520px, 100%)",

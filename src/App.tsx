@@ -831,78 +831,86 @@ const onClosePiccolaRichiesta = (_id: string) => {
   // LEGACY disattivato
 };
   const [passaggi, setPassaggi] = useState<Passaggio[]>(() => {
-    const safeLoad: (() => Passaggio[]) | null =
-      typeof loadPassaggi === "function" ? loadPassaggi : null;
+  const safeLoad: (() => Passaggio[]) | null =
+    typeof loadPassaggi === "function" ? loadPassaggi : null;
 
-    return safeLoad ? safeLoad() : [];
-  });
-   useEffect(() => {
-    let alive = true;
+  return safeLoad ? safeLoad() : [];
+});
 
-    if (loadingPassaggiRef.current) return;
-    loadingPassaggiRef.current = true;
+useEffect(() => {
+  let alive = true;
 
-    (async () => {
-        try {
-            if (!user?.id || !activeCircleId) {
-                if (alive) {
-                    setPassaggi([]);
-                    savePassaggi([]);
-                }
-                return;
-            }
+  if (loadingPassaggiRef.current) return;
+  loadingPassaggiRef.current = true;
 
-            const out = await apiGet<{ ok: true; items: any[] }>(
-                `/passaggi?circle_id=${encodeURIComponent(activeCircleId)}`
-            );
+  (async () => {
+    try {
+      if (!user?.id || circles.length === 0) {
+        if (alive) {
+          setPassaggi([]);
+          savePassaggi([]);
+        }
+        return;
+      }
 
-            const items: any[] = Array.isArray(out.items) ? out.items : [];
+      const results = await Promise.all(
+        circles.map((circle) =>
+          apiGet<{ ok: true; items: any[] }>(
+            `/passaggi?circle_id=${encodeURIComponent(circle.id)}`
+          ).catch(() => ({ ok: true, items: [] }))
+        )
+      );
 
-            const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
+      const allItems = results.flatMap((out) =>
+        Array.isArray(out.items) ? out.items : []
+      );
 
-            const mapped = items
-    .filter((x) => x.status === "in_corso")
-    .filter((x) => {
-        const t = x.created_at ? new Date(x.created_at).getTime() : 0;
-        return t >= cutoff;
-    })
-    .map((x) => ({
-        id: x.id,
-        circleId: x.circle_id,
-        circleName: circles.find((c) => c.id === x.circle_id)?.name || "",
-        fromName: x.from_name,
-        fromUserId: x.from_user_id,
-        producerId: x.producer_id,
-        producerName: x.producer_name,
-        producerCategory: x.producer_category,
-        whenLabel: x.when_label,
-        dateISO: x.date_iso || undefined,
-        note: x.note || "",
-        createdAtISO: x.created_at
+      const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
+
+      const mapped = allItems
+        .filter((x) => x.status === "in_corso")
+        .filter((x) => {
+          const t = x.created_at ? new Date(x.created_at).getTime() : 0;
+          return t >= cutoff;
+        })
+        .map((x) => ({
+          id: x.id,
+          circleId: x.circle_id,
+          circleName: circles.find((c) => c.id === x.circle_id)?.name || "",
+          fromName: x.from_name,
+          fromUserId: x.from_user_id,
+          producerId: x.producer_id,
+          producerName: x.producer_name,
+          producerCategory: x.producer_category,
+          whenLabel: x.when_label,
+          dateISO: x.date_iso || undefined,
+          note: x.note || "",
+          createdAtISO: x.created_at
             ? new Date(x.created_at).toISOString()
             : new Date().toISOString(),
-        createdAt: x.created_at
+          createdAt: x.created_at
             ? new Date(x.created_at).getTime()
             : Date.now(),
-    }));
+        }));
 
-            if (!alive) return;
+      if (!alive) return;
 
-            setPassaggi(mapped);
-            savePassaggi(mapped);
-        } catch (err) {
-            console.error("Errore caricamento passaggi:", err);
-                      if (!alive) return;
-            setPassaggi([]);
-        }
-    })().finally(() => {
-        loadingPassaggiRef.current = false;
-    });
+      setPassaggi(mapped);
+      savePassaggi(mapped);
+    } catch (err) {
+      console.error("Errore caricamento passaggi:", err);
+      if (!alive) return;
+      setPassaggi([]);
+    } finally {
+      loadingPassaggiRef.current = false;
+    }
+  })();
 
-    return () => {
-        alive = false;
-    };
-}, [user?.id, activeCircleId]);
+  return () => {
+    alive = false;
+  };
+}, [user?.id, circles]);
+
   const onOpenProducer = (producer: Producer) => {
     setScreen({
       name: "producerDetail",
@@ -1544,8 +1552,8 @@ const content = (() => {
      case "cerchiaPassaggi": {
     return (
         <CerchiaPassaggi
-            passaggi={passaggi.filter((p) => p.circleId === activeCircleId)}
-            richieste={richieste.filter((r) => r.circleId === activeCircleId)}
+            passaggi={passaggi}
+            richieste={richieste}
             onBack={() => setScreen({ name: "tabs", tab: "home" })}
             onAddPassaggio={() =>
                 setScreen({ name: "producersFollowed", mode: "stoAndando" })
@@ -1814,12 +1822,13 @@ const content = (() => {
 
       case "tabs": {
         switch (screen.tab) {
-       case "home":
+    case "home":
   return (
     <Home
       setScreen={setScreen}
       producers={producers}
-      passaggi={passaggi.filter((p) => p.circleId === activeCircleId)}
+      passaggi={passaggi}
+      cerchie={circles}
     />
   );
 
@@ -2665,6 +2674,24 @@ function CerchiaPassaggi({
         return (r.targetUserIds || []).includes(passaggio.fromUserId);
     });
 };
+const getCircleCardStyle = (circleId?: string): React.CSSProperties => {
+    const palettes = [
+        { background: "#dff0df", border: "1px solid #9fc49f" },
+        { background: "#fde7d2", border: "1px solid #e1b27c" },
+        { background: "#dfeafb", border: "1px solid #9fb9e8" },
+        { background: "#efe0f8", border: "1px solid #c39cdd" },
+        { background: "#faefc9", border: "1px solid #d8bd63" },
+    ];
+
+    const source = circleId || "cerchia";
+    let sum = 0;
+
+    for (let i = 0; i < source.length; i++) {
+        sum += source.charCodeAt(i);
+    }
+
+    return palettes[sum % palettes.length];
+};
     return (
         <div style={styles.page}>
             <div style={styles.headerRow}>
@@ -2711,10 +2738,14 @@ function CerchiaPassaggi({
                 <div style={{ display: "grid", gap: 12 }}>
                     {passaggi.map((p) => (
                         <div
-                            key={p.id}
-                            style={{ ...styles.card, cursor: "pointer" }}
-                            onClick={() => onOpenJoinPassaggio(p.id)}
-                        >
+    key={p.id}
+   style={{
+    ...styles.card,
+    ...getCircleCardStyle(p.circleId),
+    cursor: "pointer",
+}}
+    onClick={() => onOpenJoinPassaggio(p.id)}
+>
                             <div style={styles.cardTop}>
                                 <div style={styles.iconCircle}>🚗</div>
 
@@ -2732,10 +2763,9 @@ function CerchiaPassaggi({
                                     </div>
 
                                     <div style={styles.cardSub}>
-                                        {p.whenLabel}
-                                        {p.dateISO ? ` • ${formatDateIT(p.dateISO)}` : ""}
-                                        {p.producerCategory ? ` • ${p.producerCategory}` : ""}
-                                    </div>
+    {p.whenLabel}
+    {p.dateISO ? ` • ${formatDateIT(p.dateISO)}` : ""}
+</div>
 
                                     {p.note?.trim() ? (
                                         <div style={styles.cardQuote}>
