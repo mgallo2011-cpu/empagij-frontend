@@ -1887,28 +1887,29 @@ apiGet={apiGet}
  />
             );
             case "impostazioni":
-  return (
-    <Impostazioni
-      myName={myName}
-      selectedProvinceCode={user?.selected_province_code || "FG"}
-      onChangeProvince={(provinceCode) => {
-        setUser((prev) =>
-          prev ? { ...prev, selected_province_code: provinceCode } : prev
-        );
-      }}
-      onLogout={() => {
-        try {
-          localStorage.removeItem(LS_TOKEN);
-          localStorage.removeItem(LS_USER);
-        } catch {}
+                return (
+                    <Impostazioni
+                        myName={myName}
+                        selectedProvinceCode={user?.selected_province_code || "FG"}
+                        onChangeProvince={(provinceCode) => {
+                            setUser((prev) =>
+                                prev ? { ...prev, selected_province_code: provinceCode } : prev
+                            );
+                        }}
+                        onOpenIntro={() => setScreen({ name: "intro" })}
+                        onLogout={() => {
+                            try {
+                                localStorage.removeItem(LS_TOKEN);
+                                localStorage.removeItem(LS_USER);
+                            } catch { }
 
-        setUser(null);
-      }}
-    />
-  );
+                            setUser(null);
+                        }}
+                    />
+                );
 
                 default:
-                return <Home setScreen={setScreen} producers={producers} passaggi={passaggi} />;
+                return <Home setScreen={setScreen} producers={producers} passaggi={passaggi} cerchie={circles} />;
         }
       }
     }
