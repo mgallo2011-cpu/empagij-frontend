@@ -84,7 +84,9 @@ React.useEffect(() => {
         </div>
       </div>
           <div style={styles.impactCard}>
-              <div style={styles.impactNumber}>{tripsSaved}</div>
+              <div style={styles.impactNumber}>
+  {tripsSaved.toLocaleString()}
+</div>
               <div style={styles.impactTitle}>Viaggi risparmiati insieme</div>
               <div style={styles.impactSub}>Basato sui passaggi condivisi</div>
           </div>

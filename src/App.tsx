@@ -548,13 +548,17 @@ const [isSavingProducer, setIsSavingProducer] = useState(false);
   const [lastTab, setLastTab] = useState<Tab>("home");
   
     const [user, setUser] = useState<AuthUser | null>(() => {
-        try {
-            const raw = localStorage.getItem(LS_USER);
-            return raw ? (JSON.parse(raw) as AuthUser) : null;
-        } catch {
-            return null;
-        }
-    });
+    try {
+        const token = localStorage.getItem(LS_TOKEN) || "";
+        const raw = localStorage.getItem(LS_USER);
+
+        if (!token || !raw) return null;
+
+        return JSON.parse(raw) as AuthUser;
+    } catch {
+        return null;
+    }
+});
 const [circles, setCircles] = useState<Circle[]>([]);
 const [activeCircleId, setActiveCircleId] = useState<string | null>(null);
 const [circleMembers, setCircleMembers] = useState<CircleMember[]>([]);
@@ -619,6 +623,17 @@ useEffect(() => {
             else localStorage.removeItem(LS_USER);
         } catch { }
     }, [user]);
+    useEffect(() => {
+    try {
+        const token = localStorage.getItem(LS_TOKEN) || "";
+        const rawUser = localStorage.getItem(LS_USER) || "";
+
+        if (rawUser && !token) {
+            localStorage.removeItem(LS_USER);
+            setUser(null);
+        }
+    } catch {}
+}, []);
 useEffect(() => {
     let alive = true;
 
@@ -1692,12 +1707,50 @@ const content = (() => {
               );
           }
 
-          return (
+                   return (
               <JoinPassaggio
                   passaggio={passaggio}
                   onBack={() => setScreen({ name: "cerchiaPassaggi" })}
-                  onSend={() => {
-                      alert("Funzione non ancora disponibile in questa versione");
+                  onSend={async (text) => {
+                      try {
+                          if (!user?.id) {
+                              alert("Devi effettuare il login");
+                              return;
+                          }
+
+                          if (!activeCircleId) {
+                              alert("Cerchia attiva non trovata");
+                              return;
+                          }
+
+                          const postRes = await fetch(`${API_BASE}/richieste`, {
+                              method: "POST",
+                              headers: {
+                                  "Content-Type": "application/json",
+                                  ...getBearerHeaders(),
+                              },
+                              body: JSON.stringify({
+                                  circle_id: activeCircleId,
+                                  from_name: user.name || "Anonimo",
+                                  producer_id: passaggio.producerId,
+                                  producer_name: passaggio.producerName,
+                                  request_text: text.trim(),
+                                  target_user_ids: [passaggio.fromUserId],
+                              }),
+                          });
+
+                          const postOut = await postRes.json().catch(() => ({}));
+
+                          if (!postRes.ok || postOut?.ok === false) {
+                              throw new Error(postOut?.error || `HTTP ${postRes.status}`);
+                          }
+
+                          alert("RICHIESTA INVIATA TEST 999");
+                          setScreen({ name: "tabs", tab: "home" });
+                      } catch (err: any) {
+                          console.error("Errore invio richiesta da passaggio:", err);
+                          alert(String(err?.message || err));
+                      }
                   }}
               />
           );
@@ -3414,6 +3467,12 @@ const [password, setPassword] = useState("");
             })
         );
 
+              try {
+            await acceptInviteTokenIfPresent();
+        } catch (inviteErr) {
+            console.error("Accept invite post-login error:", inviteErr);
+        }
+
         onLogged({
             id: out.user.id,
             name: out.user.name,
@@ -3425,12 +3484,6 @@ const [password, setPassword] = useState("");
             await registerPush();
         } catch (pushErr) {
             console.error("Register push post-login error:", pushErr);
-        }
-
-        try {
-            await acceptInviteTokenIfPresent();
-        } catch (inviteErr) {
-            console.error("Accept invite post-login error:", inviteErr);
         }
     } catch (e: any) {
         setError(String(e?.message || e));
@@ -3572,6 +3625,11 @@ function RegisterBox({
                        province_name: out.user.province_name,
                    })
                );
+        try {
+            await acceptInviteTokenIfPresent();
+        } catch (inviteErr) {
+            console.error("Accept invite post-register error:", inviteErr);
+        }
 
         onLogged({
             id: out.user.id,
@@ -3579,12 +3637,6 @@ function RegisterBox({
             email: out.user.email,
             selected_province_code: out.user.province_code,
         });
-
-        try {
-            await acceptInviteTokenIfPresent();
-        } catch (inviteErr) {
-            console.error("Accept invite post-register error:", inviteErr);
-        }
     } catch (e: any) {
         setError(String(e?.message || e));
     }
