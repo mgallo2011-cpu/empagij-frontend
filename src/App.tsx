@@ -50,15 +50,16 @@ type WhenChoice = "oggi" | "domani" | "altra";
 type Passaggio = {
   id: string;
   circleId: string;
-    producerId: string;
-    fromName: string;
-    fromUserId: string;
+  circleName?: string;
+  producerId: string;
+  fromName: string;
+  fromUserId: string;
   producerName: string;
   friendName?: string;
   producerCategory: string;
   createdAtISO: string;
   whenLabel: "Oggi" | "Domani" | "Altra data";
-  dateISO?: string; // solo se "Altra data"
+  dateISO?: string;
   note: string;
   createdAt: number;
 };
@@ -860,29 +861,30 @@ const onClosePiccolaRichiesta = (_id: string) => {
             const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
 
             const mapped = items
-                .filter((x) => x.status === "in_corso")
-                .filter((x) => {
-                    const t = x.created_at ? new Date(x.created_at).getTime() : 0;
-                    return t >= cutoff;
-                })
-                .map((x) => ({
-                    id: x.id,
-                    circleId: x.circle_id,
-                    fromName: x.from_name,
-                    fromUserId: x.from_user_id,
-                    producerId: x.producer_id,
-                    producerName: x.producer_name,
-                    producerCategory: x.producer_category,
-                    whenLabel: x.when_label,
-                    dateISO: x.date_iso || undefined,
-                    note: x.note || "",
-                    createdAtISO: x.created_at
-                        ? new Date(x.created_at).toISOString()
-                        : new Date().toISOString(),
-                    createdAt: x.created_at
-                        ? new Date(x.created_at).getTime()
-                        : Date.now(),
-                }));
+    .filter((x) => x.status === "in_corso")
+    .filter((x) => {
+        const t = x.created_at ? new Date(x.created_at).getTime() : 0;
+        return t >= cutoff;
+    })
+    .map((x) => ({
+        id: x.id,
+        circleId: x.circle_id,
+        circleName: circles.find((c) => c.id === x.circle_id)?.name || "",
+        fromName: x.from_name,
+        fromUserId: x.from_user_id,
+        producerId: x.producer_id,
+        producerName: x.producer_name,
+        producerCategory: x.producer_category,
+        whenLabel: x.when_label,
+        dateISO: x.date_iso || undefined,
+        note: x.note || "",
+        createdAtISO: x.created_at
+            ? new Date(x.created_at).toISOString()
+            : new Date().toISOString(),
+        createdAt: x.created_at
+            ? new Date(x.created_at).getTime()
+            : Date.now(),
+    }));
 
             if (!alive) return;
 
@@ -2720,7 +2722,11 @@ function CerchiaPassaggi({
                                     <div style={styles.cardTitle}>
                                         {p.producerName || "Produttore"}
                                     </div>
-
+                                    {p.circleName && (
+    <div style={{ ...styles.muted, fontSize: 12, marginTop: 2 }}>
+        Cerchia: {p.circleName}
+    </div>
+)}
                                     <div style={styles.cardSub}>
                                         Da: {p.fromName?.trim() ? p.fromName : myName}
                                     </div>
