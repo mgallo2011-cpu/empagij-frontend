@@ -118,23 +118,7 @@ React.useEffect(() => {
           Vado io a fare la spesa
         </button>
 
-              {!haAderito && (
-  <button
-    type="button"
-    style={{
-      ...styles.secondaryBtn,
-      minWidth: 240,
-      maxWidth: 320,
-      border: "1px solid #b7c9d7",
-    }}
-    onClick={() =>
-      setScreen({ name: "piccolaRichiesta", fromTab: "home" })
-    }
-  >
-    Chiedi se qualcuno sta andando
-  </button>
-)}
-      </div>
+             </div>
 
           <div
               style={{
