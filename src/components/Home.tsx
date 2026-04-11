@@ -11,8 +11,9 @@ export default function Home({
   producers,
   passaggi,
 }: Props) {
-  const passaggiAttivi = passaggi.length;
-  const [tripsSaved, setTripsSaved] = React.useState(0);
+ const passaggiAttivi = passaggi.length;
+const [tripsSaved, setTripsSaved] = React.useState(0);
+const [haAderito, setHaAderito] = React.useState(false);
 
 React.useEffect(() => {
   fetch("https://empagij-backend-delsud.onrender.com/metrics/trips-saved")
@@ -25,6 +26,15 @@ React.useEffect(() => {
     .catch((err) => {
       console.error("Trips saved fetch error:", err);
     });
+}, []);
+React.useEffect(() => {
+  const richieste = JSON.parse(localStorage.getItem("empagij_requests") || "[]");
+
+  if (Array.isArray(richieste) && richieste.length > 0) {
+    setHaAderito(true);
+  } else {
+    setHaAderito(false);
+  }
 }, []);
   return (
     <div style={styles.page}>
@@ -88,7 +98,7 @@ React.useEffect(() => {
   {tripsSaved.toLocaleString()}
 </div>
               <div style={styles.impactTitle}>Viaggi risparmiati insieme</div>
-              <div style={styles.impactSub}>Basato sui passaggi condivisi</div>
+              <div style={styles.impactSub}>Basato sulle adesioni</div>
           </div>
           <div
               style={{
@@ -108,20 +118,22 @@ React.useEffect(() => {
           Vado io a fare la spesa
         </button>
 
-              <button
-                  type="button"
-                  style={{
-                      ...styles.secondaryBtn,
-                      minWidth: 240,
-                      maxWidth: 320,
-                      border: "1px solid #b7c9d7",
-                  }}
-                  onClick={() =>
-                      setScreen({ name: "piccolaRichiesta", fromTab: "home" })
-                  }
-              >
-                  Chiedi se qualcuno sta andando
-              </button>
+              {!haAderito && (
+  <button
+    type="button"
+    style={{
+      ...styles.secondaryBtn,
+      minWidth: 240,
+      maxWidth: 320,
+      border: "1px solid #b7c9d7",
+    }}
+    onClick={() =>
+      setScreen({ name: "piccolaRichiesta", fromTab: "home" })
+    }
+  >
+    Chiedi se qualcuno sta andando
+  </button>
+)}
       </div>
 
           <div
