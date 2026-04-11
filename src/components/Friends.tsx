@@ -492,7 +492,7 @@ export default function Friends({
                     ))}
 
                     
-
+{/*
                     {!selecting && !hasOnlyMeInCircle && (
                         <div style={{ marginTop: 40, marginBottom: 14 }}>
                             <div
@@ -753,6 +753,7 @@ export default function Friends({
                     )}
                 </div>
             )}
+            */}
                   <div
               style={{
                   ...styles.muted,

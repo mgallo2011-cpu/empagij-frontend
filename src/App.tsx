@@ -1745,7 +1745,7 @@ const content = (() => {
                               throw new Error(postOut?.error || `HTTP ${postRes.status}`);
                           }
 
-                          alert("Richiesta inviata");
+                          alert("Ti sei aggiunto al passaggio");
                           setScreen({ name: "tabs", tab: "home" });
                       } catch (err: any) {
                           console.error("Errore invio richiesta da passaggio:", err);
@@ -3369,12 +3369,14 @@ function JoinPassaggio({
         <button style={styles.backBtn} onClick={onBack}>
           ←
         </button>
-              <div style={styles.brand}>SpesaConTe</div>
+        <div style={styles.brand}>SpesaConTe</div>
         <div style={styles.avatar}>🙂</div>
       </div>
 
-      <h2 style={styles.h2}>Mi associo a questo passaggio</h2>
-      <p style={styles.muted}>Scrivi cosa ti serve così chi sta andando può aggiungerlo.</p>
+      <h2 style={styles.h2}>Mi aggiungo a questo passaggio</h2>
+      <p style={styles.muted}>
+        Scrivi cosa ti serve così chi sta andando può aggiungerlo alla spesa.
+      </p>
 
       <textarea
         style={{ ...styles.input, height: 90 }}
@@ -3388,7 +3390,7 @@ function JoinPassaggio({
         disabled={!text.trim()}
         onClick={() => onSend(text.trim())}
       >
-        Invia richiesta
+        Mi aggiungo
       </button>
     </div>
   );
