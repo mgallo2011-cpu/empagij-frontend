@@ -579,6 +579,7 @@ export default function Friends({
                                                  )}
                         </div>
                     )}
+                        */}
                     {!selecting && myInvites.length > 0 && (
                         <div style={{ marginTop: 60, marginBottom: 12 }}>
                             <div
@@ -753,7 +754,7 @@ export default function Friends({
                     )}
                 </div>
             )}
-            */}
+        
                   <div
               style={{
                   ...styles.muted,
