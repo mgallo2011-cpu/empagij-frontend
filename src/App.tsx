@@ -876,33 +876,31 @@ useEffect(() => {
         Array.isArray(out.items) ? out.items : []
       );
 
-      const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
-
-      const mapped = allItems
-        .filter((x) => x.status === "in_corso")
-        .filter((x) => {
-          const t = x.created_at ? new Date(x.created_at).getTime() : 0;
-          return t >= cutoff;
-        })
-        .map((x) => ({
-          id: x.id,
-          circleId: x.circle_id,
-          circleName: circles.find((c) => c.id === x.circle_id)?.name || "",
-          fromName: x.from_name,
-          fromUserId: x.from_user_id,
-          producerId: x.producer_id,
-          producerName: x.producer_name,
-          producerCategory: x.producer_category,
-          whenLabel: x.when_label,
-          dateISO: x.date_iso || undefined,
-          note: x.note || "",
-          createdAtISO: x.created_at
-            ? new Date(x.created_at).toISOString()
-            : new Date().toISOString(),
-          createdAt: x.created_at
-            ? new Date(x.created_at).getTime()
-            : Date.now(),
-        }));
+        const mapped = allItems
+            .filter((x) => x.status !== "eliminato" && x.status !== "deleted")
+            .map((x) => ({
+                id: x.id,
+                circleId: x.circle_id,
+                circleName: circles.find((c) => c.id === x.circle_id)?.name || "",
+                fromName: x.from_name || "",
+                fromUserId: x.from_user_id || "",
+                producerId: x.producer_id || "",
+                producerName: x.producer_name || "",
+                producerCategory: x.producer_category || "",
+                whenLabel:
+                    x.when_label === "Oggi" || x.when_label === "Domani" || x.when_label === "Altra data"
+                        ? x.when_label
+                        : "Oggi",
+                dateISO: x.date_iso || undefined,
+                note: x.note || "",
+                createdAtISO: x.created_at
+                    ? new Date(x.created_at).toISOString()
+                    : new Date().toISOString(),
+                createdAt: x.created_at
+                    ? new Date(x.created_at).getTime()
+                    : Date.now(),
+            }))
+            .sort((a, b) => b.createdAt - a.createdAt);
 
       if (!alive) return;
 
