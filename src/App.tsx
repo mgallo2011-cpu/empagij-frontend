@@ -323,6 +323,23 @@ const LS_PASSAGGI = "empagij_passaggi_v1";
 const LS_PRODUCERS = "empagij_producers_v1";
 const LS_USER = "empagij_user";
 const LS_TOKEN = "empagij_token";
+function getIntroSeenKey(userId?: string) {
+    return userId ? `empagij_hasSeenIntro_${userId}` : "empagij_hasSeenIntro";
+}
+
+function hasSeenIntroForUser(userId?: string) {
+    try {
+        return localStorage.getItem(getIntroSeenKey(userId)) === "1";
+    } catch {
+        return false;
+    }
+}
+
+function markIntroSeenForUser(userId?: string) {
+    try {
+        localStorage.setItem(getIntroSeenKey(userId), "1");
+    } catch { }
+}
 
 function loadPassaggi(): Passaggio[] {
   try {
@@ -455,8 +472,21 @@ export default function App() {
     const [introStep, setIntroStep] = useState<1 | 2 | 3>(1);
     const [introAction, setIntroAction] = useState<"see" | "go" | null>(null);
     const [screen, setScreen] = useState<Screen>(() => {
-        const seen = localStorage.getItem("empagij_hasSeenIntro") === "1";
-        return seen ? { name: "tabs", tab: "home" } : { name: "intro" };
+        try {
+            const token = localStorage.getItem(LS_TOKEN) || "";
+            const rawUser = localStorage.getItem(LS_USER);
+
+            if (!token || !rawUser) {
+                return { name: "intro" };
+            }
+
+            const parsedUser = JSON.parse(rawUser) as AuthUser;
+            const seen = hasSeenIntroForUser(parsedUser.id);
+
+            return seen ? { name: "tabs", tab: "home" } : { name: "intro" };
+        } catch {
+            return { name: "intro" };
+        }
     });
     useEffect(() => {
         if (screen.name === "intro") {
@@ -1538,7 +1568,7 @@ const content = (() => {
                     passaggi.filter((p) => p.circleId === activeCircleId).length > 0;
 
                 if (hasVisiblePassaggi) {
-                    localStorage.setItem("empagij_hasSeenIntro", "1");
+                    markIntroSeenForUser(user?.id);
                     setScreen({ name: "tabs", tab: "home" });
                     return;
                 }
@@ -1549,7 +1579,7 @@ const content = (() => {
                 setIntroAction("go");
 
                 if (activeCircleId) {
-                    localStorage.setItem("empagij_hasSeenIntro", "1");
+                    markIntroSeenForUser(user?.id);
                     setScreen({ name: "producersFollowed", mode: "stoAndando" });
                     return;
                 }
@@ -1558,7 +1588,7 @@ const content = (() => {
             }}
             onAskIfSomeoneGoes={() => {
                 if (activeCircleId) {
-                    localStorage.setItem("empagij_hasSeenIntro", "1");
+                    markIntroSeenForUser(user?.id);
                     setScreen({ name: "piccolaRichiesta", fromTab: "home" });
                     return;
                 }
@@ -1566,7 +1596,7 @@ const content = (() => {
                 setIntroStep(3);
             }}
             onInvitePeople={() => {
-                localStorage.setItem("empagij_hasSeenIntro", "1");
+                markIntroSeenForUser(user?.id);
                 setScreen({ name: "cerchia", mode: "manage", from: "home" });
             }}
         />
@@ -1598,6 +1628,9 @@ const content = (() => {
           return (
               <StoAndando
                   producer={producer}
+                  circles={circles}
+                  activeCircleId={activeCircleId}
+                  onChangeActiveCircle={setActiveCircleId}
                   onBack={() => {
                       if (fromTab === "home") {
                           setScreen({ name: "producersFollowed", mode: "stoAndando" });
@@ -1795,6 +1828,7 @@ const content = (() => {
           return (
               <Friends
                   onBack={() => setScreen({ name: "tabs", tab: "home" })}
+                  onOpenCerchiaPassaggi={() => setScreen({ name: "cerchiaPassaggi" })}
                   mode={(screen as any).mode || "manage"}
                   producerId={(screen as any).producerId}
                   producers={producers}
@@ -1858,32 +1892,33 @@ const content = (() => {
 
       case "cerchia":
   return (
-    <Friends
-  onBack={() => setScreen({ name: "tabs", tab: "home" })}
-  mode={(screen as any).mode || "manage"}
-  producerId={(screen as any).producerId}
-  producers={producers}
-  onCreateRequest={handleCreateRichiesta}
-  richieste={richieste.filter((r) => r.circleId === activeCircleId)}
-  myName={myName}
-  onRespondRequest={handleRespondRequest}
+      <Friends
+          onBack={() => setScreen({ name: "tabs", tab: "home" })}
+          onOpenCerchiaPassaggi={() => setScreen({ name: "cerchiaPassaggi" })}
+          mode={(screen as any).mode || "manage"}
+          producerId={(screen as any).producerId}
+          producers={producers}
+          onCreateRequest={handleCreateRichiesta}
+          richieste={richieste.filter((r) => r.circleId === activeCircleId)}
+          myName={myName}
+          onRespondRequest={handleRespondRequest}
           isCreatingRichiesta={isCreatingRichiesta}
           richiestaError={richiestaError}
-  onDeleteRequest={handleDeleteRichiesta}
-      circleMembers={circleMembers}
-      setCircleMembers={setCircleMembers}
-      myInvites={myInvites}
-      userId={user?.id || ""}
-      setMyInvites={setMyInvites}
-      refreshCircles={refreshCircles}
-      circles={circles}
-activeCircleId={activeCircleId}
-onChangeActiveCircle={setActiveCircleId}
-styles={styles}
-apiBase={API_BASE}
-getBearerHeaders={getBearerHeaders}
-apiGet={apiGet}
-    />
+          onDeleteRequest={handleDeleteRichiesta}
+          circleMembers={circleMembers}
+          setCircleMembers={setCircleMembers}
+          myInvites={myInvites}
+          userId={user?.id || ""}
+          setMyInvites={setMyInvites}
+          refreshCircles={refreshCircles}
+          circles={circles}
+          activeCircleId={activeCircleId}
+          onChangeActiveCircle={setActiveCircleId}
+          styles={styles}
+          apiBase={API_BASE}
+          getBearerHeaders={getBearerHeaders}
+          apiGet={apiGet}
+      />
   );
           case "disponibilita":
             return (
@@ -1998,8 +2033,7 @@ apiGet={apiGet}
                         setIntroStep(1);
                         setIntroAction(null);
 
-                        const seen = localStorage.getItem("empagij_hasSeenIntro") === "1";
-                        setScreen(seen ? { name: "tabs", tab: "home" } : { name: "intro" });
+                                 setScreen({ name: "intro" });
                     }}
                 />
             </div>
@@ -2017,8 +2051,8 @@ apiGet={apiGet}
                         setIntroStep(1);
                         setIntroAction(null);
 
-                        const seen = localStorage.getItem("empagij_hasSeenIntro") === "1";
-                        setScreen(seen ? { name: "tabs", tab: "home" } : { name: "intro" });
+                                 const seen = hasSeenIntroForUser(u.id);
+                                 setScreen(seen ? { name: "tabs", tab: "home" } : { name: "intro" });
                     }}
                 />
             </div>
@@ -2099,293 +2133,292 @@ function Intro({
     <div style={styles.brand}>SpesaConTe</div>
 </div>
 
-       {introStep === 1 && (
-    <>
-        <h2
-            style={{
-                ...styles.h2,
-                textAlign: "center",
-                marginTop: 6,
-                marginBottom: 18,
-                color: "#E57A1F",
-            }}
-        >
-            La spesa insieme conviene
-        </h2>
+            {introStep === 1 && (
+                <>
+                    <h2
+                        style={{
+                            ...styles.h2,
+                            textAlign: "center",
+                            marginTop: 6,
+                            marginBottom: 18,
+                            color: "#E57A1F",
+                        }}
+                    >
+                        La spesa insieme conviene
+                    </h2>
 
-        <div
-            style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: 14,
-            }}
-        >
-            <div
-                style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "8px 14px",
-                    borderRadius: 999,
-                    background: "#fffdf7",
-                    border: "1px solid #d8e7cb",
-                    fontWeight: 800,
-                    fontSize: 14,
-                    color: "#35513a",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-                }}
-            >
-                <span>📍</span>
-                <span>Provincia attiva: {selectedProvinceLabel}</span>
-            </div>
-        </div>
+                    <div
+                        style={{
+                            textAlign: "center",
+                            fontSize: 15,
+                            fontWeight: 400,
+                            color: "#2F5D35",
+                            marginBottom: 8,
+                        }}
+                    >
+                        Organizzati con altri nella tua zona
+                    </div>
 
-       <div
-    style={{
-        position: "relative",
-        minHeight: 280,
-        borderRadius: 24,
-        background: "#FFFFFF",
-        border: "1px solid #DCE8D3",
-        overflow: "hidden",
-        padding: "22px 16px 28px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-    }}
->
-    <div
-        style={{
-            position: "relative",
-            height: 170,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-        }}
-    >
-        <div
-            style={{
-                position: "relative",
-                width: 280,
-                height: 170,
-            }}
-        >
-            <img
-                src="/intro-provincia-foggia.png"
-                alt="Territorio"
-                style={{
-                    position: "absolute",
-                    left: "50%",
-                    top: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: 220,
-                    maxWidth: "100%",
-                    height: "auto",
-                    opacity: 0.96,
-                }}
-            />
+                    <div
+                        style={{
+                            position: "relative",
+                            minHeight: 280,
+                            borderRadius: 24,
+                            background: "#FFFFFF",
+                            border: "1px solid #DCE8D3",
+                            overflow: "hidden",
+                            padding: "22px 16px 28px",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                        }}
+                    >
+                        <div
+                            style={{
+                                position: "relative",
+                                height: 170,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    position: "relative",
+                                    width: 280,
+                                    height: 170,
+                                }}
+                            >
+                                <img
+                                    src="/intro-provincia-foggia.png"
+                                    alt="Territorio"
+                                    style={{
+                                        position: "absolute",
+                                        left: "50%",
+                                        top: "50%",
+                                        transform: "translate(-50%, -50%)",
+                                        width: 220,
+                                        maxWidth: "100%",
+                                        height: "auto",
+                                        opacity: 0.96,
+                                    }}
+                                />
 
-            <div
-                style={{
-                    position: "absolute",
-                    left: 48,
-                    top: 38,
-                    width: 34,
-                    height: 34,
-                    borderRadius: 12,
-                    background: "#FFF7D6",
-                    display: "grid",
-                    placeItems: "center",
-                    fontSize: 20,
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.10)",
-                }}
-            >
-                🧀
-            </div>
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        left: 48,
+                                        top: 38,
+                                        width: 34,
+                                        height: 34,
+                                        borderRadius: 12,
+                                        background: "#FFF7D6",
+                                        display: "grid",
+                                        placeItems: "center",
+                                        fontSize: 20,
+                                        boxShadow: "0 2px 6px rgba(0,0,0,0.10)",
+                                    }}
+                                >
+                                    🧀
+                                </div>
 
-            <div
-                style={{
-                    position: "absolute",
-                    right: 48,
-                    top: 34,
-                    width: 34,
-                    height: 34,
-                    borderRadius: 12,
-                    background: "#FFF4F2",
-                    display: "grid",
-                    placeItems: "center",
-                    fontSize: 20,
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.10)",
-                }}
-            >
-                🍎
-            </div>
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        right: 48,
+                                        top: 34,
+                                        width: 34,
+                                        height: 34,
+                                        borderRadius: 12,
+                                        background: "#FFF4F2",
+                                        display: "grid",
+                                        placeItems: "center",
+                                        fontSize: 20,
+                                        boxShadow: "0 2px 6px rgba(0,0,0,0.10)",
+                                    }}
+                                >
+                                    🍎
+                                </div>
 
-            <div
-                style={{
-                    position: "absolute",
-                    left: 72,
-                    bottom: 28,
-                    width: 34,
-                    height: 34,
-                    borderRadius: 12,
-                    background: "#F6F0FF",
-                    display: "grid",
-                    placeItems: "center",
-                    fontSize: 20,
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.10)",
-                }}
-            >
-                🍷
-            </div>
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        left: 72,
+                                        bottom: 28,
+                                        width: 34,
+                                        height: 34,
+                                        borderRadius: 12,
+                                        background: "#F6F0FF",
+                                        display: "grid",
+                                        placeItems: "center",
+                                        fontSize: 20,
+                                        boxShadow: "0 2px 6px rgba(0,0,0,0.10)",
+                                    }}
+                                >
+                                    🍷
+                                </div>
 
-            <div
-                style={{
-                    position: "absolute",
-                    right: 62,
-                    bottom: 26,
-                    width: 34,
-                    height: 34,
-                    borderRadius: 12,
-                    background: "#FFF1DF",
-                    display: "grid",
-                    placeItems: "center",
-                    fontSize: 20,
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.10)",
-                }}
-            >
-                🥖
-            </div>
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        right: 62,
+                                        bottom: 26,
+                                        width: 34,
+                                        height: 34,
+                                        borderRadius: 12,
+                                        background: "#FFF1DF",
+                                        display: "grid",
+                                        placeItems: "center",
+                                        fontSize: 20,
+                                        boxShadow: "0 2px 6px rgba(0,0,0,0.10)",
+                                    }}
+                                >
+                                    🥖
+                                </div>
 
-        <div
-    style={{
-        position: "absolute",
-        left: "36%",
-        top: "52%",
-        transform: "translate(-50%, -50%)",
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-    }}
->
-    <div
-        style={{
-            width: 18,
-            height: 2,
-            background: "#9CCFE8",
-            borderRadius: 999,
-            opacity: 0.9,
-        }}
-    />
-    <div
-        style={{
-            width: 10,
-            height: 2,
-            background: "#9CCFE8",
-            borderRadius: 999,
-            opacity: 0.7,
-        }}
-    />
-    <div
-        style={{
-            width: 50,
-            height: 50,
-            borderRadius: 16,
-            background: "#BFE7FF",
-            border: "2px solid #8CCDF2",
-            display: "grid",
-            placeItems: "center",
-            fontSize: 28,
-            boxShadow: "0 4px 10px rgba(0,0,0,0.16)",
-        }}
-    >
-        <div
-            style={{
-                transform: "scaleX(-1)",
-                lineHeight: 1,
-            }}
-        >
-            🚗
-        </div>
-    </div>
-</div>
-        </div>
-    </div>
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        left: "36%",
+                                        top: "52%",
+                                        transform: "translate(-50%, -50%)",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 8,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            width: 18,
+                                            height: 2,
+                                            background: "#9CCFE8",
+                                            borderRadius: 999,
+                                            opacity: 0.9,
+                                        }}
+                                    />
+                                    <div
+                                        style={{
+                                            width: 10,
+                                            height: 2,
+                                            background: "#9CCFE8",
+                                            borderRadius: 999,
+                                            opacity: 0.7,
+                                        }}
+                                    />
+                                    <div
+                                        style={{
+                                            width: 50,
+                                            height: 50,
+                                            borderRadius: 16,
+                                            background: "#BFE7FF",
+                                            border: "2px solid #8CCDF2",
+                                            display: "grid",
+                                            placeItems: "center",
+                                            fontSize: 28,
+                                            boxShadow: "0 4px 10px rgba(0,0,0,0.16)",
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                transform: "scaleX(-1)",
+                                                lineHeight: 1,
+                                            }}
+                                        >
+                                            🚗
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-    <div
-        style={{
-            position: "relative",
-            marginTop: 30,
-            textAlign: "center",
-            fontSize: 15,
-            fontWeight: 800,
-            color: "#2F5D35",
-        }}
-    >
-        Organizzati con altri nella tua zona
-    </div>
-</div>
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                marginTop: 22,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    padding: "8px 14px",
+                                    borderRadius: 999,
+                                    background: "#fffdf7",
+                                    border: "1px solid #d8e7cb",
+                                    fontWeight: 800,
+                                    fontSize: 14,
+                                    color: "#35513a",
+                                    boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                                }}
+                            >
+                                <span>📍</span>
+                                <span>Provincia attiva: {selectedProvinceLabel}</span>
+                            </div>
+                        </div>
+                    </div>
 
-       <div
-    style={{
-        marginTop: 60,
-        textAlign: "center",
-        fontSize: 16,
-        fontWeight: 700,
-        color: "#2d2d2d",
-    }}
->
-    Meno viaggi, meno benzina, più tempo
-</div>
+                    <div
+                        style={{
+                            marginTop: 60,
+                            textAlign: "center",
+                            fontSize: 16,
+                            fontWeight: 700,
+                            color: "#2d2d2d",
+                        }}
+                    >
+                        Meno viaggi e benzina, più tempo libero
+                    </div>
 
-        <div style={{ height: 34 }} />
+                    <div style={{ height: 34 }} />
 
-        <div
-            style={{
-                display: "grid",
-                gap: 14,
-                justifyItems: "center",
-            }}
-        >
-            <button
-                type="button"
-                style={{
-                    ...styles.primaryBtn,
-                    width: "min(360px, 100%)",
-                    background: "#1F6B45",
-                    boxShadow: "0 8px 18px rgba(31,107,69,0.22)",
-                }}
-                onClick={onChooseSee}
-            >
-                Vedi chi sta andando
-            </button>
+                    <div
+                        style={{
+                            display: "grid",
+                            gap: 14,
+                            justifyItems: "center",
+                        }}
+                    >
+                        <button
+                            type="button"
+                            style={{
+                                ...styles.primaryBtn,
+                                width: "min(360px, 100%)",
+                                background: "#1F6B45",
+                                boxShadow: "0 8px 18px rgba(31,107,69,0.22)",
+                            }}
+                            onClick={onChooseSee}
+                        >
+                            Vedi chi sta andando
+                        </button>
 
-            <div
-                style={{
-                    fontSize: 14,
-                    fontWeight: 700,
-                    color: "#5A5A5A",
-                    textAlign: "center",
-                }}
-            >
-                Nessuno in viaggio?
-            </div>
+                        <div
+                            style={{
+                                fontSize: 14,
+                                fontWeight: 700,
+                                color: "#5A5A5A",
+                                textAlign: "center",
+                            }}
+                        >
+                            Nessuno in viaggio?
+                        </div>
 
-            <button
-                type="button"
-                style={{
-                    ...styles.secondaryBtn,
-                    width: "min(320px, 100%)",
-                    background: "#FFD66B",
-                    color: "#4E3A00",
-                    fontWeight: 800,
-                    boxShadow: "0 6px 14px rgba(255,214,107,0.24)",
-                }}
-                onClick={onChooseGo}
-            >
-                Pubblica tu un passaggio
-            </button>
-        </div>
-    </>
-)}
+                        <button
+                            type="button"
+                            style={{
+                                ...styles.secondaryBtn,
+                                width: "min(320px, 100%)",
+                                background: "#FFD66B",
+                                color: "#4E3A00",
+                                fontWeight: 800,
+                                boxShadow: "0 6px 14px rgba(255,214,107,0.24)",
+                            }}
+                            onClick={onChooseGo}
+                        >
+                            Fai partire tu un passaggio
+                        </button>
+                    </div>
+                </>
+            )}
 
             {introStep === 2 && (
                 <>
@@ -2451,21 +2484,27 @@ function Intro({
 
 
 function StoAndando({
-  producer,
-  onBack,
-  onStoAndando,
-  onUpdateProducer,
-  onDeleteProducer,
+    producer,
+    circles,
+    activeCircleId,
+    onChangeActiveCircle,
+    onBack,
+    onStoAndando,
+    onUpdateProducer,
+    onDeleteProducer,
 }: {
-  producer: Producer;
-  onBack: () => void;
-        onStoAndando: (draft: {
-            when: WhenChoice;
-            dateISO?: string;
-            note?: string;
-        }) => Promise<void>;
-  onUpdateProducer: (p: Producer) => void;
-  onDeleteProducer: (id: string) => void;
+    producer: Producer;
+    circles: Circle[];
+    activeCircleId: string | null;
+    onChangeActiveCircle: (circleId: string) => void;
+    onBack: () => void;
+    onStoAndando: (draft: {
+        when: WhenChoice;
+        dateISO?: string;
+        note?: string;
+    }) => Promise<void>;
+    onUpdateProducer: (p: Producer) => void;
+    onDeleteProducer: (id: string) => void;
 }) {
   const [whenChoice, setWhenChoice] = useState<WhenChoice>("oggi");
   const [dateISO, setDateISO] = useState<string>(() => {
@@ -2511,10 +2550,36 @@ function StoAndando({
         Avvisa la tua cerchia che stai passando da un produttore.
       </p>
 
-      <div style={{ height: 12 }} />
+          <div style={{ height: 12 }} />
 
-      {/* Produttore */}
-      <div style={styles.card}>
+          <div style={styles.card}>
+              <div style={styles.cardTitle}>In quale cerchia vuoi pubblicarlo?</div>
+
+              {circles.length > 1 ? (
+                  <div style={{ marginTop: 10 }}>
+                      <select
+                          value={activeCircleId || ""}
+                          onChange={(e) => onChangeActiveCircle(e.target.value)}
+                          style={styles.input}
+                      >
+                          {circles.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                  {c.name}
+                              </option>
+                          ))}
+                      </select>
+                  </div>
+              ) : (
+                  <div style={{ ...styles.cardSub, marginTop: 8 }}>
+                      {circles[0]?.name || "Nessuna cerchia selezionata"}
+                  </div>
+              )}
+          </div>
+
+          <div style={{ height: 14 }} />
+
+          {/* Produttore */}
+          <div style={styles.card}>
         <div style={styles.cardTop}>
          <div style={styles.iconSquare}>
                       {CATEGORY_META[producer.category]?.icon || "📍"}
@@ -2959,30 +3024,56 @@ function CerchiaPassaggi({
     currentUserId: string;
 }) {
     const hasJoinedPassaggio = (passaggio: Passaggio) => {
-    return richieste.some((r) => {
-        if (r.fromUserId !== currentUserId) return false;
-        if (r.producerId !== passaggio.producerId) return false;
-        return (r.targetUserIds || []).includes(passaggio.fromUserId);
+        return richieste.some((r) => {
+            if (r.fromUserId !== currentUserId) return false;
+            if (r.producerId !== passaggio.producerId) return false;
+            return (r.targetUserIds || []).includes(passaggio.fromUserId);
+        });
+    };
+
+    const getCircleCardStyle = (circleId?: string): React.CSSProperties => {
+        const palettes = [
+            { background: "#dff0df", border: "1px solid #9fc49f" },
+            { background: "#fde7d2", border: "1px solid #e1b27c" },
+            { background: "#dfeafb", border: "1px solid #9fb9e8" },
+            { background: "#efe0f8", border: "1px solid #c39cdd" },
+            { background: "#faefc9", border: "1px solid #d8bd63" },
+        ];
+
+        const source = circleId || "cerchia";
+        let sum = 0;
+
+        for (let i = 0; i < source.length; i++) {
+            sum += source.charCodeAt(i);
+        }
+
+        return palettes[sum % palettes.length];
+    };
+
+    const [hiddenIds, setHiddenIds] = useState<string[]>(() => {
+        try {
+            return JSON.parse(localStorage.getItem("empagij_hidden_passaggi") || "[]");
+        } catch {
+            return [];
+        }
     });
-};
-const getCircleCardStyle = (circleId?: string): React.CSSProperties => {
-    const palettes = [
-        { background: "#dff0df", border: "1px solid #9fc49f" },
-        { background: "#fde7d2", border: "1px solid #e1b27c" },
-        { background: "#dfeafb", border: "1px solid #9fb9e8" },
-        { background: "#efe0f8", border: "1px solid #c39cdd" },
-        { background: "#faefc9", border: "1px solid #d8bd63" },
-    ];
 
-    const source = circleId || "cerchia";
-    let sum = 0;
+    const hidePassaggio = (id: string) => {
+        if (hiddenIds.includes(id)) return;
 
-    for (let i = 0; i < source.length; i++) {
-        sum += source.charCodeAt(i);
-    }
+        const updated = [...hiddenIds, id];
+        setHiddenIds(updated);
+        localStorage.setItem("empagij_hidden_passaggi", JSON.stringify(updated));
+    };
 
-    return palettes[sum % palettes.length];
-};
+    const restoreHiddenPassaggi = () => {
+        setHiddenIds([]);
+        localStorage.removeItem("empagij_hidden_passaggi");
+    };
+
+    const visiblePassaggi = passaggi.filter((p) => !hiddenIds.includes(p.id));
+    const hiddenCount = hiddenIds.filter((id) => passaggi.some((p) => p.id === id)).length;
+
     return (
         <div style={styles.page}>
             <div style={styles.headerRow}>
@@ -2994,18 +3085,84 @@ const getCircleCardStyle = (circleId?: string): React.CSSProperties => {
 
             <h2 style={styles.h2}>Chi sta andando?</h2>
 
-            <div style={{ ...styles.muted, marginBottom: 12 }}>
+            <div style={{ ...styles.muted, marginBottom: 10 }}>
                 Qui vedi i passaggi pubblicati dalle persone della tua cerchia.
             </div>
 
-            {passaggi.length > 0 && (
-                <button
-                    type="button"
-                    style={{ ...styles.primaryBtn, marginBottom: 14 }}
-                    onClick={onAddPassaggio}
+            {hiddenCount > 0 && (
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 10,
+                        marginBottom: 14,
+                        padding: "10px 12px",
+                        borderRadius: 12,
+                        background: "#FFF7E8",
+                        border: "1px solid #E7C27A",
+                    }}
                 >
-                    + Pubblica un passaggio
-                </button>
+                    <div
+                        style={{
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: "#6B4A00",
+                        }}
+                    >
+                        Hai nascosto {hiddenCount} passagg{hiddenCount === 1 ? "io" : "i"}
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={restoreHiddenPassaggi}
+                        style={{
+                            border: "none",
+                            background: "#FFFDF9",
+                            color: "#6B5A2B",
+                            cursor: "pointer",
+                            fontSize: 13,
+                            fontWeight: 800,
+                            padding: "9px 12px",
+                            borderRadius: 999,
+                            boxShadow: "0 4px 10px rgba(244,185,66,0.18)",
+                        }}
+                    >
+                        Mostra passaggi nascosti
+                    </button>
+                </div>
+            )}
+
+            {passaggi.length > 0 && (
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 14,
+                        gap: 10,
+                    }}
+                >
+                    <div />
+
+                    <button
+                        type="button"
+                        style={{
+                            border: "none",
+                            background: "#F4B942",
+                            color: "#4E3200",
+                            cursor: "pointer",
+                            fontSize: 14,
+                            fontWeight: 800,
+                            padding: "10px 14px",
+                            borderRadius: 999,
+                            boxShadow: "0 4px 10px rgba(244,185,66,0.24)",
+                        }}
+                        onClick={onAddPassaggio}
+                    >
+                        + Pubblica un passaggio
+                    </button>
+                </div>
             )}
 
             {passaggi.length === 0 ? (
@@ -3025,18 +3182,25 @@ const getCircleCardStyle = (circleId?: string): React.CSSProperties => {
                         Pubblica il primo passaggio
                     </button>
                 </div>
+            ) : visiblePassaggi.length === 0 ? (
+                <div style={styles.card}>
+                    <div style={styles.cardTitle}>Hai nascosto tutti i passaggi</div>
+                    <div style={{ ...styles.muted, marginTop: 6 }}>
+                        Puoi ripristinarli quando vuoi con il tasto qui sopra.
+                    </div>
+                </div>
             ) : (
                 <div style={{ display: "grid", gap: 12 }}>
-                    {passaggi.map((p) => (
+                    {visiblePassaggi.map((p) => (
                         <div
-    key={p.id}
-   style={{
-    ...styles.card,
-    ...getCircleCardStyle(p.circleId),
-    cursor: "pointer",
-}}
-    onClick={() => onOpenJoinPassaggio(p.id)}
->
+                            key={p.id}
+                            style={{
+                                ...styles.card,
+                                ...getCircleCardStyle(p.circleId),
+                                cursor: "pointer",
+                            }}
+                            onClick={() => onOpenJoinPassaggio(p.id)}
+                        >
                             <div style={styles.cardTop}>
                                 <div style={styles.iconCircle}>🚗</div>
 
@@ -3044,19 +3208,21 @@ const getCircleCardStyle = (circleId?: string): React.CSSProperties => {
                                     <div style={styles.cardTitle}>
                                         {p.producerName || "Produttore"}
                                     </div>
+
                                     {p.circleName && (
-    <div style={{ ...styles.muted, fontSize: 12, marginTop: 2 }}>
-        Cerchia: {p.circleName}
-    </div>
-)}
+                                        <div style={{ ...styles.muted, fontSize: 12, marginTop: 2 }}>
+                                            Cerchia: {p.circleName}
+                                        </div>
+                                    )}
+
                                     <div style={styles.cardSub}>
                                         Da: {p.fromName?.trim() ? p.fromName : myName}
                                     </div>
 
                                     <div style={styles.cardSub}>
-    {p.whenLabel}
-    {p.dateISO ? ` • ${formatDateIT(p.dateISO)}` : ""}
-</div>
+                                        {p.whenLabel}
+                                        {p.dateISO ? ` • ${formatDateIT(p.dateISO)}` : ""}
+                                    </div>
 
                                     {p.note?.trim() ? (
                                         <div style={styles.cardQuote}>
@@ -3064,43 +3230,62 @@ const getCircleCardStyle = (circleId?: string): React.CSSProperties => {
                                         </div>
                                     ) : null}
 
-                                 {p.fromUserId !== currentUserId ? (
-    hasJoinedPassaggio(p) ? (
-        <div
-            style={{
-                marginTop: 10,
-                fontSize: 13,
-                fontWeight: 700,
-                color: "#1f7a3d",
-            }}
-        >
-            ✅ Hai aderito a questo passaggio
-        </div>
-    ) : (
-        <div
-            style={{
-                marginTop: 10,
-                fontSize: 13,
-                fontWeight: 700,
-                color: "#2f4a3d",
-            }}
-        >
-            Tocca per associarti a questo passaggio
-        </div>
-    )
-) : null}
+                                    {p.fromUserId !== currentUserId ? (
+                                        hasJoinedPassaggio(p) ? (
+                                            <div
+                                                style={{
+                                                    marginTop: 10,
+                                                    fontSize: 13,
+                                                    fontWeight: 700,
+                                                    color: "#1f7a3d",
+                                                }}
+                                            >
+                                                ✅ Hai aderito a questo passaggio
+                                            </div>
+                                        ) : (
+                                            <div
+                                                style={{
+                                                    marginTop: 10,
+                                                    fontSize: 14,
+                                                    fontWeight: 800,
+                                                    color: "#2f7a6d",
+                                                }}
+                                            >
+                                                👉 Aggiungi la tua richiesta
+                                            </div>
+                                        )
+                                    ) : null}
                                 </div>
 
-                                <button
-                                    type="button"
-                                    style={styles.btnSecondary}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onDeletePassaggio(p.id);
-                                    }}
-                                >
-                                    Elimina passaggio
-                                </button>
+                                <div style={{ display: "flex", gap: 8 }}>
+                                    {p.fromUserId === currentUserId ? (
+                                        <button
+                                            type="button"
+                                            style={styles.btnSecondary}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDeletePassaggio(p.id);
+                                            }}
+                                        >
+                                            Elimina
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            style={{
+                                                ...styles.btnSecondary,
+                                                background: "#f3f3f3",
+                                                color: "#555",
+                                            }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                hidePassaggio(p.id);
+                                            }}
+                                        >
+                                            Nascondi
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}

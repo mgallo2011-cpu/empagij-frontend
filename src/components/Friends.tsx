@@ -42,8 +42,9 @@ type Circle = {
 };
 
 type FriendsProps = {
-  onBack: () => void;
-  mode?: "manage" | "selectForRequest";
+    onBack: () => void;
+    onOpenCerchiaPassaggi?: () => void;
+    mode?: "manage" | "selectForRequest";
   producerId?: string;
   producers: Producer[];
   onCreateRequest?: (payload: {
@@ -79,6 +80,7 @@ type FriendsProps = {
 
 export default function Friends({
     onBack,
+    onOpenCerchiaPassaggi,
     mode = "manage",
     producerId,
     producers = [],
@@ -160,8 +162,38 @@ export default function Friends({
         <div style={styles.avatar}>🙂</div>
       </div>
 
-            <h2 style={styles.h2}>Chi fa la spesa con te</h2>
+          <div
+              style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  marginBottom: 14,
+              }}
+          >
+              <h2 style={{ ...styles.h2, margin: 0 }}>Chi fa la spesa con te</h2>
 
+              {!selecting && !hasNoCircles && (
+                  <button
+                      type="button"
+                      onClick={onOpenCerchiaPassaggi}
+                      style={{
+                          ...styles.secondaryBtn,
+                          minWidth: 0,
+                          maxWidth: "none",
+                          padding: "8px 12px",
+                          background: "#FEFBF4",
+                          color: "#2F5D35",
+                          border: "1px solid #E6D6B3",
+                          fontSize: 13,
+                          fontWeight: 700,
+                      }}
+                  >
+                      Chi sta andando?
+                  </button>
+              )}
+          </div>
+          
     {hasOnlyMeInCircle && (
     <div>
         <div style={styles.card}>

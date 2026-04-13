@@ -21,13 +21,12 @@ const passaggiConCerchia = passaggi.map((p) => {
   };
 });
 
-const passaggiAttivi = passaggiConCerchia.length;
-const titoloDinamico =
-  passaggiAttivi > 0
-    ? "C’è qualcuno che sta andando: unisciti"
-    : "Nessuno sta andando: puoi iniziare tu";
-const [tripsSaved, setTripsSaved] = React.useState(0);
-const [haAderito, setHaAderito] = React.useState(false);
+    const passaggiAttivi = passaggiConCerchia.length;
+    const titoloDinamico =
+        passaggiAttivi > 0
+            ? "La tua cerchia si sta muovendo..."
+            : "Nessuno sta andando... per ora";
+    const [tripsSaved, setTripsSaved] = React.useState(0);
 
 React.useEffect(() => {
   fetch("https://empagij-backend-delsud.onrender.com/metrics/trips-saved")
@@ -41,15 +40,19 @@ React.useEffect(() => {
       console.error("Trips saved fetch error:", err);
     });
 }, []);
-React.useEffect(() => {
-  const richieste = JSON.parse(localStorage.getItem("empagij_requests") || "[]");
-
-  if (Array.isArray(richieste) && richieste.length > 0) {
-    setHaAderito(true);
-  } else {
-    setHaAderito(false);
-  }
-}, []);
+    React.useEffect(() => {
+    }, []);
+    if (typeof document !== "undefined") {
+        const style = document.createElement("style");
+        style.innerHTML = `
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+    `;
+        document.head.appendChild(style);
+    }
   return (
     <div style={styles.page}>
           <div style={styles.topbar}>
@@ -74,128 +77,144 @@ React.useEffect(() => {
 
       <h2 style={styles.h2}>{titoloDinamico}</h2>
 
-     <div style={styles.cardsCol}>
-  {passaggiAttivi === 0 && (
-    <div
-      style={{
-        ...styles.card,
-        background: "#f4fbf4",
-        border: "1px solid #cfe3cf",
-        cursor: "default",
-      }}
-    >
-      <div style={{ ...styles.cardTitle, marginBottom: 6 }}>
-        Nessuno sta andando al momento
-      </div>
+          <div style={styles.cardsCol}>
+              <div
+                  style={{
+                      ...styles.card,
+                      border: passaggiAttivi > 0 ? "2px solid #F4B942" : styles.card.border,
+                      boxShadow:
+                          passaggiAttivi > 0
+                              ? "0 6px 18px rgba(244,185,66,0.18)"
+                              : styles.card.boxShadow,
+                  }}
+                  onClick={() => setScreen({ name: "cerchiaPassaggi" })}
+              >
+                  {passaggiAttivi > 0 ? (
+                      <>
+                          <div
+                              style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  gap: 12,
+                              }}
+                          >
+                              <div
+                                  style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 10,
+                                      minWidth: 0,
+                                  }}
+                              >
+                                  <div style={{ fontSize: 22 }}>🧺</div>
+                                  <div style={styles.cardTitle}>Chi sta andando?</div>
+                              </div>
 
-      <div style={styles.cardSub}>Bastano 2 persone per iniziare</div>
+                              <div
+                                  style={{
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      minWidth: 30,
+                                      height: 30,
+                                      padding: "0 10px",
+                                      borderRadius: 999,
+                                      background: "#FFF4F2",
+                                      border: "1px solid #F1C7BF",
+                                      color: "#C84A3A",
+                                      fontWeight: 800,
+                                      fontSize: 15,
+                                      flex: "0 0 auto",
+                                      animation: passaggiAttivi > 0 ? "pulse 1.6s ease-in-out infinite" : "none",
+                                  }}
+                              >
+                                  {passaggiAttivi}
+                              </div>
+                          </div>
 
-      <div
-        style={{
-          marginTop: 6,
-          fontSize: 13,
-          color: "#3f3a33",
-        }}
-      >
-        Avvisa la tua cerchia e fate la spesa con un solo viaggio
-      </div>
+                          <div style={{ ...styles.cardSub, marginTop: 6 }}>
+                              Vedi i passaggi attivi nelle tue cerchie
+                          </div>
+                      </>
+                  ) : (
+                      <>
+                              <button
+                                  type="button"
+                                  style={{
+                                      ...styles.primaryBtn,
+                                      marginTop: 0,
+                                      minWidth: 200,
+                                      background: "#F4B942",
+                                      color: "#4E3200",
+                                      boxShadow: "0 6px 16px rgba(244,185,66,0.28)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      gap: 8,
+                                  }}
+                                  onClick={(e) => {
+                                      e.stopPropagation();
+                                      setScreen({ name: "producersFollowed", mode: "stoAndando" });
+                                  }}
+                              >
+                                  <span>🚗</span>
+                                  <span>Fai partire tu il primo passaggio</span>
+                              </button>
 
-      <button
-        type="button"
-        style={{
-          ...styles.primaryBtn,
-          marginTop: 14,
-          minWidth: 200,
-          background: "#F4B942",
-          color: "#4E3200",
-          boxShadow: "0 6px 16px rgba(244,185,66,0.28)",
-        }}
-        onClick={() =>
-          setScreen({ name: "producersFollowed", mode: "stoAndando" })
-        }
-      >
-        Inizia tu un passaggio
-      </button>
-    </div>
-  )}
+                              <div
+                                  style={{
+                                      ...styles.cardSub,
+                                      marginTop: 12,
+                                      textAlign: "center",
+                                  }}
+                              >
+                                  Avvisa la tua cerchia e raccogli le richieste
+                              </div>
+                      </>
+                  )}
+              </div>
 
-  <div
-    style={styles.card}
-    onClick={() => setScreen({ name: "cerchiaPassaggi" })}
-  >
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-      }}
-    >
-      <div style={{ fontSize: 22 }}>🧺</div>
-      <div style={styles.cardTitle}>Chi sta andando?</div>
-      {passaggiAttivi > 0 && <div style={styles.redDot} />}
-    </div>
+              <div
+                  style={styles.card}
+                  onClick={() => setScreen({ name: "tabs", tab: "disponibilita" })}
+              >
+                  <div
+                      style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                      }}
+                  >
+                      <div style={{ fontSize: 22, display: "flex", gap: 6 }}>
+                          <span>🍎</span>
+                          <span>🍷</span>
+                      </div>
 
-    {passaggiAttivi > 0 ? (
-      <div style={styles.cardSub}>
-        Vedi i passaggi attivi nelle tue cerchie
-      </div>
-    ) : (
-      <>
-        <div style={{ ...styles.cardSub, marginTop: 6 }}>
-          Nessuno al momento
-        </div>
+                      <div style={styles.cardTitle}>Produttori vicini a te</div>
+                  </div>
 
-        <div
-          style={{
-            fontSize: 13,
-            marginTop: 6,
-            color: "#6b6b6b",
-          }}
-        >
-          Quando qualcuno va, lo vedi qui
-        </div>
-      </>
-    )}
-  </div>
-
-  <div
-    style={styles.card}
-    onClick={() => setScreen({ name: "tabs", tab: "disponibilita" })}
-  >
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 12,
-      }}
-    >
-      <div style={styles.cardTitle}>Produttori vicini a te</div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          fontSize: 20,
-        }}
-      >
-        <span>🍎</span>
-        <span>🍷</span>
-      </div>
-    </div>
-
-    <div style={styles.cardSub}>Scopri cosa puoi comprare</div>
-  </div>
-</div>
-         <div style={styles.impactCard}>
-    <div style={{ fontSize: 22, marginBottom: 6 }}>🚗</div>
-    <div style={styles.impactNumber}>
-      {tripsSaved.toLocaleString()}
-    </div>
-    <div style={styles.impactTitle}>Viaggi risparmiati insieme</div>
-    <div style={styles.impactSub}>Basato sulle adesioni</div>
-</div>
+                  <div style={styles.cardSub}>Scopri cosa puoi comprare</div>
+              </div>
+          </div>
+          <div style={styles.impactCard}>
+              <div
+                  style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                      marginBottom: 6,
+                  }}
+              >
+                  <div style={{ fontSize: 22, lineHeight: 1 }}>🚗</div>
+                  <div style={styles.impactNumber}>
+                      {tripsSaved.toLocaleString()}
+                  </div>
+              </div>
+              <div style={styles.impactTitle}>Viaggi risparmiati</div>
+              <div style={styles.impactSub}>Grazie anche alla tua cerchia</div>
+          </div>
          <div style={{ flex: 1 }} />
     </div>
   );
@@ -232,12 +251,13 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid #e1d8c9",
     fontSize: 14,
   },
-   h2: {
-    fontSize: 18,
-    fontWeight: 800,
-    margin: "6px 0 10px",
-    color: "#D97706",
-  },
+    h2: {
+        fontSize: 18,
+        fontWeight: 600,
+        margin: "6px 0 10px",
+        color: "#2d8881",
+        textAlign: "center",
+    },
   cardsCol: {
     display: "grid",
     gap: 12,
@@ -274,7 +294,7 @@ const styles: Record<string, React.CSSProperties> = {
         padding: "12px 16px",
         border: "1px solid #bfe3f7",
         boxShadow: "0 1px 0 rgba(0,0,0,0.02)",
-        marginTop: 12,
+        marginTop: 50,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -297,20 +317,22 @@ const styles: Record<string, React.CSSProperties> = {
         color: "#4e6772",
         fontSize: 12,
     },
-  primaryBtn: {
-    alignSelf: "center",
-    minWidth: 260,
-    maxWidth: 360,
-    padding: "15px 20px",
-    borderRadius: 999,
-    background: "#2f4a3d",
-    color: "#fff",
-    fontWeight: 800,
-    fontSize: 16,
-    border: "none",
-    cursor: "pointer",
-    boxShadow: "0 6px 18px rgba(47,74,61,0.28)",
-  },
+    primaryBtn: {
+        alignSelf: "center",
+        marginLeft: "auto",
+        marginRight: "auto",
+        minWidth: 260,
+        maxWidth: 360,
+        padding: "15px 20px",
+        borderRadius: 999,
+        background: "#2f4a3d",
+        color: "#fff",
+        fontWeight: 800,
+        fontSize: 16,
+        border: "none",
+        cursor: "pointer",
+        boxShadow: "0 6px 18px rgba(47,74,61,0.28)",
+    },
     secondaryBtn: {
         alignSelf: "center",
         minWidth: 220,
