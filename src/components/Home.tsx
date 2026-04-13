@@ -25,7 +25,7 @@ const passaggiAttivi = passaggiConCerchia.length;
 const titoloDinamico =
   passaggiAttivi > 0
     ? "C’è qualcuno che sta andando: unisciti"
-    : "Devi fare la spesa? Avvisa la tua cerchia";
+    : "Nessuno sta andando: puoi iniziare tu";
 const [tripsSaved, setTripsSaved] = React.useState(0);
 const [haAderito, setHaAderito] = React.useState(false);
 
@@ -74,66 +74,128 @@ React.useEffect(() => {
 
       <h2 style={styles.h2}>{titoloDinamico}</h2>
 
-      <div style={styles.cardsCol}>
-        <div
-          style={styles.card}
-          onClick={() => setScreen({ name: "cerchiaPassaggi" })}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 12,
-            }}
-          >
-            <div style={styles.cardTitle}>Chi sta andando?</div>
-
-            {passaggiAttivi > 0 && <div style={styles.redDot} />}
-          </div>
-
-          <div style={styles.cardSub}>
-            Vedi i passaggi attivi nelle tue cerchie
-          </div>
-        </div>
-
-        <div
-          style={styles.card}
-          onClick={() => setScreen({ name: "tabs", tab: "disponibilita" })}
-        >
-          <div style={styles.cardTitle}>Produttori vicini a te</div>
-          <div style={styles.cardSub}>
-            Scopri cosa puoi comprare
-          </div>
-        </div>
+     <div style={styles.cardsCol}>
+  {passaggiAttivi === 0 && (
+    <div
+      style={{
+        ...styles.card,
+        background: "#f4fbf4",
+        border: "1px solid #cfe3cf",
+        cursor: "default",
+      }}
+    >
+      <div style={{ ...styles.cardTitle, marginBottom: 6 }}>
+        Nessuno sta andando al momento
       </div>
-          <div style={styles.impactCard}>
-              <div style={styles.impactNumber}>
-  {tripsSaved.toLocaleString()}
-</div>
-              <div style={styles.impactTitle}>Viaggi risparmiati insieme</div>
-              <div style={styles.impactSub}>Basato sulle adesioni</div>
-          </div>
-          <div
-              style={{
-                  display: "grid",
-                  gap: 20,
-                  marginTop: 46,
-                  justifyItems: "center",
-              }}
-          >
-        <button
-          type="button"
-          style={{ ...styles.primaryBtn, minWidth: 240, maxWidth: 320 }}
-          onClick={() =>
-            setScreen({ name: "producersFollowed", mode: "stoAndando" })
-          }
+
+      <div style={styles.cardSub}>Bastano 2 persone per iniziare</div>
+
+      <div
+        style={{
+          marginTop: 6,
+          fontSize: 13,
+          color: "#3f3a33",
+        }}
+      >
+        Avvisa la tua cerchia e fate la spesa con un solo viaggio
+      </div>
+
+      <button
+        type="button"
+        style={{
+          ...styles.primaryBtn,
+          marginTop: 14,
+          minWidth: 200,
+          background: "#F4B942",
+          color: "#4E3200",
+          boxShadow: "0 6px 16px rgba(244,185,66,0.28)",
+        }}
+        onClick={() =>
+          setScreen({ name: "producersFollowed", mode: "stoAndando" })
+        }
+      >
+        Inizia tu un passaggio
+      </button>
+    </div>
+  )}
+
+  <div
+    style={styles.card}
+    onClick={() => setScreen({ name: "cerchiaPassaggi" })}
+  >
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+      }}
+    >
+      <div style={{ fontSize: 22 }}>🧺</div>
+      <div style={styles.cardTitle}>Chi sta andando?</div>
+      {passaggiAttivi > 0 && <div style={styles.redDot} />}
+    </div>
+
+    {passaggiAttivi > 0 ? (
+      <div style={styles.cardSub}>
+        Vedi i passaggi attivi nelle tue cerchie
+      </div>
+    ) : (
+      <>
+        <div style={{ ...styles.cardSub, marginTop: 6 }}>
+          Nessuno al momento
+        </div>
+
+        <div
+          style={{
+            fontSize: 13,
+            marginTop: 6,
+            color: "#6b6b6b",
+          }}
         >
-          Vado io a fare la spesa
-        </button>
+          Quando qualcuno va, lo vedi qui
+        </div>
+      </>
+    )}
+  </div>
 
-             </div>
+  <div
+    style={styles.card}
+    onClick={() => setScreen({ name: "tabs", tab: "disponibilita" })}
+  >
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+      }}
+    >
+      <div style={styles.cardTitle}>Produttori vicini a te</div>
 
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          fontSize: 20,
+        }}
+      >
+        <span>🍎</span>
+        <span>🍷</span>
+      </div>
+    </div>
+
+    <div style={styles.cardSub}>Scopri cosa puoi comprare</div>
+  </div>
+</div>
+         <div style={styles.impactCard}>
+    <div style={{ fontSize: 22, marginBottom: 6 }}>🚗</div>
+    <div style={styles.impactNumber}>
+      {tripsSaved.toLocaleString()}
+    </div>
+    <div style={styles.impactTitle}>Viaggi risparmiati insieme</div>
+    <div style={styles.impactSub}>Basato sulle adesioni</div>
+</div>
          <div style={{ flex: 1 }} />
     </div>
   );

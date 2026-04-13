@@ -840,19 +840,30 @@ const onClosePiccolaRichiesta = (_id: string) => {
 useEffect(() => {
   let alive = true;
 
-  if (loadingPassaggiRef.current) return;
+  if (!user?.id) {
+    setPassaggi([]);
+    savePassaggi([]);
+    return () => {
+      alive = false;
+    };
+  }
+
+  if (circles.length === 0) {
+    return () => {
+      alive = false;
+    };
+  }
+
+  if (loadingPassaggiRef.current) {
+    return () => {
+      alive = false;
+    };
+  }
+
   loadingPassaggiRef.current = true;
 
   (async () => {
     try {
-      if (!user?.id || circles.length === 0) {
-        if (alive) {
-          setPassaggi([]);
-          savePassaggi([]);
-        }
-        return;
-      }
-
       const results = await Promise.all(
         circles.map((circle) =>
           apiGet<{ ok: true; items: any[] }>(
@@ -900,7 +911,9 @@ useEffect(() => {
     } catch (err) {
       console.error("Errore caricamento passaggi:", err);
       if (!alive) return;
-      setPassaggi([]);
+
+      const fallback = loadPassaggi();
+      setPassaggi(fallback);
     } finally {
       loadingPassaggiRef.current = false;
     }
@@ -1501,53 +1514,59 @@ const content = (() => {
       }
 
       case "intro": {
-          return (
-              <Intro
-                  introStep={introStep}
-                  introAction={introAction}
-                  hasPassaggi={passaggi.filter((p) => p.circleId === activeCircleId).length > 0}
-                  hasActiveCircle={!!activeCircleId}
-                  onChooseSee={() => {
-                      setIntroAction("see");
+    return (
+        <Intro
+            introStep={introStep}
+            introAction={introAction}
+            hasPassaggi={passaggi.filter((p) => p.circleId === activeCircleId).length > 0}
+            hasActiveCircle={!!activeCircleId}
+            selectedProvinceLabel={
+                user?.province_name ||
+                PROVINCES.find((p) => p.code === user?.selected_province_code)?.name ||
+                user?.selected_province_code ||
+                "la tua provincia"
+            }
+            onChooseSee={() => {
+                setIntroAction("see");
 
-                      const hasVisiblePassaggi =
-                          passaggi.filter((p) => p.circleId === activeCircleId).length > 0;
+                const hasVisiblePassaggi =
+                    passaggi.filter((p) => p.circleId === activeCircleId).length > 0;
 
-                      if (hasVisiblePassaggi) {
-                          localStorage.setItem("empagij_hasSeenIntro", "1");
-                          setScreen({ name: "tabs", tab: "home" });
-                          return;
-                      }
+                if (hasVisiblePassaggi) {
+                    localStorage.setItem("empagij_hasSeenIntro", "1");
+                    setScreen({ name: "tabs", tab: "home" });
+                    return;
+                }
 
-                      setIntroStep(2);
-                  }}
-                  onChooseGo={() => {
-                      setIntroAction("go");
+                setIntroStep(2);
+            }}
+            onChooseGo={() => {
+                setIntroAction("go");
 
-                      if (activeCircleId) {
-                          localStorage.setItem("empagij_hasSeenIntro", "1");
-                          setScreen({ name: "producersFollowed", mode: "stoAndando" });
-                          return;
-                      }
+                if (activeCircleId) {
+                    localStorage.setItem("empagij_hasSeenIntro", "1");
+                    setScreen({ name: "producersFollowed", mode: "stoAndando" });
+                    return;
+                }
 
-                      setIntroStep(3);
-                  }}
-                  onAskIfSomeoneGoes={() => {
-                      if (activeCircleId) {
-                          localStorage.setItem("empagij_hasSeenIntro", "1");
-                          setScreen({ name: "piccolaRichiesta", fromTab: "home" });
-                          return;
-                      }
+                setIntroStep(3);
+            }}
+            onAskIfSomeoneGoes={() => {
+                if (activeCircleId) {
+                    localStorage.setItem("empagij_hasSeenIntro", "1");
+                    setScreen({ name: "piccolaRichiesta", fromTab: "home" });
+                    return;
+                }
 
-                      setIntroStep(3);
-                  }}
-                  onInvitePeople={() => {
-                      localStorage.setItem("empagij_hasSeenIntro", "1");
-                      setScreen({ name: "cerchia", mode: "manage", from: "home" });
-                  }}
-              />
-          );
-      }
+                setIntroStep(3);
+            }}
+            onInvitePeople={() => {
+                localStorage.setItem("empagij_hasSeenIntro", "1");
+                setScreen({ name: "cerchia", mode: "manage", from: "home" });
+            }}
+        />
+    );
+}
 
      case "cerchiaPassaggi": {
     return (
@@ -2035,6 +2054,7 @@ function Intro({
     introAction,
     hasPassaggi,
     hasActiveCircle,
+    selectedProvinceLabel,
     onChooseSee,
     onChooseGo,
     onAskIfSomeoneGoes,
@@ -2044,6 +2064,7 @@ function Intro({
     introAction: "see" | "go" | null;
     hasPassaggi: boolean;
     hasActiveCircle: boolean;
+    selectedProvinceLabel: string;
     onChooseSee: () => void;
     onChooseGo: () => void;
     onAskIfSomeoneGoes: () => void;
@@ -2051,63 +2072,327 @@ function Intro({
 }) {
     return (
         <div style={{ ...styles.page, fontSize: 14, lineHeight: "22px" }}>
-            <div style={styles.headerRow}>
-                <div style={{ width: 28 }} />
-                <div style={styles.brand}>SpesaConTe</div>
-                <div style={{ width: 28 }} />
+           <div
+    style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 10,
+        marginTop: 10,
+        marginBottom: 20,
+    }}
+>
+    <img
+        src="/logo192-B.png"
+        alt="SpesaConTe"
+        style={{
+            width: 34,
+            height: 34,
+            objectFit: "contain",
+        }}
+    />
+    <div style={styles.brand}>SpesaConTe</div>
+</div>
+
+       {introStep === 1 && (
+    <>
+        <h2
+            style={{
+                ...styles.h2,
+                textAlign: "center",
+                marginTop: 6,
+                marginBottom: 18,
+                color: "#E57A1F",
+            }}
+        >
+            La spesa insieme conviene
+        </h2>
+
+        <div
+            style={{
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: 14,
+            }}
+        >
+            <div
+                style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "8px 14px",
+                    borderRadius: 999,
+                    background: "#fffdf7",
+                    border: "1px solid #d8e7cb",
+                    fontWeight: 800,
+                    fontSize: 14,
+                    color: "#35513a",
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                }}
+            >
+                <span>📍</span>
+                <span>Provincia attiva: {selectedProvinceLabel}</span>
+            </div>
+        </div>
+
+       <div
+    style={{
+        position: "relative",
+        minHeight: 280,
+        borderRadius: 24,
+        background: "#FFFFFF",
+        border: "1px solid #DCE8D3",
+        overflow: "hidden",
+        padding: "22px 16px 28px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+    }}
+>
+    <div
+        style={{
+            position: "relative",
+            height: 170,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+        }}
+    >
+        <div
+            style={{
+                position: "relative",
+                width: 280,
+                height: 170,
+            }}
+        >
+            <img
+                src="/intro-provincia-foggia.png"
+                alt="Territorio"
+                style={{
+                    position: "absolute",
+                    left: "50%",
+                    top: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: 220,
+                    maxWidth: "100%",
+                    height: "auto",
+                    opacity: 0.96,
+                }}
+            />
+
+            <div
+                style={{
+                    position: "absolute",
+                    left: 48,
+                    top: 38,
+                    width: 34,
+                    height: 34,
+                    borderRadius: 12,
+                    background: "#FFF7D6",
+                    display: "grid",
+                    placeItems: "center",
+                    fontSize: 20,
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.10)",
+                }}
+            >
+                🧀
             </div>
 
-            {introStep === 1 && (
-                <>
-                    <h2 style={styles.h2}>Vuoi evitare un viaggio per la spesa?</h2>
+            <div
+                style={{
+                    position: "absolute",
+                    right: 48,
+                    top: 34,
+                    width: 34,
+                    height: 34,
+                    borderRadius: 12,
+                    background: "#FFF4F2",
+                    display: "grid",
+                    placeItems: "center",
+                    fontSize: 20,
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.10)",
+                }}
+            >
+                🍎
+            </div>
 
-                    <div style={styles.card}>
-                        <p style={styles.muted}>
-                            Scopri se qualcuno sta già andando per la spesa da un produttore oppure inizia tu.
-                        </p>
+            <div
+                style={{
+                    position: "absolute",
+                    left: 72,
+                    bottom: 28,
+                    width: 34,
+                    height: 34,
+                    borderRadius: 12,
+                    background: "#F6F0FF",
+                    display: "grid",
+                    placeItems: "center",
+                    fontSize: 20,
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.10)",
+                }}
+            >
+                🍷
+            </div>
 
-                        <p style={{ ...styles.muted, marginTop: 6 }}>
-                            Oggi aiuti tu, domani qualcuno aiuterà te.
-                        </p>
+            <div
+                style={{
+                    position: "absolute",
+                    right: 62,
+                    bottom: 26,
+                    width: 34,
+                    height: 34,
+                    borderRadius: 12,
+                    background: "#FFF1DF",
+                    display: "grid",
+                    placeItems: "center",
+                    fontSize: 20,
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.10)",
+                }}
+            >
+                🥖
+            </div>
 
-                        <div style={{ ...styles.muted, marginTop: 6 }}>
-                            Scegli facilmente come organizzare la tua spesa.
-                        </div>
-                    </div>
+        <div
+    style={{
+        position: "absolute",
+        left: "36%",
+        top: "52%",
+        transform: "translate(-50%, -50%)",
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+    }}
+>
+    <div
+        style={{
+            width: 18,
+            height: 2,
+            background: "#9CCFE8",
+            borderRadius: 999,
+            opacity: 0.9,
+        }}
+    />
+    <div
+        style={{
+            width: 10,
+            height: 2,
+            background: "#9CCFE8",
+            borderRadius: 999,
+            opacity: 0.7,
+        }}
+    />
+    <div
+        style={{
+            width: 50,
+            height: 50,
+            borderRadius: 16,
+            background: "#BFE7FF",
+            border: "2px solid #8CCDF2",
+            display: "grid",
+            placeItems: "center",
+            fontSize: 28,
+            boxShadow: "0 4px 10px rgba(0,0,0,0.16)",
+        }}
+    >
+        <div
+            style={{
+                transform: "scaleX(-1)",
+                lineHeight: 1,
+            }}
+        >
+            🚗
+        </div>
+    </div>
+</div>
+        </div>
+    </div>
 
-                    <div style={{ height: 18 }} />
+    <div
+        style={{
+            position: "relative",
+            marginTop: 30,
+            textAlign: "center",
+            fontSize: 15,
+            fontWeight: 800,
+            color: "#2F5D35",
+        }}
+    >
+        Organizzati con altri nella tua zona
+    </div>
+</div>
 
-                    <div style={{ display: "grid", gap: 12 }}>
-                        <button
-                            type="button"
-                            style={styles.primaryBtn}
-                            onClick={onChooseSee}
-                        >
-                            Vedi chi sta andando
-                        </button>
+       <div
+    style={{
+        marginTop: 60,
+        textAlign: "center",
+        fontSize: 16,
+        fontWeight: 700,
+        color: "#2d2d2d",
+    }}
+>
+    Meno viaggi, meno benzina, più tempo
+</div>
 
-                        <button
-                            type="button"
-                            style={styles.secondaryBtn}
-                            onClick={onChooseGo}
-                        >
-                            Farò io un passaggio
-                        </button>
-                    </div>
-                </>
-            )}
+        <div style={{ height: 34 }} />
+
+        <div
+            style={{
+                display: "grid",
+                gap: 14,
+                justifyItems: "center",
+            }}
+        >
+            <button
+                type="button"
+                style={{
+                    ...styles.primaryBtn,
+                    width: "min(360px, 100%)",
+                    background: "#1F6B45",
+                    boxShadow: "0 8px 18px rgba(31,107,69,0.22)",
+                }}
+                onClick={onChooseSee}
+            >
+                Vedi chi sta andando
+            </button>
+
+            <div
+                style={{
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: "#5A5A5A",
+                    textAlign: "center",
+                }}
+            >
+                Nessuno in viaggio?
+            </div>
+
+            <button
+                type="button"
+                style={{
+                    ...styles.secondaryBtn,
+                    width: "min(320px, 100%)",
+                    background: "#FFD66B",
+                    color: "#4E3A00",
+                    fontWeight: 800,
+                    boxShadow: "0 6px 14px rgba(255,214,107,0.24)",
+                }}
+                onClick={onChooseGo}
+            >
+                Pubblica tu un passaggio
+            </button>
+        </div>
+    </>
+)}
 
             {introStep === 2 && (
                 <>
-                    <h2 style={styles.h2}>Nessuno ancora oggi… puoi iniziare tu</h2>
+                    <h2 style={styles.h2}>Nessuno sta andando in questo momento</h2>
 
                     <div style={styles.card}>
                         <div style={{ fontWeight: 700, marginBottom: 8 }}>
-                            Al momento non ci sono passaggi visibili.
+                            Puoi far partire tu il coordinamento.
                         </div>
 
                         <div style={{ ...styles.muted, marginTop: 6 }}>
-                            Puoi chiedere se qualcuno ha in programma di andarci.
+                            Chiedi se qualcuno ha in programma di andare da un produttore del tuo territorio.
                         </div>
                     </div>
 
@@ -2119,7 +2404,7 @@ function Intro({
                             style={styles.primaryBtn}
                             onClick={onAskIfSomeoneGoes}
                         >
-                            Chiedi se qualcuno ci va
+                            Chiedi alla tua cerchia
                         </button>
                     </div>
                 </>
@@ -2127,15 +2412,15 @@ function Intro({
 
             {introStep === 3 && (
                 <>
-                    <h2 style={styles.h2}>Per iniziare servono 2–3 persone</h2>
+                    <h2 style={styles.h2}>Per iniziare bastano poche persone</h2>
 
                     <div style={styles.card}>
                         <div style={{ fontWeight: 700, marginBottom: 8 }}>
-                            In 2 minuti potete già usarla.
+                            Collegatevi e iniziate a condividere la spesa.
                         </div>
 
                         <div style={{ ...styles.muted, marginTop: 6 }}>
-                            Prima crea o completa la tua cerchia, poi potrai scambiarvi passaggi e richieste.
+                            Prima crea la tua cerchia. Poi potrete pubblicare passaggi e aggiungervi alla spesa.
                         </div>
                     </div>
 
@@ -2147,7 +2432,7 @@ function Intro({
                             style={styles.primaryBtn}
                             onClick={onInvitePeople}
                         >
-                            Invita 2 persone
+                            Crea la tua cerchia
                         </button>
                     </div>
                 </>
