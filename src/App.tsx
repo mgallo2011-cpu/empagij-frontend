@@ -836,63 +836,46 @@ const onClosePiccolaRichiesta = (_id: string) => {
 
   return safeLoad ? safeLoad() : [];
 });
+   
+    const loadPassaggiFromBackend = async (
+        circlesInput: Circle[]
+    ): Promise<Passaggio[]> => {
+        if (!Array.isArray(circlesInput) || circlesInput.length === 0) {
+            return [];
+        }
 
-useEffect(() => {
-  let alive = true;
+        const results = await Promise.all(
+            circlesInput.map((circle) =>
+                apiGet<{ ok: true; items: any[] }>(
+                    `/passaggi?circle_id=${encodeURIComponent(circle.id)}`
+                ).catch(() => ({ ok: true, items: [] }))
+            )
+        );
 
-  if (!user?.id) {
-    setPassaggi([]);
-    savePassaggi([]);
-    return () => {
-      alive = false;
-    };
-  }
+        const allItems = results.flatMap((out) =>
+            Array.isArray(out.items) ? out.items : []
+        );
 
-  if (circles.length === 0) {
-    return () => {
-      alive = false;
-    };
-  }
-
-  if (loadingPassaggiRef.current) {
-    return () => {
-      alive = false;
-    };
-  }
-
-  loadingPassaggiRef.current = true;
-
-  (async () => {
-    try {
-      const results = await Promise.all(
-        circles.map((circle) =>
-          apiGet<{ ok: true; items: any[] }>(
-            `/passaggi?circle_id=${encodeURIComponent(circle.id)}`
-          ).catch(() => ({ ok: true, items: [] }))
-        )
-      );
-
-      const allItems = results.flatMap((out) =>
-        Array.isArray(out.items) ? out.items : []
-      );
-
-        const mapped = allItems
-            .filter((x) => x.status !== "eliminato" && x.status !== "deleted")
+        const mapped: Passaggio[] = allItems
+            .filter((x) => x && x.status !== "eliminato" && x.status !== "deleted")
             .map((x) => ({
-                id: x.id,
-                circleId: x.circle_id,
-                circleName: circles.find((c) => c.id === x.circle_id)?.name || "",
-                fromName: x.from_name || "",
-                fromUserId: x.from_user_id || "",
-                producerId: x.producer_id || "",
-                producerName: x.producer_name || "",
-                producerCategory: x.producer_category || "",
+                id: String(x.id || ""),
+                circleId: String(x.circle_id || ""),
+                circleName:
+                    circlesInput.find((c) => c.id === x.circle_id)?.name || "",
+                fromName: String(x.from_name || ""),
+                fromUserId: String(x.from_user_id || ""),
+                producerId: String(x.producer_id || ""),
+                producerName: String(x.producer_name || ""),
+                producerCategory: String(x.producer_category || ""),
                 whenLabel:
-                    x.when_label === "Oggi" || x.when_label === "Domani" || x.when_label === "Altra data"
+                    x.when_label === "Oggi" ||
+                        x.when_label === "Domani" ||
+                        x.when_label === "Altra data"
                         ? x.when_label
                         : "Oggi",
                 dateISO: x.date_iso || undefined,
-                note: x.note || "",
+                note: String(x.note || ""),
                 createdAtISO: x.created_at
                     ? new Date(x.created_at).toISOString()
                     : new Date().toISOString(),
@@ -900,27 +883,51 @@ useEffect(() => {
                     ? new Date(x.created_at).getTime()
                     : Date.now(),
             }))
+            .filter((p) => p.id && p.circleId && p.producerId)
             .sort((a, b) => b.createdAt - a.createdAt);
 
-      if (!alive) return;
+        return mapped;
+    };
+    useEffect(() => {
+        let alive = true;
 
-      setPassaggi(mapped);
-      savePassaggi(mapped);
-    } catch (err) {
-      console.error("Errore caricamento passaggi:", err);
-      if (!alive) return;
+        async function load() {
+            try {
+                if (!user?.id) {
+                    if (!alive) return;
+                    setPassaggi([]);
+                    savePassaggi([]);
+                    return;
+                }
 
-      const fallback = loadPassaggi();
-      setPassaggi(fallback);
-    } finally {
-      loadingPassaggiRef.current = false;
-    }
-  })();
+                if (!circles || circles.length === 0) {
+                    if (!alive) return;
+                    setPassaggi([]);
+                    return;
+                }
 
-  return () => {
-    alive = false;
-  };
-}, [user?.id, circles]);
+                const mapped = await loadPassaggiFromBackend(circles);
+
+                if (!alive) return;
+
+                setPassaggi(mapped);
+                savePassaggi(mapped);
+            } catch (err) {
+                console.error("Errore caricamento passaggi:", err);
+
+                if (!alive) return;
+
+                const fallback = loadPassaggi();
+                setPassaggi(fallback);
+            }
+        }
+
+        load();
+
+        return () => {
+            alive = false;
+        };
+    }, [user?.id, circles.length]);
 
   const onOpenProducer = (producer: Producer) => {
     setScreen({
