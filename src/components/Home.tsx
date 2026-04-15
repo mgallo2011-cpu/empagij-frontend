@@ -155,7 +155,7 @@ React.useEffect(() => {
                                   }}
                                   onClick={(e) => {
                                       e.stopPropagation();
-                                      setScreen({ name: "producersFollowed", mode: "stoAndando" });
+                                      setScreen({ name: "stoAndando", fromTab: "home" });
                                   }}
                               >
                                   <span>🚗</span>
@@ -197,7 +197,7 @@ React.useEffect(() => {
                   <div style={styles.cardSub}>Scopri cosa puoi comprare</div>
               </div>
           </div>
-          <div style={styles.impactCard}>
+                   <div style={styles.impactCard}>
               <div
                   style={{
                       display: "flex",
@@ -215,8 +215,19 @@ React.useEffect(() => {
               <div style={styles.impactTitle}>Viaggi risparmiati</div>
               <div style={styles.impactSub}>Grazie anche alla tua cerchia</div>
           </div>
-         <div style={{ flex: 1 }} />
-    </div>
+
+          <div style={{ flex: 1 }} />
+
+                   {passaggiAttivi > 0 && (
+              <button
+                  type="button"
+                  style={styles.floatingCta}
+                  onClick={() => setScreen({ name: "stoAndando", fromTab: "home" })}
+              >
+                  🚗 Sto andando a fare la spesa
+              </button>
+          )}
+          </div>
   );
 }
 const styles: Record<string, React.CSSProperties> = {
@@ -332,6 +343,23 @@ const styles: Record<string, React.CSSProperties> = {
         border: "none",
         cursor: "pointer",
         boxShadow: "0 6px 18px rgba(47,74,61,0.28)",
+    },
+        floatingCta: {
+        position: "fixed",
+        left: "50%",
+        bottom: 78,
+        transform: "translateX(-50%)",
+        width: "min(420px, calc(100vw - 32px))",
+        padding: "16px 20px",
+        borderRadius: 999,
+        background: "#F4B942",
+        color: "#4E3200",
+        fontWeight: 900,
+        fontSize: 16,
+        border: "none",
+        cursor: "pointer",
+        boxShadow: "0 10px 24px rgba(244,185,66,0.30)",
+        zIndex: 30,
     },
     secondaryBtn: {
         alignSelf: "center",

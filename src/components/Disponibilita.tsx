@@ -41,6 +41,8 @@ type Props = {
   onOpenMiaArea: () => void;
   onAddProducer: () => void;
   onDeleteProducer?: (id: string) => void;
+  showCompletePassaggioCta?: boolean;
+  onCompletePassaggio?: () => void;
 };
 
 export default function Disponibilita({
@@ -55,24 +57,51 @@ export default function Disponibilita({
   onAddProducer,
   onUpdateProducer,
   onDeleteProducer,
+  showCompletePassaggioCta = false,
+  onCompletePassaggio,
 }: Props) {
   const [prodTab, setProdTab] = useState<"area" | "seguiti">("area");
   const [categoryFilter, setCategoryFilter] = useState<string>("tutte");
 
   return (
     <div style={styles.page}>
-      <div style={styles.headerRow}>
-        <div style={styles.avatar}>🙂</div>
-        <button type="button" onClick={onBack} style={styles.secondaryButton}>
-          ← Indietro
-        </button>
-      </div>
+              <div style={styles.headerRow}>
+  <button type="button" onClick={onBack} style={styles.secondaryButton}>
+    ← Indietro
+  </button>
 
-      <button type="button" style={styles.primaryBtn} onClick={onAddProducer}>
-        + Aggiungi
-      </button>
+  {showCompletePassaggioCta && followedProducerIds.length > 0 ? (
+    <button
+      type="button"
+      onClick={onCompletePassaggio}
+      style={styles.completePassaggioBtn}
+    >
+      Completa il passaggio
+    </button>
+  ) : (
+    <div />
+  )}
+</div>
 
-          <h2 style={styles.h2}>Produttori del tuo territorio</h2>
+     <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginBottom: 6,
+  }}
+>
+  <h2 style={{ ...styles.h2, margin: 0 }}>Produttori del tuo territorio</h2>
+
+  <button
+    type="button"
+    onClick={onAddProducer}
+    style={styles.addProducerBtn}
+  >
+    + Aggiungi produttore
+  </button>
+</div>
 
           <p style={{ ...styles.muted, marginTop: 6 }}>
               Provincia attuale: <strong>{selectedProvinceName || selectedProvinceCode}</strong>
@@ -229,17 +258,7 @@ const styles: Record<string, React.CSSProperties> = {
     marginTop: 6,
     marginBottom: 14,
   },
-  avatar: {
-    justifySelf: "end",
-    width: 28,
-    height: 28,
-    borderRadius: 999,
-    display: "grid",
-    placeItems: "center",
-    background: "#efe9df",
-    border: "1px solid #e1d8c9",
-    fontSize: 14,
-  },
+ 
   h2: {
     fontSize: 18,
     fontWeight: 800,
@@ -300,6 +319,30 @@ const styles: Record<string, React.CSSProperties> = {
         cursor: "pointer",
         boxShadow: "0 4px 12px rgba(70,107,90,0.18)",
     },
+        completePassaggioBtn: {
+    padding: "8px 14px",
+    borderRadius: 999,
+    background: "#F3C476",
+    color: "#6B4300",
+    fontWeight: 800,
+    fontSize: 13,
+    border: "none",
+    cursor: "pointer",
+    boxShadow: "0 4px 10px rgba(243,196,118,0.22)",
+    whiteSpace: "nowrap",
+  },
+    addProducerBtn: {
+    padding: "10px 14px",
+    borderRadius: 999,
+    background: "#466b5a",
+    color: "#fff",
+    fontWeight: 800,
+    fontSize: 13,
+    border: "none",
+    cursor: "pointer",
+    boxShadow: "0 4px 12px rgba(70,107,90,0.18)",
+    whiteSpace: "nowrap",
+  },
     secondaryButton: {
         alignSelf: "center",
         minWidth: 0,

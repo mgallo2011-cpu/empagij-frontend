@@ -11,7 +11,7 @@ import { PROVINCES } from "./data/provinces";
 import { registerPush } from "./index";
 type Tab = "home" | "cerchia" | "disponibilita" | "impostazioni";
 type Screen =
-  | { name: "tabs"; tab: Tab }
+  | { name: "tabs"; tab: Tab; flow?: "createPassaggio" }
  | {
     name: "cerchia";
     mode?: "manage" | "selectForRequest";
@@ -19,8 +19,8 @@ type Screen =
     from?: Tab;
   }
   | { name: "intro" }
-  | { name: "producerDetail"; producer: Producer; fromTab: Tab }
-  | { name: "stoAndando"; producer: Producer; fromTab: Tab }
+    | { name: "producerDetail"; producer: Producer; fromTab: Tab }
+  | { name: "stoAndando"; producer?: Producer; fromTab: Tab }
   | { name: "miaArea" }
   | { name: "piccolaRichiesta"; fromTab: Tab }
   | { name: "producersFollowed"; mode: "browse" | "stoAndando" }
@@ -463,6 +463,18 @@ const CATEGORY_META: Record<string, { label: string; icon: string }> = {
   uova: { label: "Uova", icon: "🥚" },
   vino: { label: "Vino", icon: "🍷" },
 };
+if (typeof document !== "undefined" && !document.getElementById("spesaconte-boot-animation")) {
+    const style = document.createElement("style");
+    style.id = "spesaconte-boot-animation";
+    style.innerHTML = `
+        @keyframes bootDrive {
+            0% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            100% { transform: translateX(-10px); }
+        }
+    `;
+    document.head.appendChild(style);
+}
 export default function App() {
     const publishingRef = useRef(false);
     const loadingPassaggiRef = useRef(false);
@@ -594,6 +606,8 @@ const [circles, setCircles] = useState<Circle[]>([]);
 const [activeCircleId, setActiveCircleId] = useState<string | null>(null);
 const [circleMembers, setCircleMembers] = useState<CircleMember[]>([]);
 const [myInvites, setMyInvites] = useState<InviteItem[]>([]);
+const [circlesReady, setCirclesReady] = useState(false);
+const [passaggiReady, setPassaggiReady] = useState(false);
 useEffect(() => {
     try {
         const params = new URLSearchParams(window.location.search);
@@ -674,13 +688,16 @@ useEffect(() => {
             setActiveCircleId(null);
             setCircleMembers([]);
             setMyInvites([]);
+            setCirclesReady(true);
             return;
         }
 
-        try {
-          const data = await apiGet<{ ok: true; circles: Circle[] }>("/circles/mine");
+        setCirclesReady(false);
 
-           const list: Circle[] = Array.isArray(data.circles) ? data.circles : [];
+        try {
+            const data = await apiGet<{ ok: true; circles: Circle[] }>("/circles/mine");
+
+            const list: Circle[] = Array.isArray(data.circles) ? data.circles : [];
 
             if (!alive) return;
 
@@ -695,6 +712,8 @@ useEffect(() => {
             if (!alive) return;
             setCircles([]);
             setActiveCircleId(null);
+        } finally {
+            if (alive) setCirclesReady(true);
         }
     }
 
@@ -919,45 +938,51 @@ const onClosePiccolaRichiesta = (_id: string) => {
         return mapped;
     };
     useEffect(() => {
-        let alive = true;
+    let alive = true;
 
-        async function load() {
-            try {
-                if (!user?.id) {
-                    if (!alive) return;
-                    setPassaggi([]);
-                    savePassaggi([]);
-                    return;
-                }
-
-                if (!circles || circles.length === 0) {
-                    if (!alive) return;
-                    setPassaggi([]);
-                    return;
-                }
-
-                const mapped = await loadPassaggiFromBackend(circles);
-
+    async function load() {
+        try {
+            if (!user?.id) {
                 if (!alive) return;
-
-                setPassaggi(mapped);
-                savePassaggi(mapped);
-            } catch (err) {
-                console.error("Errore caricamento passaggi:", err);
-
-                if (!alive) return;
-
-                const fallback = loadPassaggi();
-                setPassaggi(fallback);
+                setPassaggi([]);
+                savePassaggi([]);
+                setPassaggiReady(true);
+                return;
             }
+
+            if (!circles || circles.length === 0) {
+                if (!alive) return;
+                setPassaggi([]);
+                setPassaggiReady(true);
+                return;
+            }
+
+            setPassaggiReady(false);
+
+            const mapped = await loadPassaggiFromBackend(circles);
+
+            if (!alive) return;
+
+            setPassaggi(mapped);
+            savePassaggi(mapped);
+        } catch (err) {
+            console.error("Errore caricamento passaggi:", err);
+
+            if (!alive) return;
+
+            const fallback = loadPassaggi();
+            setPassaggi(fallback);
+        } finally {
+            if (alive) setPassaggiReady(true);
         }
+    }
 
-        load();
+    load();
 
-        return () => {
-            alive = false;
-        };
-    }, [user?.id, circles.length]);
+    return () => {
+        alive = false;
+    };
+}, [user?.id, circles.length]);
 
   const onOpenProducer = (producer: Producer) => {
     setScreen({
@@ -1561,40 +1586,38 @@ const content = (() => {
                 user?.selected_province_code ||
                 "la tua provincia"
             }
-            onChooseSee={() => {
+                        onChooseSee={() => {
                 setIntroAction("see");
 
                 const hasVisiblePassaggi =
                     passaggi.filter((p) => p.circleId === activeCircleId).length > 0;
 
+                markIntroSeenForUser(user?.id);
+
                 if (hasVisiblePassaggi) {
-                    markIntroSeenForUser(user?.id);
                     setScreen({ name: "tabs", tab: "home" });
                     return;
                 }
 
-                setIntroStep(2);
+                if (activeCircleId) {
+                    setScreen({ name: "tabs", tab: "home" });
+                    return;
+                }
+
+                setIntroStep(3);
             }}
-            onChooseGo={() => {
+                        onChooseGo={() => {
                 setIntroAction("go");
 
                 if (activeCircleId) {
                     markIntroSeenForUser(user?.id);
-                    setScreen({ name: "producersFollowed", mode: "stoAndando" });
+                    setScreen({ name: "stoAndando", fromTab: "home" });
                     return;
                 }
 
                 setIntroStep(3);
             }}
-            onAskIfSomeoneGoes={() => {
-                if (activeCircleId) {
-                    markIntroSeenForUser(user?.id);
-                    setScreen({ name: "piccolaRichiesta", fromTab: "home" });
-                    return;
-                }
-
-                setIntroStep(3);
-            }}
+           
             onInvitePeople={() => {
                 markIntroSeenForUser(user?.id);
                 setScreen({ name: "cerchia", mode: "manage", from: "home" });
@@ -1610,7 +1633,7 @@ const content = (() => {
             richieste={richieste}
             onBack={() => setScreen({ name: "tabs", tab: "home" })}
             onAddPassaggio={() =>
-                setScreen({ name: "producersFollowed", mode: "stoAndando" })
+                setScreen({ name: "stoAndando", fromTab: "home" })
             }
             onOpenJoinPassaggio={(passaggioId) =>
                 setScreen({ name: "joinPassaggio", passaggioId })
@@ -1622,79 +1645,209 @@ const content = (() => {
     );
 }
 
-      case "stoAndando": {
-          const { producer, fromTab } = screen;
+     case "stoAndando": {
+    const { producer, fromTab } = screen;
 
-          return (
-              <StoAndando
-                  producer={producer}
-                  circles={circles}
-                  activeCircleId={activeCircleId}
-                  onChangeActiveCircle={setActiveCircleId}
-                  onBack={() => {
-                      if (fromTab === "home") {
-                          setScreen({ name: "producersFollowed", mode: "stoAndando" });
-                      } else {
-                          setScreen({ name: "producerDetail", producer, fromTab });
-                      }
-                  }}
-                  onStoAndando={async (draft) => {
-                      if (publishingRef.current) return;
-                      publishingRef.current = true;
+    // 🔴 NUOVO: se NON ho produttore → mostra lista produttori seguiti
+    if (!producer) {
+        const followed = producers.filter((p) =>
+            followedProducerIds.includes(p.id)
+        );
 
-                      try {
-                          if (!user?.id) {
-                              alert("Devi effettuare il login");
-                              return;
-                          }
+               return (
+            <div style={styles.page}>
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginTop: 6,
+                        marginBottom: 14,
+                    }}
+                >
+                    <button
+                        style={styles.backBtn}
+                        onClick={() => setScreen({ name: "tabs", tab: "home" })}
+                    >
+                        ← Indietro
+                    </button>
 
-                          if (!activeCircleId) {
-                              alert("Devi prima selezionare o creare una cerchia");
-                              return;
-                          }
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                        }}
+                    >
+                        <img
+                            src="/logo192-B.png"
+                            alt="Logo SpesaConTe"
+                            style={{ width: 30, height: 30, objectFit: "contain" }}
+                        />
+                        <div style={styles.brand}>SpesaConTe</div>
+                    </div>
 
-                          const whenLabel =
-                              draft.when === "oggi"
-                                  ? "Oggi"
-                                  : draft.when === "domani"
-                                      ? "Domani"
-                                      : "Altra data";
+                    <div style={styles.avatar}>🙂</div>
+                </div>
 
-                          const created = await addPassaggio(user.id, {
-                              fromName: myNameLocal,
-                              circleId: activeCircleId,
-                              producerId: producer.id,
-                              producerName: producer.name,
-                              fromUserId: user.id,
-                              producerCategory: producer.category,
-                              whenLabel,
-                              dateISO: draft.dateISO || "",
-                              note: (draft.note ?? "").trim(),
-                              createdAt: Date.now(),
-                              createdAtISO: new Date().toISOString(),
-                          });
+                <h2
+                    style={{
+                        ...styles.h2,
+                        color: "#D97706",
+                    }}
+                >
+                    Da quale produttore stai andando?
+                </h2>
 
-                          setPassaggi((prev) => {
-                              if (prev.some((x) => x.id === created.id)) return prev;
-                              return [created, ...prev];
-                          });
+                <div style={{ ...styles.muted, marginTop: 2, marginBottom: 12 }}>
+                    Tocca un produttore per continuare.
+                </div>
 
-                          alert("Passaggio creato");
-                          setScreen({ name: "tabs", tab: "home" });
-                      } catch (e: any) {
-                          alert(
-                              "Errore di rete: backend non raggiungibile.\n\n" +
-                              String(e?.message || e)
-                          );
-                      } finally {
-                          publishingRef.current = false;
-                      }
-                  }}
-                  onUpdateProducer={handleUpdateProducer}
-                  onDeleteProducer={handleDeleteProducer}
-              />
-          );
-      }
+                <div style={{ display: "grid", gap: 10 }}>
+                    {followed.length === 0 ? (
+                        <div style={styles.card}>
+                            <div style={styles.muted}>
+                                Per pubblicare un passaggio devi prima seguire
+                                un produttore.
+                            </div>
+
+                            <button
+                                type="button"
+                                style={{ ...styles.primaryBtn, marginTop: 12 }}
+                                onClick={() =>
+    setScreen({
+        name: "tabs",
+        tab: "disponibilita",
+        flow: "createPassaggio",
+    })
+}
+                            >
+                                Vai ai produttori
+                            </button>
+                        </div>
+                    ) : (
+                        followed.map((p) => (
+                            <button
+                                key={p.id}
+                                type="button"
+                                style={{
+                                    background: "#fff",
+                                    border: "1px solid #d9cbb7",
+                                    borderRadius: 16,
+                                    padding: "12px 14px",
+                                    textAlign: "left",
+                                    cursor: "pointer",
+                                    width: "100%",
+                                    boxShadow: "0 1px 0 rgba(0,0,0,0.02)",
+                                }}
+                                onClick={() =>
+                                    setScreen({
+                                        name: "stoAndando",
+                                        producer: p,
+                                        fromTab: "home",
+                                    })
+                                }
+                            >
+                                <div
+                                    style={{
+                                        fontWeight: 800,
+                                        fontSize: 15,
+                                        color: "#1f1a14",
+                                    }}
+                                >
+                                    {p.name}
+                                </div>
+
+                                <div
+                                    style={{
+                                        marginTop: 4,
+                                        fontSize: 13,
+                                        color: "#433b31",
+                                        lineHeight: 1.3,
+                                    }}
+                                >
+                                    {p.category}
+                                    {p.city ? ` • ${p.city}` : ""}
+                                </div>
+                            </button>
+                        ))
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    // 🔵 CASO NORMALE (già esistente)
+    return (
+        <StoAndando
+            producer={producer}
+            circles={circles}
+            activeCircleId={activeCircleId}
+            onChangeActiveCircle={setActiveCircleId}
+            onBack={() => {
+                if (fromTab === "home") {
+                    setScreen({ name: "tabs", tab: "home" });
+                } else {
+                    setScreen({ name: "tabs", tab: fromTab });
+                }
+            }}
+            onStoAndando={async (draft) => {
+                if (publishingRef.current) return;
+                publishingRef.current = true;
+
+                try {
+                    if (!user?.id) {
+                        alert("Devi effettuare il login");
+                        return;
+                    }
+
+                    if (!activeCircleId) {
+                        alert("Devi prima selezionare o creare una cerchia");
+                        return;
+                    }
+
+                    const whenLabel =
+                        draft.when === "oggi"
+                            ? "Oggi"
+                            : draft.when === "domani"
+                            ? "Domani"
+                            : "Altra data";
+
+                    const created = await addPassaggio(user.id, {
+                        fromName: myNameLocal,
+                        circleId: activeCircleId,
+                        producerId: producer.id,
+                        producerName: producer.name,
+                        fromUserId: user.id,
+                        producerCategory: producer.category,
+                        whenLabel,
+                        dateISO: draft.dateISO || "",
+                        note: (draft.note ?? "").trim(),
+                        createdAt: Date.now(),
+                        createdAtISO: new Date().toISOString(),
+                    });
+
+                    setPassaggi((prev) => {
+                        if (prev.some((x) => x.id === created.id)) return prev;
+                        return [created, ...prev];
+                    });
+
+                    alert("Passaggio creato");
+                    setScreen({ name: "tabs", tab: "home" });
+                } catch (e: any) {
+                    alert(
+                        "Errore di rete: backend non raggiungibile.\n\n" +
+                            String(e?.message || e)
+                    );
+                } finally {
+                    publishingRef.current = false;
+                }
+            }}
+            onUpdateProducer={handleUpdateProducer}
+            onDeleteProducer={handleDeleteProducer}
+        />
+    );
+}
        case "passaggi": {
     return (
         <PassaggiList
@@ -1922,7 +2075,7 @@ const content = (() => {
   );
           case "disponibilita":
             return (
-             <Disponibilita
+                         <Disponibilita
     producers={producers}
     followedProducerIds={followedProducerIds}
     selectedProvinceCode={user?.selected_province_code || "-"}
@@ -1943,6 +2096,10 @@ const content = (() => {
     onBack={() => setScreen({ name: "tabs", tab: "home" })}
     onOpenMiaArea={() => setScreen({ name: "miaArea" })}
     onAddProducer={() => setScreen({ name: "producerAdd" })}
+    showCompletePassaggioCta={screen.flow === "createPassaggio"}
+    onCompletePassaggio={() =>
+      setScreen({ name: "stoAndando", fromTab: "home" })
+    }
  />
             );
             case "impostazioni":
@@ -1973,93 +2130,121 @@ const content = (() => {
       }
     }
   })();
+  const isBootLoading = !!user && (!circlesReady || !passaggiReady);
+
              const main = !user ? (
-        <div
-            style={{
-                padding: 16,
-                maxWidth: 420,
-                margin: "0 auto",
-                display: "grid",
-                gap: 18,
-                width: "100%",
-            }}
-        >
-            <div style={{ ...styles.card, padding: "14px 20px 12px" }}>
-                <div
-                    style={{
-                        ...styles.brand,
-                        textAlign: "center",
-                        marginBottom: 8,
-                        color: "#D97706",
-                    }}
-                >
-                    SpesaConTe
-                </div>
-
-                <p
-                    style={{
-                        opacity: 0.8,
-                        margin: 0,
-                        textAlign: "left",
-                        lineHeight: 1.3,
-                    }}
-                >
-                    Registrati e scegli la provincia
-                    <br />
-                    per vedere i produttori del tuo territorio
-                    <br />
-                    già presenti in SpesaConTe.
-                </p>
-
-                <p
-                    style={{
-                        opacity: 0.8,
-                        margin: "8px 0 0 0",
-                        textAlign: "left",
-                        lineHeight: 1.3,
-                    }}
-                >
-                    La provincia si può cambiare
-                    <br />
-                    in qualsiasi momento.
-                </p>
+    <div
+        style={{
+            padding: 16,
+            maxWidth: 420,
+            margin: "0 auto",
+            display: "grid",
+            gap: 18,
+            width: "100%",
+        }}
+    >
+        <div style={{ ...styles.card, padding: "14px 20px 12px" }}>
+            <div
+                style={{
+                    ...styles.brand,
+                    textAlign: "center",
+                    marginBottom: 8,
+                    color: "#D97706",
+                }}
+            >
+                SpesaConTe
             </div>
 
-            <div style={{ ...styles.card, padding: 20 }}>
-                <h2 style={{ ...styles.h2, margin: 0 }}>Registrazione</h2>
-                <RegisterBox
-                    onLogged={(u) => {
-                        setUser(u);
-                        setIntroStep(1);
-                        setIntroAction(null);
+            <p
+                style={{
+                    opacity: 0.8,
+                    margin: 0,
+                    textAlign: "left",
+                    lineHeight: 1.3,
+                }}
+            >
+                Registrati e scegli la provincia
+                <br />
+                per vedere i produttori del tuo territorio
+                <br />
+                già presenti in SpesaConTe.
+            </p>
 
-                                 setScreen({ name: "intro" });
-                    }}
-                />
-            </div>
-
-            <div style={{ ...styles.card, padding: 20 }}>
-                <h2 style={{ ...styles.h2, margin: 0 }}>Hai già un account?</h2>
-                <p style={{ opacity: 0.8, marginTop: 8 }}>
-                    Accedi con la tua email e vedrai
-                    <br />
-                    passaggi e richieste delle persone con cui ti organizzi
-                </p>
-                <LoginBox
-                    onLogged={(u) => {
-                        setUser(u);
-                        setIntroStep(1);
-                        setIntroAction(null);
-
-                                 const seen = hasSeenIntroForUser(u.id);
-                                 setScreen(seen ? { name: "tabs", tab: "home" } : { name: "intro" });
-                    }}
-                />
-            </div>
+            <p
+                style={{
+                    opacity: 0.8,
+                    margin: "8px 0 0 0",
+                    textAlign: "left",
+                    lineHeight: 1.3,
+                }}
+            >
+                La provincia si può cambiare
+                <br />
+                in qualsiasi momento.
+            </p>
         </div>
-    ) : (
-        content
-    );
+
+        <div style={{ ...styles.card, padding: 20 }}>
+            <h2 style={{ ...styles.h2, margin: 0 }}>Registrazione</h2>
+            <RegisterBox
+                onLogged={(u) => {
+                    setUser(u);
+                    setIntroStep(1);
+                    setIntroAction(null);
+
+                    setScreen({ name: "intro" });
+                }}
+            />
+        </div>
+
+        <div style={{ ...styles.card, padding: 20 }}>
+            <h2 style={{ ...styles.h2, margin: 0 }}>Hai già un account?</h2>
+            <p style={{ opacity: 0.8, marginTop: 8 }}>
+                Accedi con la tua email e vedrai
+                <br />
+                passaggi e richieste delle persone con cui ti organizzi
+            </p>
+            <LoginBox
+                onLogged={(u) => {
+                    setUser(u);
+                    setIntroStep(1);
+                    setIntroAction(null);
+
+                    const seen = hasSeenIntroForUser(u.id);
+                    setScreen(seen ? { name: "tabs", tab: "home" } : { name: "intro" });
+                }}
+            />
+        </div>
+    </div>
+) : isBootLoading ? (
+    <div
+        style={{
+            width: "min(520px, 100%)",
+            minHeight: "60vh",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12,
+            textAlign: "center",
+        }}
+    >
+        <img
+            src="/logo192-B.png"
+            alt="SpesaConTe"
+            style={{ width: 52, height: 52, objectFit: "contain" }}
+        />
+               <div style={{ ...styles.brand, color: "#14b414" }}>SpesaConTe</div>
+
+        <div style={styles.bootCar}>🚗</div>
+
+        <div style={{ ...styles.muted, fontSize: 15 }}>
+            Sto recuperando la tua cerchia e i passaggi...
+        </div>
+    </div>
+) : (
+    content
+);
 
   return (
     <div style={styles.app}>
@@ -2096,7 +2281,6 @@ function Intro({
     selectedProvinceLabel,
     onChooseSee,
     onChooseGo,
-    onAskIfSomeoneGoes,
     onInvitePeople,
 }: {
     introStep: 1 | 2 | 3;
@@ -2106,7 +2290,6 @@ function Intro({
     selectedProvinceLabel: string;
     onChooseSee: () => void;
     onChooseGo: () => void;
-    onAskIfSomeoneGoes: () => void;
     onInvitePeople: () => void;
 }) {
     return (
@@ -2391,18 +2574,7 @@ function Intro({
                             Vedi chi sta andando
                         </button>
 
-                        <div
-                            style={{
-                                fontSize: 14,
-                                fontWeight: 700,
-                                color: "#5A5A5A",
-                                textAlign: "center",
-                            }}
-                        >
-                            Nessuno in viaggio?
-                        </div>
-
-                        <button
+                                               <button
                             type="button"
                             style={{
                                 ...styles.secondaryBtn,
@@ -2420,35 +2592,7 @@ function Intro({
                 </>
             )}
 
-            {introStep === 2 && (
-                <>
-                    <h2 style={styles.h2}>Nessuno sta andando in questo momento</h2>
-
-                    <div style={styles.card}>
-                        <div style={{ fontWeight: 700, marginBottom: 8 }}>
-                            Puoi far partire tu il coordinamento.
-                        </div>
-
-                        <div style={{ ...styles.muted, marginTop: 6 }}>
-                            Chiedi se qualcuno ha in programma di andare da un produttore del tuo territorio.
-                        </div>
-                    </div>
-
-                    <div style={{ height: 18 }} />
-
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                        <button
-                            type="button"
-                            style={styles.primaryBtn}
-                            onClick={onAskIfSomeoneGoes}
-                        >
-                            Chiedi alla tua cerchia
-                        </button>
-                    </div>
-                </>
-            )}
-
-            {introStep === 3 && (
+              {introStep === 3 && (
                 <>
                     <h2 style={styles.h2}>Per iniziare bastano poche persone</h2>
 
@@ -3331,6 +3475,12 @@ const styles: Record<string, React.CSSProperties> = {
   color: "#14b414",
   letterSpacing: 0.3,
 },
+  bootCar: {
+    fontSize: 30,
+    lineHeight: 1,
+    display: "inline-block",
+    animation: "bootDrive 1.8s ease-in-out infinite",
+  },
   avatar: {
     justifySelf: "end",
     width: 28,
