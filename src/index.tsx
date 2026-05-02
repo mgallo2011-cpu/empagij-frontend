@@ -69,18 +69,22 @@ export async function registerPush(): Promise<void> {
 
     let subscription = await registration.pushManager.getSubscription();
 
-    if (!subscription) {
-      const convertedKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+if (subscription) {
+  try {
+    await subscription.unsubscribe();
+    console.log("registerPush: vecchia subscription rimossa");
+  } catch {}
+  subscription = null;
+}
 
-      subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: convertedKey,
-      });
+const convertedKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
 
-      console.log("registerPush: nuova subscription creata");
-    } else {
-      console.log("registerPush: subscription esistente trovata");
-    }
+subscription = await registration.pushManager.subscribe({
+  userVisibleOnly: true,
+  applicationServerKey: convertedKey,
+});
+
+console.log("registerPush: nuova subscription creata");
 
     const res = await fetch(`${API_BASE}/push/subscribe`, {
       method: "POST",

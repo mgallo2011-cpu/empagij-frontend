@@ -668,6 +668,13 @@ useEffect(() => {
             else localStorage.removeItem(LS_USER);
         } catch { }
     }, [user]);
+useEffect(() => {
+    if (!user?.id) return;
+
+    registerPush().catch((err) => {
+        console.error("Auto registerPush error:", err);
+    });
+}, [user?.id]);
     useEffect(() => {
     try {
         const token = localStorage.getItem(LS_TOKEN) || "";
