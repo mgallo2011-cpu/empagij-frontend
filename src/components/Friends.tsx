@@ -525,10 +525,9 @@ export default function Friends({
                     ))}
                     {!selecting && circles.length > 0 && circles.length < 3 && (
     <div style={{ ...styles.card, marginBottom: 14 }}>
-        <div style={styles.cardTitle}>Vuoi creare una tua cerchia?</div>
+        <div style={styles.cardTitle}>Qui puoi creare una tua cerchia</div>
         <div style={{ ...styles.muted, marginTop: 6 }}>
-            Utile se vuoi fare test o organizzarti con un gruppo diverso.
-        </div>
+                    </div>
 
         <div style={{ marginTop: 12 }}>
             <input
@@ -576,7 +575,7 @@ export default function Friends({
                     }
                 }}
             >
-                {isCreatingCircle ? "Creazione..." : "Crea nuova cerchia"}
+                {isCreatingCircle ? "Creazione..." : "OK"}
             </button>
         </div>
     </div>
