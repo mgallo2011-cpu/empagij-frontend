@@ -2163,7 +2163,9 @@ const content = (() => {
   })();
   const isBootLoading = !!user && (!circlesReady || !passaggiReady);
 
-             const main = !user ? (
+             const main = screen.name === "resetPassword" ? (
+    content
+) : !user ? (
     <div
         style={{
             padding: 16,
