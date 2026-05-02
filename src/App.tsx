@@ -34,7 +34,9 @@ type Screen =
       mode?: "manage" | "selectForRequest";
       producerId?: string;
     }
-  | { name: "joinPassaggio"; passaggioId: string };
+ | { name: "joinPassaggio"; passaggioId: string }
+| { name: "resetPassword"; token: string };
+
 type ProducerDraft = {
   name: string;
   category: string;
@@ -611,13 +613,19 @@ const [passaggiReady, setPassaggiReady] = useState(false);
 useEffect(() => {
     try {
         const params = new URLSearchParams(window.location.search);
-        const inviteToken = params.get("invite_token");
 
+        const resetToken = params.get("reset_token");
+        if (resetToken) {
+            setScreen({ name: "resetPassword", token: resetToken });
+            return;
+        }
+
+        const inviteToken = params.get("invite_token");
         if (inviteToken) {
             localStorage.setItem("empagij_invite_token", inviteToken);
         }
     } catch (err) {
-        console.error("Errore parsing invite_token:", err);
+        console.error("Errore parsing URL:", err);
     }
 }, []);
 useEffect(() => {
@@ -1281,7 +1289,23 @@ const handleCreateRichiesta = async ({
     };
 const content = (() => {
   switch (screen.name) {
-    case "producerDetail": {
+    case "resetPassword": {
+    return (
+        <ResetPassword
+            token={screen.token}
+            onDone={() => {
+                try {
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete("reset_token");
+                    window.history.replaceState({}, "", url.toString());
+                } catch {}
+
+                setScreen({ name: "intro" });
+            }}
+        />
+    );
+}
+      case "producerDetail": {
       const { producer, fromTab } = screen;
 
       return (
@@ -4391,6 +4415,82 @@ function RegisterBox({
             >
                 Registrati
             </button>
+        </div>
+    );
+}
+function ResetPassword({
+    token,
+    onDone,
+}: {
+    token: string;
+    onDone: () => void;
+}) {
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
+
+    return (
+        <div style={{ padding: 16 }}>
+            <h2>Reimposta password</h2>
+
+            <input
+                type="password"
+                placeholder="Nuova password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ width: "100%", padding: 8, marginBottom: 12 }}
+            />
+
+            <button
+                disabled={!password || loading}
+                onClick={async () => {
+                    setError("");
+                    setMessage("");
+
+                    try {
+                        setLoading(true);
+
+                        await apiPost("/auth/reset-password", {
+                            token,
+                            new_password: password,
+                        });
+
+                        setMessage("Password aggiornata. Ora puoi accedere.");
+
+                        setTimeout(() => {
+                            onDone();
+                        }, 1500);
+                    } catch (e: any) {
+                        setError(String(e?.message || e));
+                    } finally {
+                        setLoading(false);
+                    }
+                }}
+                style={{
+                    width: "100%",
+                    padding: 10,
+                    background: "#2f4a3d",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 6,
+                    fontWeight: 700,
+                }}
+            >
+                {loading ? "Salvataggio..." : "Salva nuova password"}
+            </button>
+
+            {message ? (
+                <div style={{ color: "#2f4a3d", marginTop: 10 }}>
+                    {message}
+                </div>
+            ) : null}
+
+            {error ? (
+                <div style={{ color: "red", marginTop: 10 }}>
+                    {error}
+                </div>
+            ) : null}
         </div>
     );
 }
