@@ -4100,7 +4100,9 @@ function LoginBox({
 }) {
     const [email, setEmail] = useState("");
 const [password, setPassword] = useState("");
-    const [error, setError] = useState<string>("");
+const [error, setError] = useState<string>("");
+const [resetMessage, setResetMessage] = useState<string>("");
+const [isSendingReset, setIsSendingReset] = useState(false);
 
     return (
         <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
@@ -4196,6 +4198,47 @@ const [password, setPassword] = useState("");
             >
                 Entra
             </button>
+            <button
+    type="button"
+    disabled={!email.trim() || isSendingReset}
+    onClick={async () => {
+        setError("");
+        setResetMessage("");
+
+        try {
+            setIsSendingReset(true);
+
+            await apiPost("/auth/forgot-password", {
+                email,
+            });
+
+            setResetMessage(
+                "Se questa email è registrata, riceverai un link per reimpostare la password."
+            );
+        } catch (e: any) {
+            setError(String(e?.message || e));
+        } finally {
+            setIsSendingReset(false);
+        }
+    }}
+    style={{
+        border: "none",
+        background: "transparent",
+        color: "#D97706",
+        fontWeight: 800,
+        cursor: "pointer",
+        textDecoration: "underline",
+        padding: 6,
+    }}
+>
+    {isSendingReset ? "Invio..." : "Password dimenticata?"}
+</button>
+
+{resetMessage ? (
+    <div style={{ color: "#2f4a3d", fontSize: 13, lineHeight: 1.4 }}>
+        {resetMessage}
+    </div>
+) : null}
         </div>
     );
 }
