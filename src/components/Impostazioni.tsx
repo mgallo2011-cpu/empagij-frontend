@@ -7,6 +7,7 @@ type Props = {
     onChangeProvince: (provinceCode: string) => void;
     onLogout: () => void;
     onOpenIntro: () => void;
+    onEnableNotifications: () => Promise<void>;
 };
 
 export default function Impostazioni({
@@ -15,6 +16,7 @@ export default function Impostazioni({
     onChangeProvince,
     onLogout,
     onOpenIntro,
+    onEnableNotifications,
 }: Props) {
     return (
     <div style={styles.page}>
@@ -80,7 +82,21 @@ export default function Impostazioni({
         Come funziona in 30 secondi
     </button>
 </div>
+<div style={{ height: 10 }} />
 
+<div style={styles.cardCompact}>
+    <div style={{ ...styles.muted, marginBottom: 10 }}>
+        Ricevi notifiche quando qualcuno crea un passaggio.
+    </div>
+
+    <button
+        type="button"
+        style={styles.helpButton}
+        onClick={onEnableNotifications}
+    >
+        Attiva notifiche
+    </button>
+</div>
         <button
     type="button"
     style={{ ...styles.primaryButton, marginTop: 60, alignSelf: "center" }}
