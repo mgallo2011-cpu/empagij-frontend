@@ -6,16 +6,16 @@ type Producer = {
 };
 
 type Richiesta = {
-    id: string;
-    producerName: string;
-    fromName?: string; // solo UI
-    fromUserId?: string;
-    itemsText: string;
-    toNames: string[]; // solo UI
-    targetUserIds: string[];
-    statusByName: Record<string, "pending" | "accepted" | "declined">; // solo legacy/UI
-    statusByUserId: Record<string, "pending" | "accepted" | "declined">;
-    status: "open" | "closed";
+  id: string;
+  producerName: string;
+  fromName?: string;
+  fromUserId?: string;
+  itemsText: string;
+  toNames: string[];
+  targetUserIds: string[];
+  statusByName: Record<string, "pending" | "accepted" | "declined">;
+  statusByUserId: Record<string, "pending" | "accepted" | "declined">;
+  status: "open" | "closed";
 };
 
 type CircleMember = {
@@ -42,9 +42,9 @@ type Circle = {
 };
 
 type FriendsProps = {
-    onBack: () => void;
-    onOpenCerchiaPassaggi?: () => void;
-    mode?: "manage" | "selectForRequest";
+  onBack: () => void;
+  onOpenCerchiaPassaggi?: () => void;
+  mode?: "manage" | "selectForRequest";
   producerId?: string;
   producers: Producer[];
   onCreateRequest?: (payload: {
@@ -55,11 +55,11 @@ type FriendsProps = {
   }) => Promise<void> | void;
   richieste: Richiesta[];
   myName: string;
-    onRespondRequest: (
-        requestId: string,
-        userId: string,
-        decision: "accepted" | "declined"
-    ) => void;
+  onRespondRequest: (
+    requestId: string,
+    userId: string,
+    decision: "accepted" | "declined"
+  ) => void;
   onDeleteRequest: (id: string) => void;
   circleMembers: CircleMember[];
   setCircleMembers: React.Dispatch<React.SetStateAction<CircleMember[]>>;
@@ -70,8 +70,8 @@ type FriendsProps = {
   circles: Circle[];
   activeCircleId: string | null;
   onChangeActiveCircle: (circleId: string) => void;
-    isCreatingRichiesta: boolean;
-    richiestaError: string;
+  isCreatingRichiesta: boolean;
+  richiestaError: string;
   styles: Record<string, React.CSSProperties>;
   apiBase: string;
   getBearerHeaders: () => Record<string, string>;
@@ -79,82 +79,99 @@ type FriendsProps = {
 };
 
 export default function Friends({
-    onBack,
-    onOpenCerchiaPassaggi,
-    mode = "manage",
-    producerId,
-    producers = [],
-    onCreateRequest,
-    richieste = [],
-    myName,
-    onRespondRequest,
-    onDeleteRequest,
-    circleMembers = [],
-    setCircleMembers,
-    myInvites = [],
-    userId,
-    setMyInvites,
-    refreshCircles,
-    circles = [],
-    activeCircleId,
-    onChangeActiveCircle,
-    isCreatingRichiesta,
-    richiestaError,
-    styles = {} as Record<string, React.CSSProperties>,
-    apiBase,
-    getBearerHeaders,
-    apiGet,
+  onBack,
+  onOpenCerchiaPassaggi,
+  mode = "manage",
+  producerId,
+  producers = [],
+  onCreateRequest,
+  richieste = [],
+  myName,
+  onRespondRequest,
+  onDeleteRequest,
+  circleMembers = [],
+  setCircleMembers,
+  myInvites = [],
+  userId,
+  setMyInvites,
+  refreshCircles,
+  circles = [],
+  activeCircleId,
+  onChangeActiveCircle,
+  isCreatingRichiesta,
+  richiestaError,
+  styles = {} as Record<string, React.CSSProperties>,
+  apiBase,
+  getBearerHeaders,
+  apiGet,
 }: FriendsProps) {
-    const selecting = mode === "selectForRequest";
+  const selecting = mode === "selectForRequest";
 
-      const received = !selecting
-      ? richieste.filter((r) => {
-          const ids = Array.isArray(r.targetUserIds) ? r.targetUserIds : [];
-          return ids.includes(userId);
-      })
-      : [];
+  const selectableMembers = useMemo(
+    () =>
+      circleMembers.filter(
+        (m) => (m.name || "").trim().length > 0 && m.name !== myName
+      ),
+    [circleMembers, myName]
+  );
 
-    const selectableMembers = useMemo(
-        () =>
-            circleMembers.filter(
-                (m) => (m.name || "").trim().length > 0 && m.name !== myName
-            ),
-        [circleMembers, myName]
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [draft, setDraft] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [isInviting, setIsInviting] = useState(false);
+  const [inviteFeedback, setInviteFeedback] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const [newCircleName, setNewCircleName] = useState("");
+  const [isCreatingCircle, setIsCreatingCircle] = useState(false);
+  const [isSubmittingLocal, setIsSubmittingLocal] = useState(false);
+
+  const hasNoCircles = circles.length === 0;
+  const hasOnlyMeInCircle = !hasNoCircles && selectableMembers.length === 0;
+
+  const producerName = producers.find((p) => p.id === producerId)?.name || "";
+
+  const toggleUserId = (id: string) => {
+    setSelectedUserIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
+  };
 
-    const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
-    const [itemsText, setItemsText] = useState("");
-    const [draft, setDraft] = useState("");
-    const [isSubmittingLocal, setIsSubmittingLocal] = useState(false);
-       const [inviteEmail, setInviteEmail] = useState("");
-    const [isInviting, setIsInviting] = useState(false);
-    const [inviteFeedback, setInviteFeedback] = useState<{
-        type: "success" | "error";
-        text: string;
-    } | null>(null);
-    const [newCircleName, setNewCircleName] = useState("");
-    const [isCreatingCircle, setIsCreatingCircle] = useState(false);
+  const createCircle = async () => {
+    if (!newCircleName.trim() || isCreatingCircle) return;
 
-    const toggleUserId = (id: string) => {
-        setSelectedUserIds((prev) =>
-            prev.indexOf(id) >= 0 ? prev.filter((x) => x !== id) : [...prev, id]
-        );
-    };
+    setIsCreatingCircle(true);
 
-    const producerName =
-        producers.find((p) => p.id === producerId)?.name || "";
+    try {
+      const res = await fetch(`${apiBase}/circles`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getBearerHeaders(),
+        },
+        body: JSON.stringify({
+          name: newCircleName.trim(),
+        }),
+      });
 
-    const memberNameById = useMemo(
-        () =>
-            Object.fromEntries(
-                circleMembers.map((member) => [member.id, member.name || ""])
-            ) as Record<string, string>,
-        [circleMembers]
-    );
-        const hasNoCircles = circles.length === 0;
-    const hasOnlyMeInCircle = !hasNoCircles && selectableMembers.length === 0;
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || data?.ok === false) {
+        throw new Error(data?.error || `HTTP ${res.status}`);
+      }
+
+      setNewCircleName("");
+      await refreshCircles();
+    } catch (err: any) {
+      alert(String(err?.message || err));
+    } finally {
+      setIsCreatingCircle(false);
+    }
+  };
+
   return (
-      <div style={styles?.page || {}}>
+    <div style={styles?.page || {}}>
       <div style={styles.headerRow}>
         <button type="button" onClick={onBack} style={styles.back}>
           ← Indietro
@@ -162,242 +179,60 @@ export default function Friends({
         <div style={styles.avatar}>🙂</div>
       </div>
 
-          <div
-              style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 12,
-                  marginBottom: 14,
-              }}
-          >
-              <h2 style={{ ...styles.h2, margin: 0 }}>Chi fa la spesa con te</h2>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          marginBottom: 14,
+        }}
+      >
+        <h2 style={{ ...styles.h2, margin: 0 }}>Chi fa la spesa con te</h2>
 
-              {!selecting && !hasNoCircles && (
-                  <button
-                      type="button"
-                      onClick={onOpenCerchiaPassaggi}
-                      style={{
-                          ...styles.secondaryBtn,
-                          minWidth: 0,
-                          maxWidth: "none",
-                          padding: "8px 12px",
-                          background: "#FEFBF4",
-                          color: "#2F5D35",
-                          border: "1px solid #E6D6B3",
-                          fontSize: 13,
-                          fontWeight: 700,
-                      }}
-                  >
-                      Chi sta andando?
-                  </button>
-              )}
-          </div>
-          
-    {hasOnlyMeInCircle && (
-    <div>
-        <div style={styles.card}>
-            <div style={styles.cardTitle}>Per iniziare invita un amico</div>
-            <div style={{ ...styles.muted, marginTop: 6 }}>
-                Appena sarete in due, potrete fare la prima spesa insieme.
-            </div>
-        </div>
-
-        <div style={{ ...styles.muted, marginBottom: 6, marginTop: 12 }}>
-            Email dell’amico da invitare
-        </div>
-        <input
-            value={inviteEmail}
-            onChange={(e) => {
-                setInviteEmail(e.target.value);
-                if (inviteFeedback) setInviteFeedback(null);
-            }}
-            placeholder="email"
-            style={{ ...styles.input, marginBottom: 8 }}
-        />
-
-        <button
+        {!selecting && !hasNoCircles && (
+          <button
             type="button"
+            onClick={onOpenCerchiaPassaggi}
             style={{
-                ...styles.primaryBtn,
-                background: "#D97706",
-                color: "#ffffff",
-                border: "1px solid #B45309",
-                boxShadow: "0 6px 18px rgba(217,119,6,0.28)",
-                opacity: !inviteEmail.trim() || isInviting ? 0.82 : 1,
-                marginBottom: 14,
+              ...styles.secondaryBtn,
+              minWidth: 0,
+              maxWidth: "none",
+              padding: "8px 12px",
+              background: "#FEFBF4",
+              color: "#2F5D35",
+              border: "1px solid #E6D6B3",
+              fontSize: 13,
+              fontWeight: 700,
             }}
-            disabled={!inviteEmail.trim() || isInviting}
-            onClick={async () => {
-                if (!activeCircleId) return;
+          >
+            Chi sta andando?
+          </button>
+        )}
+      </div>
 
-                setInviteFeedback(null);
-                setIsInviting(true);
-
-                try {
-                    const email = inviteEmail.trim();
-
-                    const res = await fetch(
-                        `${apiBase}/circles/${encodeURIComponent(activeCircleId)}/invite`,
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                ...getBearerHeaders(),
-                            },
-                            body: JSON.stringify({
-                                invitee_email: email,
-                            }),
-                        }
-                    );
-
-                    const data = await res.json().catch(() => ({}));
-
-                    if (!res.ok || data?.ok === false) {
-                        throw new Error(data?.error || `HTTP ${res.status}`);
-                    }
-
-                    setInviteEmail("");
-
-                    if (data?.email_sent) {
-                        setInviteFeedback({
-                            type: "success",
-                            text:
-                                `Invito inviato a ${email}. ` +
-                                `La persona riceverà un'email con il link per entrare nella cerchia.`,
-                        });
-                    } else {
-                        setInviteFeedback({
-                            type: "error",
-                            text:
-                                `Invito salvato per ${email}, ma l'email non è stata inviata. ` +
-                                `Errore: ${data?.email_error || "invio email non disponibile"}`,
-                        });
-                    }
-                } catch (err: any) {
-                    console.error("Errore invito:", err);
-                    setInviteFeedback({
-                        type: "error",
-                        text: String(err?.message || err),
-                    });
-                } finally {
-                    setIsInviting(false);
-                }
-            }}
+      {activeCircleId && circles.length === 1 && (
+        <div
+          style={{
+            marginBottom: 12,
+            fontSize: 14,
+            lineHeight: 1.2,
+            background: "#f7f3ec",
+            border: "1px solid #eee6d7",
+            borderRadius: 14,
+            padding: 14,
+          }}
         >
-            {isInviting ? "Invio..." : "Invita un amico"}
-        </button>
-    </div>
-)}
-
-                   {activeCircleId && circles.length === 1 && (
-              <div
-                  style={{
-    marginBottom: 1,
-    fontSize: 14,
-    lineHeight: 0.8,
-    background: "#f7f3ec",
-    border: "1px solid #eee6d7",
-    borderRadius: 14,
-    padding: 14,
-}}
-              >
-                  <div>
-                      Cerchia attiva:{" "}
-                      <strong>
-                          {circles.find((c) => c.id === activeCircleId)?.name || "—"}
-                      </strong>
-                  </div>
-              </div>
-          )}
-         
-            {!selecting && activeCircleId && circleMembers.length < 5 && (
-          <div style={{ marginBottom: 12 }}>
-                                  
-
-              {inviteFeedback && (
-                  <div
-                      style={{
-                          marginTop: 8,
-                          fontSize: 13,
-                          lineHeight: 1.45,
-                          color:
-                              inviteFeedback.type === "error"
-                                  ? "crimson"
-                                  : "#2f4a3d",
-                      }}
-                  >
-                      {inviteFeedback.text}
-                  </div>
-              )}
-          </div>
+          Cerchia attiva:{" "}
+          <strong>
+            {circles.find((c) => c.id === activeCircleId)?.name || "—"}
+          </strong>
+        </div>
       )}
-          
-      {circles.length === 0 && (
-              <div style={styles.card}>
-                  <div style={styles.cardTitle}>
-                      Per iniziare servono 2–3 persone
-                  </div>
-                  <div style={{ ...styles.muted, marginTop: 6 }}>
-                      Crea la tua prima cerchia e invita almeno una persona.
-                  </div>
-
-                  <div style={{ marginTop: 12 }}>
-                      <input
-                          value={newCircleName}
-                          onChange={(e) => setNewCircleName(e.target.value)}
-                          placeholder="Nome della cerchia"
-                          style={{ ...styles.input, marginBottom: 8 }}
-                      />
-
-                      <button
-                          type="button"
-                          style={{
-                              ...styles.primaryBtn,
-                              opacity: !newCircleName.trim() || isCreatingCircle ? 0.5 : 1,
-                          }}
-                          disabled={!newCircleName.trim() || isCreatingCircle}
-                          onClick={async () => {
-                              setIsCreatingCircle(true);
-
-                              try {
-                                  const res = await fetch(`${apiBase}/circles`, {
-                                      method: "POST",
-                                      headers: {
-                                          "Content-Type": "application/json",
-                                          ...getBearerHeaders(),
-                                      },
-                                      body: JSON.stringify({
-                                          name: newCircleName.trim(),
-                                      }),
-                                  });
-
-                                  const data = await res.json().catch(() => ({}));
-
-                                  if (!res.ok || data?.ok === false) {
-                                      throw new Error(data?.error || `HTTP ${res.status}`);
-                                  }
-
-                                  await refreshCircles();
-                                  setNewCircleName("");
-                              } catch (err: any) {
-                                  console.error("Errore creazione cerchia:", err);
-                              } finally {
-                                  setIsCreatingCircle(false);
-                              }
-                          }}
-                      >
-                          {isCreatingCircle ? "Creazione..." : "Crea la prima cerchia"}
-                      </button>
-                  </div>
-              </div>
-          )}
 
       {circles.length > 1 && (
         <div style={{ marginBottom: 12 }}>
-          <div style={{ ...styles.muted, marginBottom: 6 }}>
-            Cerchia attiva
-          </div>
+          <div style={{ ...styles.muted, marginBottom: 6 }}>Cerchia attiva</div>
 
           <select
             value={activeCircleId || ""}
@@ -413,447 +248,428 @@ export default function Friends({
         </div>
       )}
 
-     
+      {hasOnlyMeInCircle && (
+        <div>
+          <div style={styles.card}>
+            <div style={styles.cardTitle}>Per iniziare invita un amico</div>
+            <div style={{ ...styles.muted, marginTop: 6 }}>
+              Appena sarete in due, potrete fare la prima spesa insieme.
+            </div>
+          </div>
 
-                           {hasNoCircles ? null : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {selecting && (
-                        <div style={{ ...styles.muted, marginBottom: 10 }}>
-                            Seleziona una o più persone della cerchia.
-                        </div>
-                    )}
+          <div style={{ ...styles.muted, marginBottom: 6, marginTop: 12 }}>
+            Email dell’amico da invitare
+          </div>
 
-                    {selecting && (
-                        <div style={{ marginBottom: 12 }}>
-                            <div style={{ ...styles.muted, marginBottom: 6 }}>
-                                Cosa ti serve dal produttore?
-                            </div>
-                            <input
-                                value={draft}
-                                onChange={(e) => setDraft(e.target.value)}
-                                placeholder='Es. "2 orecchiette + 1 pacco ceci"'
-                                style={styles.input}
-                            />
-                        </div>
-                    )}
+          <input
+            value={inviteEmail}
+            onChange={(e) => {
+              setInviteEmail(e.target.value);
+              if (inviteFeedback) setInviteFeedback(null);
+            }}
+            placeholder="email"
+            style={{ ...styles.input, marginBottom: 8 }}
+          />
 
-                    {selectableMembers.map((member) => (
-                        <div key={member.id} style={styles.card}>
-                            <div style={styles.cardTop}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                    <div style={styles.avatarSmall}>🙂</div>
-                                    <div style={styles.cardTitle}>{member.name}</div>
+          <button
+            type="button"
+            style={{
+              ...styles.primaryBtn,
+              background: "#D97706",
+              color: "#ffffff",
+              border: "1px solid #B45309",
+              boxShadow: "0 6px 18px rgba(217,119,6,0.28)",
+              opacity: !inviteEmail.trim() || isInviting ? 0.82 : 1,
+              marginBottom: 14,
+            }}
+            disabled={!inviteEmail.trim() || isInviting}
+            onClick={async () => {
+              if (!activeCircleId) return;
 
-                                    {!selecting && (
-                                        <button
-                                            type="button"
-                                            style={styles.btnSecondary}
-                                            onClick={async () => {
-                                                if (!activeCircleId) return;
+              setInviteFeedback(null);
+              setIsInviting(true);
 
-                                                if (
-                                                    !window.confirm(
-                                                        `Rimuovere ${member.name} dalla cerchia?`
-                                                    )
-                                                ) {
-                                                    return;
-                                                }
+              try {
+                const email = inviteEmail.trim();
 
-                                                try {
-                                                    const res = await fetch(
-                                                        `${apiBase}/circles/${encodeURIComponent(
-                                                            activeCircleId
-                                                        )}/members/${encodeURIComponent(member.id)}`,
-                                                        {
-                                                            method: "DELETE",
-                                                            headers: {
-                                                                ...getBearerHeaders(),
-                                                            },
-                                                        }
-                                                    );
+                const res = await fetch(
+                  `${apiBase}/circles/${encodeURIComponent(activeCircleId)}/invite`,
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      ...getBearerHeaders(),
+                    },
+                    body: JSON.stringify({
+                      invitee_email: email,
+                    }),
+                  }
+                );
 
-                                                    const data = await res.json().catch(() => ({}));
+                const data = await res.json().catch(() => ({}));
 
-                                                    if (!res.ok || data?.ok === false) {
-                                                        throw new Error(data?.error || `HTTP ${res.status}`);
-                                                    }
+                if (!res.ok || data?.ok === false) {
+                  throw new Error(data?.error || `HTTP ${res.status}`);
+                }
 
-                                                    await refreshCircles();
+                setInviteEmail("");
 
-                                                    if (data?.circle_deleted) {
-                                                        onBack();
-                                                        return;
-                                                    }
+                setInviteFeedback({
+                  type: data?.email_sent ? "success" : "error",
+                  text: data?.email_sent
+                    ? `Invito inviato a ${email}.`
+                    : `Invito salvato, ma email non inviata: ${
+                        data?.email_error || "invio email non disponibile"
+                      }`,
+                });
+              } catch (err: any) {
+                setInviteFeedback({
+                  type: "error",
+                  text: String(err?.message || err),
+                });
+              } finally {
+                setIsInviting(false);
+              }
+            }}
+          >
+            {isInviting ? "Invio..." : "Invita un amico"}
+          </button>
+        </div>
+      )}
 
-                                                    const membersData = await apiGet<{
-                                                        ok: true;
-                                                        members: CircleMember[];
-                                                    }>(
-                                                        `/circles/${encodeURIComponent(
-                                                            activeCircleId
-                                                        )}/members`
-                                                    );
+      {inviteFeedback && (
+        <div
+          style={{
+            marginTop: 8,
+            marginBottom: 12,
+            fontSize: 13,
+            lineHeight: 1.45,
+            color: inviteFeedback.type === "error" ? "crimson" : "#2f4a3d",
+          }}
+        >
+          {inviteFeedback.text}
+        </div>
+      )}
 
-                                                    const nextMembers: CircleMember[] = Array.isArray(
-                                                        membersData.members
-                                                    )
-                                                        ? membersData.members
-                                                        : [];
+      {circles.length === 0 && (
+        <div style={styles.card}>
+          <div style={styles.cardTitle}>Per iniziare servono 2–3 persone</div>
+          <div style={{ ...styles.muted, marginTop: 6 }}>
+            Crea la tua prima cerchia e invita almeno una persona.
+          </div>
 
-                                                    setCircleMembers(nextMembers);
-                                                } catch (err: any) {
-                                                    alert(String(err?.message || err));
-                                                }
-                                            }}
-                                        >
-                                            Rimuovi
-                                        </button>
-                                    )}
-                                </div>
-
-                                {selecting ? (
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedUserIds.indexOf(member.id) >= 0}
-                                        onChange={() => toggleUserId(member.id)}
-                                    />
-                                ) : (
-                                    <div style={styles.pill}>membro</div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                    {!selecting && circles.length > 0 && circles.length < 3 && (
-    <div style={{ ...styles.card, marginBottom: 14 }}>
-        <div style={styles.cardTitle}>Qui puoi creare una tua cerchia</div>
-        <div style={{ ...styles.muted, marginTop: 6 }}>
-                    </div>
-
-        <div style={{ marginTop: 12 }}>
+          <div style={{ marginTop: 12 }}>
             <input
-                value={newCircleName}
-                onChange={(e) => setNewCircleName(e.target.value)}
-                placeholder="Nome nuova cerchia"
-                style={{ ...styles.input, marginBottom: 8 }}
+              value={newCircleName}
+              onChange={(e) => setNewCircleName(e.target.value)}
+              placeholder="Nome della cerchia"
+              style={{ ...styles.input, marginBottom: 8 }}
             />
 
             <button
-                type="button"
-                style={{
-                    ...styles.primaryBtn,
-                    opacity: !newCircleName.trim() || isCreatingCircle ? 0.5 : 1,
-                }}
-                disabled={!newCircleName.trim() || isCreatingCircle}
-                onClick={async () => {
-                    setIsCreatingCircle(true);
+              type="button"
+              style={{
+                ...styles.primaryBtn,
+                opacity: !newCircleName.trim() || isCreatingCircle ? 0.5 : 1,
+              }}
+              disabled={!newCircleName.trim() || isCreatingCircle}
+              onClick={createCircle}
+            >
+              {isCreatingCircle ? "Creazione..." : "Crea la prima cerchia"}
+            </button>
+          </div>
+        </div>
+      )}
 
-                    try {
-                        const res = await fetch(`${apiBase}/circles`, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                ...getBearerHeaders(),
-                            },
-                            body: JSON.stringify({
-                                name: newCircleName.trim(),
-                            }),
-                        });
+      {!hasNoCircles && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {selecting && (
+            <div style={{ ...styles.muted, marginBottom: 10 }}>
+              Seleziona una o più persone della cerchia.
+            </div>
+          )}
 
-                        const data = await res.json().catch(() => ({}));
+          {selecting && (
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ ...styles.muted, marginBottom: 6 }}>
+                Cosa ti serve dal produttore?
+              </div>
+              <input
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder='Es. "2 orecchiette + 1 pacco ceci"'
+                style={styles.input}
+              />
+            </div>
+          )}
 
-                        if (!res.ok || data?.ok === false) {
-                            throw new Error(data?.error || `HTTP ${res.status}`);
+          {selectableMembers.map((member) => (
+            <div key={member.id} style={styles.card}>
+              <div style={styles.cardTop}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={styles.avatarSmall}>🙂</div>
+                  <div style={styles.cardTitle}>{member.name}</div>
+
+                  {!selecting && (
+                    <button
+                      type="button"
+                      style={styles.btnSecondary}
+                      onClick={async () => {
+                        if (!activeCircleId) return;
+
+                        if (!window.confirm(`Rimuovere ${member.name} dalla cerchia?`)) {
+                          return;
                         }
 
-                        await refreshCircles();
-                        setNewCircleName("");
-                    } catch (err: any) {
-                        console.error("Errore creazione cerchia:", err);
-                        alert(String(err?.message || err));
-                    } finally {
-                        setIsCreatingCircle(false);
-                    }
-                }}
-            >
-                {isCreatingCircle ? "Creazione..." : "OK"}
-            </button>
-        </div>
-    </div>
-)}
-                    
-{/*
-                    {!selecting && !hasOnlyMeInCircle && (
-                        <div style={{ marginTop: 40, marginBottom: 14 }}>
-                            <div
-                                style={{
-    fontWeight: 800,
-    fontSize: 14,
-    lineHeight: 1.0,
-    color: "#5FAE32",
-    marginBottom: 10,
-}}
-                            >
-                                Richieste ricevute
-                            </div>
+                        try {
+                          const res = await fetch(
+                            `${apiBase}/circles/${encodeURIComponent(
+                              activeCircleId
+                            )}/members/${encodeURIComponent(member.id)}`,
+                            {
+                              method: "DELETE",
+                              headers: {
+                                ...getBearerHeaders(),
+                              },
+                            }
+                          );
 
-                            {received.length === 0 ? (
-                                <div style={styles.card}>
-                                    <div style={styles.cardTitle}>Ancora nessuna richiesta ricevuta</div>
-                                    <div style={{ ...styles.muted, marginTop: 6 }}>
-                                        Quando una persona della tua cerchia ti chiederà qualcosa, lo vedrai qui.
-                                    </div>
-                                </div>
-                            ) : (
-                                received.map((r) => {
-                                    const myDecision = r.statusByUserId?.[userId] || "pending";
-                                    const isPending = myDecision === "pending";
+                          const data = await res.json().catch(() => ({}));
 
-                                    return (
-                                        <div
-                                            key={r.id}
-                                            style={{
-                                                ...styles.card,
-                                                padding: "10px 12px",
-                                                borderRadius: 12,
-                                                minHeight: "unset",
-                                                ...(!isPending ? { background: "#fffaf2" } : {}),
-                                            }}
-                                        >
-                                            <div style={{ fontWeight: 800 }}>{r.producerName}</div>
+                          if (!res.ok || data?.ok === false) {
+                            throw new Error(data?.error || `HTTP ${res.status}`);
+                          }
 
-                                            <div style={{ marginTop: 4 }}>
-                                                <div
-                                                    style={{
-                                                        fontSize: 12,
-                                                        opacity: 1,
-                                                        color: "#2f281f",
-                                                        marginBottom: 0,
-                                                        lineHeight: "14px",
-                                                    }}
-                                                >
-                                                    <div>Da: {r.fromName || "Un amico"}</div>
-                                                    <div>Prodotto: {r.itemsText?.trim() ? r.itemsText : "-"}</div>
-                                                    <div style={{ marginTop: 4, fontWeight: 700, fontSize: 12 }}>
-                                                        Stato:{" "}
-                                                        {myDecision === "accepted"
-                                                            ? "✅ Hai accettato"
-                                                            : myDecision === "declined"
-                                                                ? "❌ Hai rifiutato"
-                                                                : "⏳ In attesa"}
-                                                    </div>
-                                                </div>
+                          await refreshCircles();
 
-                                                {isPending ? (
-                                                    <>
-                                                        <button
-                                                            type="button"
-                                                            style={styles.primaryButton}
-                                                            onClick={() => onRespondRequest(r.id, userId, "accepted")}
-                                                        >
-                                                            Sì certo
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            style={styles.secondaryButton}
-                                                            onClick={() => onRespondRequest(r.id, userId, "declined")}
-                                                        >
-                                                            No, mi spiace
-                                                        </button>
-                                                    </>
-                                                ) : null}
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                                                 )}
-                        </div>
-                    )}
-                        */}
-                    {!selecting && myInvites.length > 0 && (
-                        <div style={{ marginTop: 60, marginBottom: 12 }}>
-                            <div
-                               style={{
-    fontWeight: 800,
-    fontSize: 14,
-    lineHeight: 1.0,
-    color: "#5FAE32",
-    marginBottom: 10,
-}}
-                            >
-                                Inviti ricevuti
-                            </div>
+                          const membersData = await apiGet<{
+                            ok: true;
+                            members: CircleMember[];
+                          }>(`/circles/${encodeURIComponent(activeCircleId)}/members`);
 
-                            <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-                                {myInvites.map((inv) => (
-                                    <div key={inv.id} style={styles.card}>
-                                        <div style={styles.cardTop}>
-                                            <div style={styles.avatarSmall}>📩</div>
-
-                                            <div style={{ flex: 1 }}>
-                                                <div style={styles.cardTitle}>
-                                                    {inv.circle_name || "Cerchia"}
-                                                </div>
-                                                <div style={styles.cardSub}>Invito in attesa</div>
-                                            </div>
-
-                                            <button
-                                                type="button"
-                                                style={{
-                                                    ...styles.primaryButton,
-                                                    background: "#2f4a3d",
-                                                    color: "#fff",
-                                                    fontWeight: 800,
-                                                    border: "2px solid #2f4a3d",
-                                                    boxShadow: "0 6px 16px rgba(47,74,61,0.28)",
-                                                }}
-                                                onClick={async () => {
-                                                    try {
-                                                        const res = await fetch(
-                                                            `${apiBase}/invites/${encodeURIComponent(inv.id)}/accept`,
-                                                            {
-                                                                method: "POST",
-                                                                headers: {
-                                                                    ...getBearerHeaders(),
-                                                                },
-                                                            }
-                                                        );
-
-                                                        const data = await res.json().catch(() => ({}));
-
-                                                        if (!res.ok || data?.ok === false) {
-                                                            throw new Error(data?.error || `HTTP ${res.status}`);
-                                                        }
-
-                                                        setMyInvites((prev) =>
-                                                            prev.filter((x) => x.id !== inv.id)
-                                                        );
-                                                        await refreshCircles();
-                                                        alert("Invito accettato");
-                                                    } catch (err: any) {
-                                                        alert(String(err?.message || err));
-                                                    }
-                                                }}
-                                            >
-                                                Accetta
-                                            </button>
-
-                                            <button
-                                                type="button"
-                                                style={styles.secondaryButton}
-                                                onClick={async () => {
-                                                    try {
-                                                        const res = await fetch(
-                                                            `${apiBase}/invites/${encodeURIComponent(inv.id)}/decline`,
-                                                            {
-                                                                method: "POST",
-                                                                headers: {
-                                                                    ...getBearerHeaders(),
-                                                                },
-                                                            }
-                                                        );
-
-                                                        const data = await res.json().catch(() => ({}));
-
-                                                        if (!res.ok || data?.ok === false) {
-                                                            throw new Error(data?.error || `HTTP ${res.status}`);
-                                                        }
-
-                                                        setMyInvites((prev) =>
-                                                            prev.filter((x) => x.id !== inv.id)
-                                                        );
-                                                        alert("Invito rifiutato");
-                                                    } catch (err: any) {
-                                                        alert(String(err?.message || err));
-                                                    }
-                                                }}
-                                            >
-                                                Rifiuta
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                    {selecting && (
-                        <div style={{ marginTop: 20 }}>
-                            <button
-                                type="button"
-                                style={{
-                                    ...styles.primaryButton,
-                                    opacity:
-                                        isSubmittingLocal ||
-                                            isCreatingRichiesta ||
-                                            selectedUserIds.length === 0 ||
-                                            !(draft || "").trim()
-                                            ? 0.5
-                                            : 1,
-                                    cursor:
-                                        isSubmittingLocal ||
-                                            isCreatingRichiesta ||
-                                            selectedUserIds.length === 0 ||
-                                            !(draft || "").trim()
-                                            ? "not-allowed"
-                                            : "pointer",
-                                }}
-                                disabled={
-                                    isSubmittingLocal ||
-                                    isCreatingRichiesta ||
-                                    selectedUserIds.length === 0 ||
-                                    !(draft || "").trim()
-                                }
-                                onClick={async () => {
-                                    if (
-                                        isSubmittingLocal ||
-                                        isCreatingRichiesta ||
-                                        selectedUserIds.length === 0 ||
-                                        !(draft || "").trim()
-                                    ) {
-                                        return;
-                                    }
-
-                                    setIsSubmittingLocal(true);
-
-                                    try {
-                                        await onCreateRequest?.({
-                                            producerId: producerId || "",
-                                            producerName: producerName || "",
-                                            itemsText: (draft || "").trim(),
-                                            targetUserIds: selectedUserIds,
-                                        });
-
-                                        onBack();
-                                    } catch (err) {
-                                        console.error("Errore invio richiesta:", err);
-                                    } finally {
-                                        setIsSubmittingLocal(false);
-                                    }
-                                }}
-                            >
-                                {isSubmittingLocal || isCreatingRichiesta
-                                    ? "Invio..."
-                                    : "Invia richiesta"}
-                            </button>
-                            {richiestaError && (
-                                <div style={{ color: "crimson", marginTop: 8, fontSize: 13 }}>
-                                    {richiestaError}
-                                </div>
-                            )}
-                        </div>
-                    )}
+                          setCircleMembers(
+                            Array.isArray(membersData.members) ? membersData.members : []
+                          );
+                        } catch (err: any) {
+                          alert(String(err?.message || err));
+                        }
+                      }}
+                    >
+                      Rimuovi
+                    </button>
+                  )}
                 </div>
-            )}
-        
-                  <div
-              style={{
-                  ...styles.muted,
-                  fontSize: 12,
-                  marginTop: 18,
-                  textAlign: "center",
-              }}
-          >
-              Max 5 persone per cerchia
-          </div>
+
+                {selecting ? (
+                  <input
+                    type="checkbox"
+                    checked={selectedUserIds.includes(member.id)}
+                    onChange={() => toggleUserId(member.id)}
+                  />
+                ) : (
+                  <div style={styles.pill}>membro</div>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {!selecting && circles.length > 0 && circles.length < 3 && (
+            <div style={{ ...styles.card, marginTop: 26, marginBottom: 34 }}>
+              <div style={{ ...styles.muted, marginBottom: 8 }}>
+                Qui puoi creare una nuova cerchia
+              </div>
+
+              <div style={{ display: "flex", gap: 8 }}>
+                <input
+                  value={newCircleName}
+                  onChange={(e) => setNewCircleName(e.target.value)}
+                  placeholder="Nome"
+                  style={{ ...styles.input, marginBottom: 0 }}
+                />
+
+                <button
+                  type="button"
+                  style={{
+                    ...styles.primaryBtn,
+                    minWidth: 76,
+                    padding: "10px 12px",
+                    opacity: !newCircleName.trim() || isCreatingCircle ? 0.5 : 1,
+                  }}
+                  disabled={!newCircleName.trim() || isCreatingCircle}
+                  onClick={createCircle}
+                >
+                  {isCreatingCircle ? "..." : "OK"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!selecting && myInvites.length > 0 && (
+            <div style={{ marginTop: 40, marginBottom: 12 }}>
+              <div
+                style={{
+                  fontWeight: 800,
+                  fontSize: 14,
+                  color: "#5FAE32",
+                  marginBottom: 10,
+                }}
+              >
+                Inviti ricevuti
+              </div>
+
+              <div style={{ display: "grid", gap: 10 }}>
+                {myInvites.map((inv) => (
+                  <div key={inv.id} style={styles.card}>
+                    <div style={styles.cardTop}>
+                      <div style={styles.avatarSmall}>📩</div>
+
+                      <div style={{ flex: 1 }}>
+                        <div style={styles.cardTitle}>
+                          {inv.circle_name || "Cerchia"}
+                        </div>
+                        <div style={styles.cardSub}>Invito in attesa</div>
+                      </div>
+
+                      <button
+                        type="button"
+                        style={styles.primaryButton}
+                        onClick={async () => {
+                          try {
+                            const res = await fetch(
+                              `${apiBase}/invites/${encodeURIComponent(inv.id)}/accept`,
+                              {
+                                method: "POST",
+                                headers: {
+                                  ...getBearerHeaders(),
+                                },
+                              }
+                            );
+
+                            const data = await res.json().catch(() => ({}));
+
+                            if (!res.ok || data?.ok === false) {
+                              throw new Error(data?.error || `HTTP ${res.status}`);
+                            }
+
+                            setMyInvites((prev) => prev.filter((x) => x.id !== inv.id));
+                            await refreshCircles();
+                            alert("Invito accettato");
+                          } catch (err: any) {
+                            alert(String(err?.message || err));
+                          }
+                        }}
+                      >
+                        Accetta
+                      </button>
+
+                      <button
+                        type="button"
+                        style={styles.secondaryButton}
+                        onClick={async () => {
+                          try {
+                            const res = await fetch(
+                              `${apiBase}/invites/${encodeURIComponent(inv.id)}/decline`,
+                              {
+                                method: "POST",
+                                headers: {
+                                  ...getBearerHeaders(),
+                                },
+                              }
+                            );
+
+                            const data = await res.json().catch(() => ({}));
+
+                            if (!res.ok || data?.ok === false) {
+                              throw new Error(data?.error || `HTTP ${res.status}`);
+                            }
+
+                            setMyInvites((prev) => prev.filter((x) => x.id !== inv.id));
+                            alert("Invito rifiutato");
+                          } catch (err: any) {
+                            alert(String(err?.message || err));
+                          }
+                        }}
+                      >
+                        Rifiuta
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selecting && (
+            <div style={{ marginTop: 20 }}>
+              <button
+                type="button"
+                style={{
+                  ...styles.primaryButton,
+                  opacity:
+                    isSubmittingLocal ||
+                    isCreatingRichiesta ||
+                    selectedUserIds.length === 0 ||
+                    !draft.trim()
+                      ? 0.5
+                      : 1,
+                }}
+                disabled={
+                  isSubmittingLocal ||
+                  isCreatingRichiesta ||
+                  selectedUserIds.length === 0 ||
+                  !draft.trim()
+                }
+                onClick={async () => {
+                  if (
+                    isSubmittingLocal ||
+                    isCreatingRichiesta ||
+                    selectedUserIds.length === 0 ||
+                    !draft.trim()
+                  ) {
+                    return;
+                  }
+
+                  setIsSubmittingLocal(true);
+
+                  try {
+                    await onCreateRequest?.({
+                      producerId: producerId || "",
+                      producerName,
+                      itemsText: draft.trim(),
+                      targetUserIds: selectedUserIds,
+                    });
+
+                    onBack();
+                  } catch (err) {
+                    console.error("Errore invio richiesta:", err);
+                  } finally {
+                    setIsSubmittingLocal(false);
+                  }
+                }}
+              >
+                {isSubmittingLocal || isCreatingRichiesta ? "Invio..." : "Invia richiesta"}
+              </button>
+
+              {richiestaError && (
+                <div style={{ color: "crimson", marginTop: 8, fontSize: 13 }}>
+                  {richiestaError}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div
+        style={{
+          ...styles.muted,
+          fontSize: 12,
+          marginTop: 18,
+          textAlign: "center",
+        }}
+      >
+        Max 5 persone per cerchia
       </div>
+    </div>
   );
 }
