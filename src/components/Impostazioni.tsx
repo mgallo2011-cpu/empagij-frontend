@@ -18,6 +18,7 @@ export default function Impostazioni({
     onOpenIntro,
     onEnableNotifications,
 }: Props) {
+const [notificationsEnabled, setNotificationsEnabled] = React.useState(false);
     return (
     <div style={styles.page}>
         <div style={styles.topbar}>
@@ -89,13 +90,20 @@ export default function Impostazioni({
         Ricevi notifiche quando qualcuno crea un passaggio.
     </div>
 
-    <button
-        type="button"
-        style={styles.helpButton}
-        onClick={onEnableNotifications}
-    >
-        Attiva notifiche
-    </button>
+   <button
+    type="button"
+    style={{
+        ...styles.helpButton,
+        background: notificationsEnabled ? "#2f4a3d" : "#f4b183",
+        color: notificationsEnabled ? "#fff" : "#5a2f12",
+    }}
+    onClick={async () => {
+        await onEnableNotifications();
+        setNotificationsEnabled(true);
+    }}
+>
+    {notificationsEnabled ? "Notifiche attive ✅" : "Attiva notifiche"}
+</button>
 </div>
         <button
     type="button"
