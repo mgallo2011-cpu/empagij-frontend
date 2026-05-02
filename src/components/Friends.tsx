@@ -303,7 +303,7 @@ export default function Friends({
 }}
               >
                   <div>
-                      La tua cerchia:{" "}
+                      Cerchia attiva:{" "}
                       <strong>
                           {circles.find((c) => c.id === activeCircleId)?.name || "—"}
                       </strong>
@@ -332,64 +332,7 @@ export default function Friends({
               )}
           </div>
       )}
-          {!selecting && circles.length > 0 && circles.length < 3 && (
-    <div style={{ ...styles.card, marginBottom: 14 }}>
-        <div style={styles.cardTitle}>Vuoi creare una tua cerchia?</div>
-        <div style={{ ...styles.muted, marginTop: 6 }}>
-            Utile se vuoi fare test o organizzarti con un gruppo diverso.
-        </div>
-
-        <div style={{ marginTop: 12 }}>
-            <input
-                value={newCircleName}
-                onChange={(e) => setNewCircleName(e.target.value)}
-                placeholder="Nome nuova cerchia"
-                style={{ ...styles.input, marginBottom: 8 }}
-            />
-
-            <button
-                type="button"
-                style={{
-                    ...styles.primaryBtn,
-                    opacity: !newCircleName.trim() || isCreatingCircle ? 0.5 : 1,
-                }}
-                disabled={!newCircleName.trim() || isCreatingCircle}
-                onClick={async () => {
-                    setIsCreatingCircle(true);
-
-                    try {
-                        const res = await fetch(`${apiBase}/circles`, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                ...getBearerHeaders(),
-                            },
-                            body: JSON.stringify({
-                                name: newCircleName.trim(),
-                            }),
-                        });
-
-                        const data = await res.json().catch(() => ({}));
-
-                        if (!res.ok || data?.ok === false) {
-                            throw new Error(data?.error || `HTTP ${res.status}`);
-                        }
-
-                        await refreshCircles();
-                        setNewCircleName("");
-                    } catch (err: any) {
-                        console.error("Errore creazione cerchia:", err);
-                        alert(String(err?.message || err));
-                    } finally {
-                        setIsCreatingCircle(false);
-                    }
-                }}
-            >
-                {isCreatingCircle ? "Creazione..." : "Crea nuova cerchia"}
-            </button>
-        </div>
-    </div>
-)}
+          
       {circles.length === 0 && (
               <div style={styles.card}>
                   <div style={styles.cardTitle}>
@@ -580,7 +523,64 @@ export default function Friends({
                             </div>
                         </div>
                     ))}
+                    {!selecting && circles.length > 0 && circles.length < 3 && (
+    <div style={{ ...styles.card, marginBottom: 14 }}>
+        <div style={styles.cardTitle}>Vuoi creare una tua cerchia?</div>
+        <div style={{ ...styles.muted, marginTop: 6 }}>
+            Utile se vuoi fare test o organizzarti con un gruppo diverso.
+        </div>
 
+        <div style={{ marginTop: 12 }}>
+            <input
+                value={newCircleName}
+                onChange={(e) => setNewCircleName(e.target.value)}
+                placeholder="Nome nuova cerchia"
+                style={{ ...styles.input, marginBottom: 8 }}
+            />
+
+            <button
+                type="button"
+                style={{
+                    ...styles.primaryBtn,
+                    opacity: !newCircleName.trim() || isCreatingCircle ? 0.5 : 1,
+                }}
+                disabled={!newCircleName.trim() || isCreatingCircle}
+                onClick={async () => {
+                    setIsCreatingCircle(true);
+
+                    try {
+                        const res = await fetch(`${apiBase}/circles`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                ...getBearerHeaders(),
+                            },
+                            body: JSON.stringify({
+                                name: newCircleName.trim(),
+                            }),
+                        });
+
+                        const data = await res.json().catch(() => ({}));
+
+                        if (!res.ok || data?.ok === false) {
+                            throw new Error(data?.error || `HTTP ${res.status}`);
+                        }
+
+                        await refreshCircles();
+                        setNewCircleName("");
+                    } catch (err: any) {
+                        console.error("Errore creazione cerchia:", err);
+                        alert(String(err?.message || err));
+                    } finally {
+                        setIsCreatingCircle(false);
+                    }
+                }}
+            >
+                {isCreatingCircle ? "Creazione..." : "Crea nuova cerchia"}
+            </button>
+        </div>
+    </div>
+)}
                     
 {/*
                     {!selecting && !hasOnlyMeInCircle && (
