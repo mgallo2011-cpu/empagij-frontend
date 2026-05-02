@@ -1300,7 +1300,7 @@ const content = (() => {
                     window.history.replaceState({}, "", url.toString());
                 } catch {}
 
-                setScreen({ name: "intro" });
+                setScreen({ name: "login" });
             }}
         />
     );
@@ -4456,7 +4456,7 @@ function ResetPassword({
                             new_password: password,
                         });
 
-                        setMessage("Password aggiornata. Ora puoi accedere.");
+                        setMessage("Password aggiornata ✅ Ora accedi con la nuova password.");
 
                         setTimeout(() => {
                             onDone();
@@ -4480,11 +4480,29 @@ function ResetPassword({
                 {loading ? "Salvataggio..." : "Salva nuova password"}
             </button>
 
-            {message ? (
-                <div style={{ color: "#2f4a3d", marginTop: 10 }}>
-                    {message}
-                </div>
-            ) : null}
+           {message ? (
+    <>
+        <div style={{ color: "#2f4a3d", marginTop: 14, fontWeight: 700 }}>
+            {message}
+        </div>
+
+        <button
+            onClick={onDone}
+            style={{
+                marginTop: 12,
+                width: "100%",
+                padding: 10,
+                background: "#D97706",
+                color: "#fff",
+                border: "none",
+                borderRadius: 6,
+                fontWeight: 700,
+            }}
+        >
+            Vai al login
+        </button>
+    </>
+) : null}
 
             {error ? (
                 <div style={{ color: "red", marginTop: 10 }}>
