@@ -5,12 +5,12 @@ self.addEventListener("push", function (event) {
         data = event.data.json();
     } catch (e) {
         data = {
-            title: "Empagij",
+            title: "SpesaConTe",
             body: "Nuova notifica",
         };
     }
 
-    const title = data.title || "Empagij";
+    const title = data.title || "SpesaConTe";
     const options = {
         body: data.body || "",
         data: {
