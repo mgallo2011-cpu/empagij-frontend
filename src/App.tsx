@@ -2284,7 +2284,7 @@ const content = (() => {
     <div style={styles.app}>
           <div style={styles.screen}>{main}</div>
 
-            {user && screen.name !== "intro" && (
+            {user && (
             <BottomNav
                 tab={activeTab}
                 setTab={(t) => {
