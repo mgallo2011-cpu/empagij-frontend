@@ -250,7 +250,7 @@ export default function Friends({
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-          <h2 style={{ ...styles.h2, marginTop: 0 }}>Chi fa la spesa con te</h2>
+          <h2 style={{ ...styles.h2, marginTop: 0 }}>Le tue cerchie</h2>
 
           {hasCircle && (
             <button

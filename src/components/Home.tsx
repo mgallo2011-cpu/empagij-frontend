@@ -22,11 +22,7 @@ const passaggiConCerchia = passaggi.map((p) => {
 });
 
     const passaggiAttivi = passaggiConCerchia.length;
-    const titoloDinamico =
-        passaggiAttivi > 0
-            ? "La tua cerchia si sta muovendo..."
-            : "Nessuno sta andando... per ora";
-    const [tripsSaved, setTripsSaved] = React.useState(0);
+const [tripsSaved, setTripsSaved] = React.useState(0);
 
 React.useEffect(() => {
   fetch("https://empagij-backend-delsud.onrender.com/metrics/trips-saved")
@@ -75,9 +71,7 @@ React.useEffect(() => {
               <div style={styles.avatar}>🙂</div>
           </div>
 
-      <h2 style={styles.h2}>{titoloDinamico}</h2>
-
-          <div style={styles.cardsCol}>
+                <div style={styles.cardsCol}>
               <div
                   style={{
                       ...styles.card,
@@ -134,8 +128,8 @@ React.useEffect(() => {
                           </div>
 
                           <div style={{ ...styles.cardSub, marginTop: 6 }}>
-                              Vedi i passaggi attivi nelle tue cerchie
-                          </div>
+    Entra subito e aggiungiti
+</div>
                       </>
                   ) : (
                       <>
@@ -159,7 +153,7 @@ React.useEffect(() => {
                                   }}
                               >
                                   <span>🚗</span>
-                                  <span>Fai partire tu il primo passaggio</span>
+                                  <span>Sto andando a fare la spesa</span>
                               </button>
 
                               <div
@@ -169,7 +163,7 @@ React.useEffect(() => {
                                       textAlign: "center",
                                   }}
                               >
-                                  Avvisa la tua cerchia e raccogli le richieste
+                                  Proponi una spesa e gli altri possono aggiungersi
                               </div>
                       </>
                   )}
@@ -212,7 +206,9 @@ React.useEffect(() => {
                       {tripsSaved.toLocaleString()}
                   </div>
               </div>
-              <div style={styles.impactTitle}>Viaggi risparmiati</div>
+              <div style={styles.impactTitle}>
+    Viaggi risparmiati insieme
+</div>
               <div style={styles.impactSub}>Grazie anche alla tua cerchia</div>
           </div>
 
