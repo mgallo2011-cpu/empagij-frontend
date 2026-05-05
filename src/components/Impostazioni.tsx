@@ -18,7 +18,9 @@ export default function Impostazioni({
     onOpenIntro,
     onEnableNotifications,
 }: Props) {
-const [notificationsEnabled, setNotificationsEnabled] = React.useState(false);
+    const [notificationsEnabled, setNotificationsEnabled] = React.useState(() => {
+        return localStorage.getItem("spesaconte_notifications_enabled") === "true";
+    });
     return (
     <div style={styles.page}>
         <div style={styles.topbar}>
@@ -97,10 +99,11 @@ const [notificationsEnabled, setNotificationsEnabled] = React.useState(false);
         background: notificationsEnabled ? "#2f4a3d" : "#f4b183",
         color: notificationsEnabled ? "#fff" : "#5a2f12",
     }}
-    onClick={async () => {
-        await onEnableNotifications();
-        setNotificationsEnabled(true);
-    }}
+                    onClick={async () => {
+                        await onEnableNotifications();
+                        localStorage.setItem("spesaconte_notifications_enabled", "true");
+                        setNotificationsEnabled(true);
+                    }}
 >
     {notificationsEnabled ? "Notifiche attive ✅" : "Attiva notifiche"}
 </button>
