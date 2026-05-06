@@ -225,7 +225,39 @@ export default function Friends({
       alert(String(err?.message || err));
     }
   };
+  const leaveCircle = async () => {
+  if (!activeCircleId) return;
 
+  const confirmed = window.confirm(
+    "Vuoi davvero uscire da questa cerchia?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(
+      `${apiBase}/circles/${encodeURIComponent(activeCircleId)}/leave`,
+      {
+        method: "DELETE",
+        headers: {
+          ...getBearerHeaders(),
+        },
+      }
+    );
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data?.ok === false) {
+      throw new Error(data?.error || `HTTP ${res.status}`);
+    }
+
+    await refreshCircles();
+
+    setCircleMembers([]);
+  } catch (err: any) {
+    alert(String(err?.message || err));
+  }
+};
   const toggleUserId = (id: string) => {
     setSelectedUserIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -416,14 +448,40 @@ export default function Friends({
           </div>
 
           <div
-            style={{
-              ...styles.muted,
-              fontSize: 12,
-              textAlign: "center",
-            }}
-          >
-            Max 5 persone per cerchia
-          </div>
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 10,
+  }}
+>
+  {hasCircle && hasFriends && (
+    <button
+      type="button"
+      onClick={leaveCircle}
+      style={{
+        background: "transparent",
+        border: "none",
+        color: "#9B1C1C",
+        fontSize: 13,
+        cursor: "pointer",
+        textDecoration: "underline",
+      }}
+    >
+      Esci dalla cerchia
+    </button>
+  )}
+
+  <div
+    style={{
+      ...styles.muted,
+      fontSize: 12,
+      textAlign: "center",
+    }}
+  >
+    Max 5 persone per cerchia
+  </div>
+</div>
         </div>
       )}
     </div>
