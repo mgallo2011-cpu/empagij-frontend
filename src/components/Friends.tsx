@@ -350,21 +350,26 @@ export default function Friends({
                 style={{ ...styles.input, marginBottom: 10 }}
               />
 
-              <button
-                type="button"
-                style={{
-                  ...styles.primaryBtn,
-                  background: "#D97706",
-                  color: "#fff",
-                  border: "1px solid #B45309",
-                  boxShadow: "0 6px 18px rgba(217,119,6,0.28)",
-                  opacity: !inviteEmail.trim() || isInviting ? 0.6 : 1,
-                }}
-                disabled={!inviteEmail.trim() || isInviting}
-                onClick={inviteFriend}
-              >
-                {isInviting ? "Invio..." : "Invita un amico"}
-              </button>
+             <button
+  type="button"
+  style={{
+  ...styles.primaryBtn,
+  width: "auto",
+  minWidth: 0,
+  display: "inline-flex",
+  alignSelf: "flex-start",
+  padding: "9px 14px",
+  background: "#D97706",
+  color: "#fff",
+  border: "1px solid #B45309",
+  boxShadow: "0 6px 18px rgba(217,119,6,0.28)",
+  opacity: !inviteEmail.trim() || isInviting ? 0.6 : 1,
+}}
+  disabled={!inviteEmail.trim() || isInviting}
+  onClick={inviteFriend}
+>
+  {isInviting ? "Invio..." : "Invita un amico"}
+</button>
             </div>
           )}
 
@@ -374,14 +379,20 @@ export default function Friends({
             </div>
           )}
 
-          <div style={{ ...styles.card, marginBottom: 14 }}>
-            <div style={{ ...styles.muted, marginBottom: 8 }}>
-              {hasCircle
-                ? "Qui puoi creare una nuova cerchia"
-                : "Crea la tua prima cerchia"}
-            </div>
+         <div
+  style={{
+    ...styles.card,
+    marginBottom: 8,
+    padding: 5,
+  }}
+>
+  <div style={{ ...styles.muted, marginBottom: 6, fontSize: 12 }}>
+    {hasCircle
+      ? "Qui puoi creare una nuova cerchia"
+      : "Crea la tua prima cerchia"}
+  </div>
 
-            <div style={{ display: "flex", gap: 8 }}>
+  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <input
                 value={newCircleName}
                 onChange={(e) => setNewCircleName(e.target.value)}
