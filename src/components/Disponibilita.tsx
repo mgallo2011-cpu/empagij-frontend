@@ -185,16 +185,13 @@ export default function Disponibilita({
             (p) => categoryFilter === "tutte" || p.category === categoryFilter
           );
 
-          if (filtered.length === 0) {
-            return (
-              <div style={{ ...styles.card, padding: 14 }}>
-                <div style={{ ...styles.cardSub, fontSize: 14 }}>
-                  Per ora non ci sono produttori in questa provincia. Se vuoi
-                  puoi aggiungerne uno tu.
-                </div>
-              </div>
-            );
-          }
+         if (filtered.length === 0) {
+  return (
+    <div style={styles.emptyProducersNotice}>
+      Per ora non ci sono produttori in questa provincia. Se vuoi puoi aggiungerne uno tu.
+    </div>
+  );
+}
 
           return filtered.map((p) => (
             <ProducerCard
@@ -357,4 +354,12 @@ const styles: Record<string, React.CSSProperties> = {
         cursor: "pointer",
         opacity: 0.8,
     },
+    emptyProducersNotice: {
+  marginTop: 4,
+  padding: "8px 2px",
+  color: "#2F7D32",
+  fontSize: 15,
+  fontWeight: 800,
+  lineHeight: 1.35,
+},
 };
