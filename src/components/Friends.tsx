@@ -303,22 +303,42 @@ export default function Friends({
           )}
         </div>
 
-        {hasCircle && hasFriends && (
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ ...styles.muted, marginBottom: 6 }}>Cerchia attiva</div>
-            <select
-              value={activeCircleId || ""}
-              onChange={(e) => onChangeActiveCircle(e.target.value)}
-              style={styles.input}
-            >
-              {circles.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+       {hasCircle && hasFriends && (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      marginBottom: 12,
+    }}
+  >
+    <div
+      style={{
+        ...styles.muted,
+        whiteSpace: "nowrap",
+        fontSize: 13,
+      }}
+    >
+      Cerchia attiva
+    </div>
+
+    <select
+      value={activeCircleId || ""}
+      onChange={(e) => onChangeActiveCircle(e.target.value)}
+      style={{
+        ...styles.input,
+        marginBottom: 0,
+        flex: 1,
+      }}
+    >
+      {circles.map((c) => (
+        <option key={c.id} value={c.id}>
+          {c.name}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
 
         {hasCircle && !hasFriends && !selecting && (
           <div style={styles.card}>
@@ -433,12 +453,18 @@ export default function Friends({
               />
 
               <button
-                type="button"
-                style={{
-                  ...styles.primaryBtn,
-                  minWidth: 76,
-                  opacity: !newCircleName.trim() || isCreatingCircle ? 0.5 : 1,
-                }}
+  type="button"
+  style={{
+    ...styles.primaryBtn,
+    minWidth: 76,
+    height: 44,
+    paddingTop: 0,
+    paddingBottom: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    opacity: !newCircleName.trim() || isCreatingCircle ? 0.5 : 1,
+  }}
                 disabled={!newCircleName.trim() || isCreatingCircle}
                 onClick={createCircle}
               >
