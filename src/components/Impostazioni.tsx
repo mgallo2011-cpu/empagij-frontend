@@ -18,9 +18,50 @@ export default function Impostazioni({
     onOpenIntro,
     onEnableNotifications,
 }: Props) {
-    const [notificationsEnabled, setNotificationsEnabled] = React.useState(() => {
-        return localStorage.getItem("spesaconte_notifications_enabled") === "true";
-    });
+    const [notificationsEnabled, setNotificationsEnabled] = React.useState(false);
+
+React.useEffect(() => {
+    async function checkNotificationsStatus() {
+        try {
+            if (!("Notification" in window)) {
+                setNotificationsEnabled(false);
+                localStorage.removeItem("spesaconte_notifications_enabled");
+                return;
+            }
+
+            if (Notification.permission !== "granted") {
+                setNotificationsEnabled(false);
+                localStorage.removeItem("spesaconte_notifications_enabled");
+                return;
+            }
+
+            if (!("serviceWorker" in navigator)) {
+                setNotificationsEnabled(false);
+                localStorage.removeItem("spesaconte_notifications_enabled");
+                return;
+            }
+
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.getSubscription();
+
+            const isEnabled = !!subscription;
+
+            setNotificationsEnabled(isEnabled);
+
+            if (isEnabled) {
+                localStorage.setItem("spesaconte_notifications_enabled", "true");
+            } else {
+                localStorage.removeItem("spesaconte_notifications_enabled");
+            }
+        } catch (err) {
+            console.error("CHECK NOTIFICATIONS STATUS ERROR:", err);
+            setNotificationsEnabled(false);
+            localStorage.removeItem("spesaconte_notifications_enabled");
+        }
+    }
+
+    checkNotificationsStatus();
+}, []);
     return (
     <div style={styles.page}>
         <div style={styles.topbar}>
@@ -100,10 +141,28 @@ export default function Impostazioni({
         color: notificationsEnabled ? "#fff" : "#5a2f12",
     }}
                     onClick={async () => {
-                        await onEnableNotifications();
-                        localStorage.setItem("spesaconte_notifications_enabled", "true");
-                        setNotificationsEnabled(true);
-                    }}
+    await onEnableNotifications();
+
+    try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+
+        const isEnabled =
+            Notification.permission === "granted" && !!subscription;
+
+        setNotificationsEnabled(isEnabled);
+
+        if (isEnabled) {
+            localStorage.setItem("spesaconte_notifications_enabled", "true");
+        } else {
+            localStorage.removeItem("spesaconte_notifications_enabled");
+        }
+    } catch (err) {
+        console.error("ENABLE NOTIFICATIONS STATUS CHECK ERROR:", err);
+        setNotificationsEnabled(false);
+        localStorage.removeItem("spesaconte_notifications_enabled");
+    }
+}}
 >
     {notificationsEnabled ? "Notifiche attive ✅" : "Attiva notifiche"}
 </button>

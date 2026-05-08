@@ -51,36 +51,46 @@ export async function registerPush(): Promise<void> {
       return;
     }
 
-    const registration = await navigator.serviceWorker.register("/sw.js");
-    console.log("registerPush: service worker registrato");
+    await navigator.serviceWorker.register("/sw.js");
+    const registration = await navigator.serviceWorker.ready;
+
+    console.log("registerPush: service worker ready", {
+      scope: registration.scope,
+      active: !!registration.active,
+    });
 
     let permission = Notification.permission;
     console.log("registerPush: permission iniziale =", permission);
 
-    if (permission !== "granted") {
+    if (permission === "default") {
       permission = await Notification.requestPermission();
       console.log("registerPush: permission dopo request =", permission);
     }
 
     if (permission !== "granted") {
       console.log("registerPush: permesso non concesso, skip");
+      localStorage.removeItem("spesaconte_notifications_enabled");
       return;
     }
 
+    const convertedKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+
     let subscription = await registration.pushManager.getSubscription();
 
-if (subscription) {
-  console.log("registerPush: subscription già esistente");
-} else {
-  const convertedKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+    if (subscription) {
+      console.log("registerPush: subscription già esistente", {
+        endpoint: subscription.endpoint,
+      });
+    } else {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: convertedKey,
+      });
 
-  subscription = await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: convertedKey,
-  });
-
-  console.log("registerPush: nuova subscription creata");
-}
+      console.log("registerPush: nuova subscription creata", {
+        endpoint: subscription.endpoint,
+      });
+    }
 
     const res = await fetch(`${API_BASE}/push/subscribe`, {
       method: "POST",
@@ -99,9 +109,12 @@ if (subscription) {
       throw new Error(data?.error || `HTTP ${res.status}`);
     }
 
+    localStorage.setItem("spesaconte_notifications_enabled", "true");
+
     console.log("registerPush: subscription salvata sul backend");
   } catch (err) {
     console.error("registerPush ERROR:", err);
+    localStorage.removeItem("spesaconte_notifications_enabled");
     throw err;
   }
 }
