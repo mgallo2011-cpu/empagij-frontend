@@ -2,25 +2,24 @@ self.addEventListener("push", function (event) {
     let data = {};
 
     try {
-        data = event.data.json();
+        data = event.data ? event.data.json() : {};
     } catch (e) {
-        data = {
-            title: "SpesaConTe",
-            body: "Nuova notifica",
-        };
+        data = {};
     }
 
     const title = data.title || "SpesaConTe";
+
     const options = {
-        body: data.body || "",
+        body: data.body || "Nuova notifica",
+        icon: "/logo192-B.png",
+        badge: "/logo192-B.png",
+        tag: data.tag || "spesaconte-notification",
         data: {
             url: data.url || "/",
         },
     };
 
-    event.waitUntil(
-        self.registration.showNotification(title, options)
-    );
+    event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener("notificationclick", function (event) {
@@ -30,23 +29,33 @@ self.addEventListener("notificationclick", function (event) {
     const absoluteUrl = new URL(relativeUrl, self.location.origin).href;
 
     event.waitUntil(
-        clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (clientList) {
-            for (const client of clientList) {
-                const clientUrl = new URL(client.url);
+        clients
+            .matchAll({
+                type: "window",
+                includeUncontrolled: true,
+            })
+            .then(function (clientList) {
+                for (const client of clientList) {
+                    const clientUrl = new URL(client.url);
 
-                if (clientUrl.origin === self.location.origin && "focus" in client) {
-                    return client.focus().then(function () {
-                        if ("navigate" in client && client.url !== absoluteUrl) {
-                            return client.navigate(absoluteUrl);
+                    if (clientUrl.origin === self.location.origin) {
+                        if ("focus" in client) {
+                            return client.focus().then(function () {
+                                if ("navigate" in client && client.url !== absoluteUrl) {
+                                    return client.navigate(absoluteUrl);
+                                }
+
+                                return client;
+                            });
                         }
-                        return client;
-                    });
+                    }
                 }
-            }
 
-            if (clients.openWindow) {
-                return clients.openWindow(absoluteUrl);
-            }
-        })
+                if (clients.openWindow) {
+                    return clients.openWindow(absoluteUrl);
+                }
+
+                return null;
+            })
     );
 });
