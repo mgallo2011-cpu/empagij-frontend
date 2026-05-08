@@ -359,7 +359,14 @@ export default function Friends({
             </div>
           </div>
         )}
-
+        {!hasCircle && !selecting && (
+  <div style={styles.card}>
+    <div style={styles.cardTitle}>Non fai parte di nessuna cerchia</div>
+    <div style={{ ...styles.muted, marginTop: 6 }}>
+      Puoi creare una nuova cerchia oppure farti invitare da un amico.
+    </div>
+  </div>
+)}
         {hasCircle && hasFriends && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {friends.map((member) => (
