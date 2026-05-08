@@ -1132,6 +1132,39 @@ const onClosePiccolaRichiesta = (_id: string) => {
         }
     };
     useEffect(() => {
+    if (!user?.id) return;
+
+    const inviteToken =
+        localStorage.getItem("empagij_invite_token") || "";
+
+    if (!inviteToken) return;
+
+    let alive = true;
+
+    async function acceptPendingInviteToken() {
+        try {
+            await acceptInviteTokenIfPresent();
+
+            if (!alive) return;
+
+            await refreshCircles();
+
+            alert("Invito accettato. Ora fai parte della cerchia.");
+        } catch (err) {
+            console.error(
+                "Errore accettazione invito da link:",
+                err
+            );
+        }
+    }
+
+    acceptPendingInviteToken();
+
+    return () => {
+        alive = false;
+    };
+}, [user?.id]);
+    useEffect(() => {
         let alive = true;
 
         if (!user?.id) {
