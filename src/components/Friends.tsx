@@ -87,6 +87,7 @@ export default function Friends({
   circleMembers = [],
   setCircleMembers,
   myInvites = [],
+  userId,
   setMyInvites,
   refreshCircles,
   circles = [],
@@ -109,6 +110,8 @@ export default function Friends({
   const hasCircle = !!activeCircleId && circles.length > 0;
   const hasFriends = friends.length > 0;
   const isFull = circleMembers.length >= 5;
+  const activeCircle = circles.find((c) => c.id === activeCircleId) || null;
+  const isOwner = !!activeCircle && activeCircle.owner_user_id === userId;
 
   const [inviteEmail, setInviteEmail] = useState("");
   const [isInviting, setIsInviting] = useState(false);
@@ -225,39 +228,47 @@ export default function Friends({
       alert(String(err?.message || err));
     }
   };
-  const leaveCircle = async () => {
-  if (!activeCircleId) return;
+    const leaveCircle = async () => {
+    if (!activeCircleId) return;
 
-  const confirmed = window.confirm(
-    "Vuoi davvero uscire da questa cerchia?"
-  );
-
-  if (!confirmed) return;
-
-  try {
-    const res = await fetch(
-      `${apiBase}/circles/${encodeURIComponent(activeCircleId)}/leave`,
-      {
-        method: "DELETE",
-        headers: {
-          ...getBearerHeaders(),
-        },
-      }
-    );
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok || data?.ok === false) {
-      throw new Error(data?.error || `HTTP ${res.status}`);
+    if (isOwner) {
+      alert(
+        "Sei il creatore di questa cerchia. Al momento non puoi uscire dalla cerchia: devi prima rimuovere gli altri membri oppure prevedere una funzione separata per cancellare la cerchia."
+      );
+      return;
     }
 
-    await refreshCircles();
+    const confirmed = window.confirm(
+      "Vuoi davvero uscire da questa cerchia? I tuoi passaggi e le tue richieste in questa cerchia verranno rimossi."
+    );
 
-    setCircleMembers([]);
-  } catch (err: any) {
-    alert(String(err?.message || err));
-  }
-};
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(
+        `${apiBase}/circles/${encodeURIComponent(activeCircleId)}/leave`,
+        {
+          method: "DELETE",
+          headers: {
+            ...getBearerHeaders(),
+          },
+        }
+      );
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || data?.ok === false) {
+        throw new Error(data?.error || `HTTP ${res.status}`);
+      }
+
+      await refreshCircles();
+
+      setSelectedUserIds([]);
+      setDraft("");
+    } catch (err: any) {
+      alert(String(err?.message || err));
+    }
+  };
   const toggleUserId = (id: string) => {
     setSelectedUserIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -481,20 +492,20 @@ export default function Friends({
     gap: 10,
   }}
 >
-  {hasCircle && hasFriends && (
+   {hasCircle && (
     <button
       type="button"
       onClick={leaveCircle}
       style={{
         background: "transparent",
         border: "none",
-        color: "#9B1C1C",
+        color: isOwner ? "#8A6D1D" : "#9B1C1C",
         fontSize: 13,
         cursor: "pointer",
         textDecoration: "underline",
       }}
     >
-      Esci dalla cerchia
+      {isOwner ? "Gestisci uscita dalla cerchia" : "Esci dalla cerchia"}
     </button>
   )}
 
