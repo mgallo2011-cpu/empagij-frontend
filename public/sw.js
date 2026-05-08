@@ -13,7 +13,9 @@ self.addEventListener("push", function (event) {
         body: data.body || "Nuova notifica",
         icon: "/logo192-B.png",
         badge: "/logo192-B.png",
-        tag: data.tag || "spesaconte-notification",
+        tag: data.tag || `spesaconte-${Date.now()}`,
+        renotify: true,
+        requireInteraction: false,
         data: {
             url: data.url || "/",
         },
