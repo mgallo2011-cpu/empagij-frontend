@@ -2024,6 +2024,7 @@ const content = (() => {
     from_name: user.name || "Anonimo",
     producer_id: passaggio.producerId,
     producer_name: passaggio.producerName,
+    passaggio_id: passaggio.id,
     request_text: text.trim(),
     target_user_ids: [passaggio.fromUserId],
     is_join_passaggio: true,
@@ -3239,16 +3240,22 @@ function CerchiaPassaggi({
     onDeletePassaggio: (id: string) => void;
     currentUserId: string;
 }) {
-   const hasJoinedPassaggio = (passaggio: Passaggio) => {
-    return richieste.some((r) => {
-        if (r.fromUserId !== currentUserId) return false;
-
+  const richiesteForPassaggio = (passaggio: Passaggio) => {
+    return richieste.filter((r) => {
         if (r.passaggioId) {
             return r.passaggioId === passaggio.id;
         }
 
-        return false;
+        // Compatibilità con richieste create prima di passaggio_id
+        if (r.producerId !== passaggio.producerId) return false;
+        return (r.targetUserIds || []).includes(passaggio.fromUserId);
     });
+};
+
+const hasJoinedPassaggio = (passaggio: Passaggio) => {
+    return richiesteForPassaggio(passaggio).some(
+        (r) => r.fromUserId === currentUserId
+    );
 };
 
     const getCircleCardStyle = (circleId?: string): React.CSSProperties => {
@@ -3449,7 +3456,44 @@ function CerchiaPassaggi({
                                             “{p.note.trim()}”
                                         </div>
                                     ) : null}
+                                    {p.fromUserId === currentUserId &&
+    richiesteForPassaggio(p).length > 0 && (
+        <div
+            style={{
+                marginTop: 12,
+                padding: "10px 12px",
+                borderRadius: 12,
+                background: "#fffdf9",
+                border: "1px solid #d8c8ad",
+            }}
+        >
+            <div
+                style={{
+                    fontSize: 13,
+                    fontWeight: 800,
+                    color: "#2f4a3d",
+                    marginBottom: 6,
+                }}
+            >
+                Richieste ricevute:
+            </div>
 
+            {richiesteForPassaggio(p).map((r) => (
+                <div
+                    key={r.id}
+                    style={{
+                        fontSize: 13,
+                        color: "#2f281f",
+                        lineHeight: 1.4,
+                        marginTop: 4,
+                    }}
+                >
+                    • {r.fromName || "Un utente"}:{" "}
+                    {r.itemsText || "Richiesta senza dettaglio"}
+                </div>
+            ))}
+        </div>
+    )}
                                     {p.fromUserId !== currentUserId ? (
                                         hasJoinedPassaggio(p) ? (
                                             <div
