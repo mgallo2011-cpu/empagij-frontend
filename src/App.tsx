@@ -3242,13 +3242,7 @@ function CerchiaPassaggi({
 }) {
   const richiesteForPassaggio = (passaggio: Passaggio) => {
     return richieste.filter((r) => {
-        if (r.passaggioId) {
-            return r.passaggioId === passaggio.id;
-        }
-
-        // Compatibilità con richieste create prima di passaggio_id
-        if (r.producerId !== passaggio.producerId) return false;
-        return (r.targetUserIds || []).includes(passaggio.fromUserId);
+        return r.passaggioId === passaggio.id;
     });
 };
 
