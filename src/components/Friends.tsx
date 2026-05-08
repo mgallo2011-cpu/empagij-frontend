@@ -233,7 +233,7 @@ export default function Friends({
 
     if (isOwner) {
       alert(
-        "Sei il creatore di questa cerchia. Al momento non puoi uscire dalla cerchia: devi prima rimuovere gli altri membri oppure prevedere una funzione separata per cancellare la cerchia."
+        "Sei il creatore di questa cerchia: devi prima rimuovere gli altri membri per cancellare la cerchia."
       );
       return;
     }

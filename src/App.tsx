@@ -71,6 +71,7 @@ type Richiesta = {
     circleId: string;
     producerId: string;
     producerName: string;
+    passaggioId?: string;
     fromUserId: string;
     fromName?: string; // solo UI
     itemsText: string;
@@ -164,6 +165,7 @@ function mapBackendRichieste(items: any[]): Richiesta[] {
             circleId: x.circle_id,
             producerId: x.producer_id,
             producerName: x.producer_name,
+            passaggioId: x.passaggio_id || undefined,
             fromUserId: x.from_user_id || "",
             fromName: x.from_name || "",
             itemsText: x.request_text || "",
@@ -1220,13 +1222,15 @@ const handleDeletePassaggio = async (id: string) => {
     }
 };
 const handleCreateRichiesta = async ({
-  producerId,
+   producerId,
   producerName,
+  passaggioId,
   itemsText,
   targetUserIds,
 }: {
   producerId: string;
   producerName: string;
+  passaggioId?: string;
   itemsText: string;
   targetUserIds: string[];
 }) => {
@@ -1251,6 +1255,7 @@ const handleCreateRichiesta = async ({
       from_name: user.name || "Anonimo",
       producer_id: producerId,
       producer_name: producerName,
+      passaggio_id: passaggioId || null,
       request_text: itemsText.trim() || "Richiesta",
       target_user_ids: targetUserIds,
     };
@@ -3234,13 +3239,17 @@ function CerchiaPassaggi({
     onDeletePassaggio: (id: string) => void;
     currentUserId: string;
 }) {
-    const hasJoinedPassaggio = (passaggio: Passaggio) => {
-        return richieste.some((r) => {
-            if (r.fromUserId !== currentUserId) return false;
-            if (r.producerId !== passaggio.producerId) return false;
-            return (r.targetUserIds || []).includes(passaggio.fromUserId);
-        });
-    };
+   const hasJoinedPassaggio = (passaggio: Passaggio) => {
+    return richieste.some((r) => {
+        if (r.fromUserId !== currentUserId) return false;
+
+        if (r.passaggioId) {
+            return r.passaggioId === passaggio.id;
+        }
+
+        return false;
+    });
+};
 
     const getCircleCardStyle = (circleId?: string): React.CSSProperties => {
         const palettes = [
