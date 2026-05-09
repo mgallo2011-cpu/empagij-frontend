@@ -52,6 +52,7 @@ type WhenChoice = "oggi" | "domani" | "altra";
 type Passaggio = {
   id: string;
   circleId: string;
+  status?: "in_corso" | "annullato";
   circleName?: string;
   producerId: string;
   fromName: string;
@@ -923,32 +924,56 @@ const onClosePiccolaRichiesta = (_id: string) => {
         );
 
         const mapped: Passaggio[] = allItems
-            .filter((x) => x && x.status !== "eliminato" && x.status !== "deleted")
+            .filter((x) => {
+    if (!x) return false;
+
+    if (x.status === "annullato") {
+        const updatedAt = x.updated_at ? new Date(x.updated_at).getTime() : 0;
+        const now = Date.now();
+        const maxAgeMs = 48 * 60 * 60 * 1000;
+
+        return updatedAt > 0 && now - updatedAt <= maxAgeMs;
+    }
+
+    return x.status !== "eliminato" && x.status !== "deleted";
+})
             .map((x) => ({
-                id: String(x.id || ""),
-                circleId: String(x.circle_id || ""),
-                circleName:
-                    circlesInput.find((c) => c.id === x.circle_id)?.name || "",
-                fromName: String(x.from_name || ""),
-                fromUserId: String(x.from_user_id || ""),
-                producerId: String(x.producer_id || ""),
-                producerName: String(x.producer_name || ""),
-                producerCategory: String(x.producer_category || ""),
-                whenLabel:
-                    x.when_label === "Oggi" ||
-                        x.when_label === "Domani" ||
-                        x.when_label === "Altra data"
-                        ? x.when_label
-                        : "Oggi",
-                dateISO: x.date_iso || undefined,
-                note: String(x.note || ""),
-                createdAtISO: x.created_at
-                    ? new Date(x.created_at).toISOString()
-                    : new Date().toISOString(),
-                createdAt: x.created_at
-                    ? new Date(x.created_at).getTime()
-                    : Date.now(),
-            }))
+    id: String(x.id || ""),
+    circleId: String(x.circle_id || ""),
+
+    status:
+        x.status === "annullato"
+            ? "annullato"
+            : "in_corso",
+
+    circleName:
+        circlesInput.find((c) => c.id === x.circle_id)?.name || "",
+
+    fromName: String(x.from_name || ""),
+    fromUserId: String(x.from_user_id || ""),
+    producerId: String(x.producer_id || ""),
+    producerName: String(x.producer_name || ""),
+    producerCategory: String(x.producer_category || ""),
+
+    whenLabel:
+        x.when_label === "Oggi" ||
+        x.when_label === "Domani" ||
+        x.when_label === "Altra data"
+            ? x.when_label
+            : "Oggi",
+
+    dateISO: x.date_iso || undefined,
+
+    note: String(x.note || ""),
+
+    createdAtISO: x.created_at
+        ? new Date(x.created_at).toISOString()
+        : new Date().toISOString(),
+
+    createdAt: x.created_at
+        ? new Date(x.created_at).getTime()
+        : Date.now(),
+}))
             .filter((p) => p.id && p.circleId && p.producerId)
             .sort((a, b) => b.createdAt - a.createdAt);
 
@@ -3420,15 +3445,43 @@ const hasJoinedPassaggio = (passaggio: Passaggio) => {
                                 ...getCircleCardStyle(p.circleId),
                                 cursor: "pointer",
                             }}
-                            onClick={() => onOpenJoinPassaggio(p.id)}
+                            onClick={() => {
+    if (p.status === "annullato") return;
+    onOpenJoinPassaggio(p.id);
+}}
                         >
                             <div style={styles.cardTop}>
                                 <div style={styles.iconCircle}>🚗</div>
 
                                 <div style={{ flex: 1 }}>
-                                    <div style={styles.cardTitle}>
-                                        {p.producerName || "Produttore"}
-                                    </div>
+                                    <div
+    style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        flexWrap: "wrap",
+    }}
+>
+    <div style={styles.cardTitle}>
+        {p.producerName || "Produttore"}
+    </div>
+
+    {p.status === "annullato" && (
+        <div
+            style={{
+                fontSize: 11,
+                fontWeight: 800,
+                padding: "4px 8px",
+                borderRadius: 999,
+                background: "#f3e4e4",
+                color: "#8a3b3b",
+                border: "1px solid #d8b0b0",
+            }}
+        >
+            PASSAGGIO ANNULLATO
+        </div>
+    )}
+</div>
 
                                     {p.circleName && (
                                         <div style={{ ...styles.muted, fontSize: 12, marginTop: 2 }}>
@@ -3501,16 +3554,29 @@ const hasJoinedPassaggio = (passaggio: Passaggio) => {
                                                 ✅ Hai aderito a questo passaggio
                                             </div>
                                         ) : (
-                                            <div
-                                                style={{
-                                                    marginTop: 10,
-                                                    fontSize: 14,
-                                                    fontWeight: 800,
-                                                    color: "#2f7a6d",
-                                                }}
-                                            >
-                                                👉 Aggiungi la tua richiesta
-                                            </div>
+                                           {p.status === "annullato" ? (
+    <div
+        style={{
+            marginTop: 10,
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#8a3b3b",
+        }}
+    >
+        Questo passaggio è stato annullato
+    </div>
+) : (
+    <div
+        style={{
+            marginTop: 10,
+            fontSize: 14,
+            fontWeight: 800,
+            color: "#2f7a6d",
+        }}
+    >
+        👉 Aggiungi la tua richiesta
+    </div>
+)}
                                         )
                                     ) : null}
                                 </div>
