@@ -3542,43 +3542,41 @@ const hasJoinedPassaggio = (passaggio: Passaggio) => {
         </div>
     )}
                                     {p.fromUserId !== currentUserId ? (
-                                        hasJoinedPassaggio(p) ? (
-                                            <div
-                                                style={{
-                                                    marginTop: 10,
-                                                    fontSize: 13,
-                                                    fontWeight: 700,
-                                                    color: "#1f7a3d",
-                                                }}
-                                            >
-                                                ✅ Hai aderito a questo passaggio
-                                            </div>
-                                        ) : (
-                                           {p.status === "annullato" ? (
-    <div
-        style={{
-            marginTop: 10,
-            fontSize: 13,
-            fontWeight: 700,
-            color: "#8a3b3b",
-        }}
-    >
-        Questo passaggio è stato annullato
-    </div>
-) : (
-    <div
-        style={{
-            marginTop: 10,
-            fontSize: 14,
-            fontWeight: 800,
-            color: "#2f7a6d",
-        }}
-    >
-        👉 Aggiungi la tua richiesta
-    </div>
-)}
-                                        )
-                                    ) : null}
+    hasJoinedPassaggio(p) ? (
+        <div
+            style={{
+                marginTop: 10,
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#1f7a3d",
+            }}
+        >
+            ✅ Hai aderito a questo passaggio
+        </div>
+    ) : p.status === "annullato" ? (
+        <div
+            style={{
+                marginTop: 10,
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#8a3b3b",
+            }}
+        >
+            Questo passaggio è stato annullato
+        </div>
+    ) : (
+        <div
+            style={{
+                marginTop: 10,
+                fontSize: 14,
+                fontWeight: 800,
+                color: "#2f7a6d",
+            }}
+        >
+            👉 Aggiungi la tua richiesta
+        </div>
+    )
+) : null}
                                 </div>
 
                                 <div style={{ display: "flex", gap: 8 }}>
