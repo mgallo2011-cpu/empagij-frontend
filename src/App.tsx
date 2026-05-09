@@ -927,13 +927,18 @@ const onClosePiccolaRichiesta = (_id: string) => {
             .filter((x) => {
     if (!x) return false;
 
-    if (x.status === "annullato") {
-        const updatedAt = x.updated_at ? new Date(x.updated_at).getTime() : 0;
-        const now = Date.now();
-        const maxAgeMs = 48 * 60 * 60 * 1000;
+   if (x.status === "annullato") {
+    const referenceTime = x.updated_at
+        ? new Date(x.updated_at).getTime()
+        : x.created_at
+            ? new Date(x.created_at).getTime()
+            : 0;
 
-        return updatedAt > 0 && now - updatedAt <= maxAgeMs;
-    }
+    const now = Date.now();
+    const maxAgeMs = 48 * 60 * 60 * 1000;
+
+    return referenceTime > 0 && now - referenceTime <= maxAgeMs;
+}
 
     return x.status !== "eliminato" && x.status !== "deleted";
 })
