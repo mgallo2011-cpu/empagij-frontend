@@ -2470,23 +2470,23 @@ function Intro({
                                 style={{
                                     position: "relative",
                                     width: 280,
-                                    height: 170,
+                                    height: 320,
                                 }}
                             >
-                                <img
-                                    src="/intro-provincia-foggia.png"
-                                    alt="Territorio"
-                                    style={{
-                                        position: "absolute",
-                                        left: "50%",
-                                        top: "50%",
-                                        transform: "translate(-50%, -50%)",
-                                        width: 220,
-                                        maxWidth: "100%",
-                                        height: "auto",
-                                        opacity: 0.96,
-                                    }}
-                                />
+                               <img
+    src="/home-hero.png"
+    alt="Spesa condivisa dal produttore locale"
+    style={{
+        position: "absolute",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
+        width: 340,
+        maxWidth: "96%",
+        height: "auto",
+        opacity: 0.98,
+    }}
+/>
 
                                 <div
                                     style={{
@@ -3585,33 +3585,48 @@ const hasJoinedPassaggio = (passaggio: Passaggio) => {
                                 </div>
 
                                 <div style={{ display: "flex", gap: 8 }}>
-                                    {p.fromUserId === currentUserId ? (
-                                        <button
-                                            type="button"
-                                            style={styles.btnSecondary}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onDeletePassaggio(p.id);
-                                            }}
-                                        >
-                                            Elimina
-                                        </button>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            style={{
-                                                ...styles.btnSecondary,
-                                                background: "#f3f3f3",
-                                                color: "#555",
-                                            }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                hidePassaggio(p.id);
-                                            }}
-                                        >
-                                            Nascondi
-                                        </button>
-                                    )}
+                                   {p.status === "annullato" ? (
+    <button
+        type="button"
+        style={{
+            ...styles.btnSecondary,
+            background: "#f3f3f3",
+            color: "#555",
+        }}
+        onClick={(e) => {
+            e.stopPropagation();
+            hidePassaggio(p.id);
+        }}
+    >
+        Nascondi
+    </button>
+) : p.fromUserId === currentUserId ? (
+    <button
+        type="button"
+        style={styles.btnSecondary}
+        onClick={(e) => {
+            e.stopPropagation();
+            onDeletePassaggio(p.id);
+        }}
+    >
+        Elimina
+    </button>
+) : (
+    <button
+        type="button"
+        style={{
+            ...styles.btnSecondary,
+            background: "#f3f3f3",
+            color: "#555",
+        }}
+        onClick={(e) => {
+            e.stopPropagation();
+            hidePassaggio(p.id);
+        }}
+    >
+        Nascondi
+    </button>
+)}
                                 </div>
                             </div>
                         </div>
