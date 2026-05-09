@@ -946,10 +946,9 @@ const onClosePiccolaRichiesta = (_id: string) => {
     id: String(x.id || ""),
     circleId: String(x.circle_id || ""),
 
-    status:
-        x.status === "annullato"
-            ? "annullato"
-            : "in_corso",
+                status: (x.status === "annullato" ? "annullato" : "in_corso") as
+                    | "in_corso"
+                    | "annullato",
 
     circleName:
         circlesInput.find((c) => c.id === x.circle_id)?.name || "",
@@ -1368,7 +1367,8 @@ const content = (() => {
                     window.history.replaceState({}, "", url.toString());
                 } catch {}
 
-                setScreen({ name: "login" });
+                setUser(null);
+                setScreen({ name: "intro" });
             }}
         />
     );
@@ -2448,7 +2448,7 @@ function Intro({
                     <div
                         style={{
                             position: "relative",
-                            minHeight: 280,
+                            minHeight: 380,
                             borderRadius: 24,
                             background: "#FFFFFF",
                             border: "1px solid #DCE8D3",
@@ -2460,41 +2460,30 @@ function Intro({
                         <div
                             style={{
                                 position: "relative",
-                                height: 170,
+                                height: 300,
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                             }}
                         >
-                            <div
+                            <img
+                                src="/home-hero.png"
+                                alt="Spesa condivisa dal produttore locale"
                                 style={{
-                                    position: "relative",
-                                    width: 280,
-                                    height: 320,
+                                    width: "100%",
+                                    maxWidth: 360,
+                                    height: "auto",
+                                    objectFit: "contain",
+                                    opacity: 0.98,
                                 }}
-                            >
-                               <img
-    src="/home-hero.png"
-    alt="Spesa condivisa dal produttore locale"
-    style={{
-        position: "absolute",
-        left: "50%",
-        top: "50%",
-        transform: "translate(-50%, -50%)",
-        width: 340,
-        maxWidth: "96%",
-        height: "auto",
-        opacity: 0.98,
-    }}
-/>
+                            />
+                        </div>
 
-              
-                                    
                         <div
                             style={{
                                 display: "flex",
                                 justifyContent: "center",
-                                marginTop: 22,
+                                marginTop: 12,
                             }}
                         >
                             <div
@@ -2517,7 +2506,6 @@ function Intro({
                             </div>
                         </div>
                     </div>
-
                     <div
                         style={{
                             marginTop: 60,
