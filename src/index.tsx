@@ -26,9 +26,7 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
-let registerPushInFlight: Promise<void> | null = null;
-
-async function registerPushInternal(): Promise<void> {
+export async function registerPush(): Promise<void> {
   try {
     if (!("serviceWorker" in navigator)) {
       console.log("registerPush: serviceWorker non supportato");
@@ -114,24 +112,11 @@ async function registerPushInternal(): Promise<void> {
     localStorage.setItem("spesaconte_notifications_enabled", "true");
 
     console.log("registerPush: subscription salvata sul backend");
-   } catch (err) {
+  } catch (err) {
     console.error("registerPush ERROR:", err);
     localStorage.removeItem("spesaconte_notifications_enabled");
     throw err;
   }
-}
-
-export async function registerPush(): Promise<void> {
-  if (registerPushInFlight) {
-    console.log("registerPush: chiamata già in corso, riuso quella esistente");
-    return registerPushInFlight;
-  }
-
-  registerPushInFlight = registerPushInternal().finally(() => {
-    registerPushInFlight = null;
-  });
-
-  return registerPushInFlight;
 }
 
 root.render(
